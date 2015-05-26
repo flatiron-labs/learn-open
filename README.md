@@ -1,10 +1,16 @@
-# Learn::Open
+# learn-open
 
-TODO: Write a gem description
+Open Learn lessons locally
 
 ## Installation
 
-Add this line to your application's Gemfile:
+Install with:
+
+```
+$ gem install learn-open
+```
+
+Alternatively, add this line to your application's Gemfile:
 
 ```ruby
 gem 'learn-open'
@@ -14,17 +20,17 @@ And then execute:
 
     $ bundle
 
-Or install it yourself as:
-
-    $ gem install learn-open
-
 ## Usage
 
-TODO: Write usage instructions here
+Run:
+
+```
+$ learn-open lesson-name [--editor=editor-binary]
+```
 
 ## Contributing
 
-1. Fork it ( https://github.com/[my-github-username]/learn-open/fork )
+1. Fork it ( https://github.com/flatiron-labs/learn-open/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
