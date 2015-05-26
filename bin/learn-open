@@ -2,8 +2,13 @@
 
 require 'learn_open'
 
+config_path = File.expand_path('~/.learn-config')
+editor_data = YAML.load(File.read(config_path))[:editor]
 lesson = nil
-editor_specified = ARGV.detect {|arg| arg.start_with?('--editor=')}.match(/\-\-editor=(.*)/)
+
+configured_editor = !(editor_data.empty? || editor_data.nil?) ? editor_data : nil
+editor_specified = ARGV.detect {|arg| arg.start_with?('--editor=')}.match(/\-\-editor=(.*)/) || configured_editor
+puts editor_specified
 open_after = !!editor_specified
 
 if !ARGV[0].start_with?('--editor=')
