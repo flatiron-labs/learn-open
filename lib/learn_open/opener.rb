@@ -55,7 +55,7 @@ module LearnOpen
 
     def clone_repo
       if !repo_exists?
-        system("cd #{lessons_dir} && git clone git@github.com:#{lesson}.git")
+        Git.clone("git@github.com:#{lesson}.git", repo_dir, path: lessons_dir)
       end
     end
 

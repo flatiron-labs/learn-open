@@ -21,5 +21,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", "~> 10.0"
 
   spec.add_runtime_dependency "netrc"
+  spec.add_runtime_dependency "git"
   spec.add_runtime_dependency "learn-web", ">= 0.0.13"
 end
