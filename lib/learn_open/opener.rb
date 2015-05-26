@@ -17,6 +17,7 @@ module LearnOpen
     def run
       if !lesson
         lesson = get_current_lesson
+        puts editor
         puts lesson
         exit
       end
