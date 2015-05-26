@@ -1,5 +1,6 @@
 require 'yaml'
 require 'netrc'
+require 'git'
 require 'learn_web'
 
 require 'learn_open/version'

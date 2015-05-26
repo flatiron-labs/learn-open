@@ -19,6 +19,8 @@ module LearnOpen
     def run
       set_lesson
       clone_repo
+      Dir.chdir('/Users/loganhasson/Development')
+      exec('bash');
 
       exit
       # if !lesson, get current lesson path from api
@@ -47,6 +49,10 @@ module LearnOpen
 
     def ensure_correct_lesson
       # send given lesson to api and get back sanitized version
+    end
+
+    def clone_repo
+      # cd into lessons_dir and clone
     end
   end
 end
