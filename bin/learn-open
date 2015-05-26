@@ -15,7 +15,7 @@ if !ARGV[0].start_with?('--editor=')
 end
 
 if open_after
-  editor_specified = editor_specified[1]
+  editor_specified = editor_specified.is_a?(String) ? editor_specified : editor_specified[1]
 end
 
 LearnOpen::Opener.run(lesson: lesson, editor_specified: editor_specified)
