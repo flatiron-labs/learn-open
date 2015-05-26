@@ -20,7 +20,7 @@ module LearnOpen
       set_lesson
       clone_repo
       Dir.chdir('/Users/loganhasson/Development')
-      exec('bash');
+      exec(ENV['SHELL'])
 
       exit
       # if !lesson, get current lesson path from api
