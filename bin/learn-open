@@ -7,9 +7,14 @@ editor_data = YAML.load(File.read(config_path))[:editor]
 lesson = nil
 
 configured_editor = !(editor_data.empty? || editor_data.nil?) ? editor_data : nil
-editor_specified = ARGV.detect {|arg| arg.start_with?('--editor=')}.match(/\-\-editor=(.*)/) || configured_editor
+editor_specified = ARGV.detect {|arg| arg.start_with?('--editor=')}.match(/\-\-editor=(.+)/) || configured_editor
+puts "SPECIFIED"
 puts editor_specified
+puts "CONFIGURED"
+puts configured_editor
 open_after = !!editor_specified
+puts "OPEN AFTER?"
+puts open_after
 
 if !ARGV[0].start_with?('--editor=')
   lesson = ARGV[0]
