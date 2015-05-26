@@ -1,3 +1,17 @@
 #!/usr/bin/env ruby
 
 require 'learn_open'
+
+lesson = nil
+editor_specified = ARGV.detect {|arg| arg.start_with?('--editor=')}.match(/\-\-editor=(.*)/)
+open_after = !!editor_specified
+
+if !ARGV[0].start_with?('--editor=')
+  lesson = ARGV[0]
+end
+
+if open_after
+  editor_specified = editor_specified[1]
+end
+
+LearnOpen::Opener.run(lesson: lesson, editor_specified: editor_specified)
