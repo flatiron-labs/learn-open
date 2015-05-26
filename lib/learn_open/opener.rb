@@ -13,7 +13,7 @@ module LearnOpen
 
       @lesson       = lesson
       @editor       = editor
-      @lessons_dir  = YAML.load(File.read(File.expand_path('~/.learn-config')))[:directory]
+      @lessons_dir  = YAML.load(File.read(File.expand_path('~/.learn-config')))[:learn_directory]
     end
 
     def run
