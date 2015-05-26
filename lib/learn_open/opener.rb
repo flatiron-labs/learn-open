@@ -20,6 +20,8 @@ module LearnOpen
       set_lesson
       clone_repo
       Dir.chdir('/Users/loganhasson/Development')
+      puts ENV['SHELL']
+      puts ENV['SHELL'].split('/').last
       exec(ENV['SHELL'].split('/').last)
 
       exit
