@@ -1,5 +1,6 @@
-require "learn_open/version"
+require 'yaml'
+
+require 'learn_open/version'
 
 module LearnOpen
-  # Your code goes here...
 end
