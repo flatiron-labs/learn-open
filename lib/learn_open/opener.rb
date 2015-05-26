@@ -45,6 +45,7 @@ module LearnOpen
     end
 
     def ensure_correct_lesson
+      correct_lesson_name = client.validate_repo_slug(repo_slug: lesson)
       # send given lesson to api and get back sanitized version
     end
 
