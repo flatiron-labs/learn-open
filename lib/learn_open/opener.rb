@@ -19,8 +19,8 @@ module LearnOpen
     def run
       set_lesson
       clone_repo
-      Dir.chdir('/Users/loganhasson/Development')
-      exec(ENV['SHELL'])
+      #Dir.chdir('/Users/loganhasson/Development')
+      exec("#{ENV['SHELL']} & cd /Users/loganhasson/Development")
 
       # if !lesson, get current lesson path from api
       # if lesson, get correct lesson path from api
