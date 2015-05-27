@@ -78,7 +78,7 @@ module LearnOpen
       puts "Opening lesson..."
       Dir.chdir("#{lessons_dir}/#{repo_dir}")
       puts "Bundling..."
-      system("bundle install")
+      system("bundle install &>/dev/null")
       exec(ENV['SHELL'])
     end
   end
