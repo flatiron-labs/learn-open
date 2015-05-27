@@ -42,25 +42,73 @@ module LearnOpen
       @current_lesson ||= client.current_lesson
     end
 
-    def get_current_lesson_forked_repo
-      current_lesson.forked_repo
-    end
-
-    def ensure_correct_lesson
-      client.validate_repo_slug(repo_slug: lesson).repo_slug
-    end
-
-    def fork_repo
-      if !repo_exists?
-        puts "Forking lesson..."
-        client.fork_repo(repo_name: repo_dir)
+    def get_current_lesson_forked_repo(retries=3)
+      begin
+        Timeout::timeout(15) do
+          current_lesson.forked_repo
+        end
+      rescue Timeout::Error
+        if retries > 0
+          puts "There was a problem getting your lesson from Learn. Retrying..."
+          get_current_lesson_forked_repo(retries-1)
+        else
+          puts "There seems to be a problem connecting to Learn. Please try again."
+          exit
+        end
       end
     end
 
-    def clone_repo
+    def ensure_correct_lesson(retries=3)
+      begin
+        Timeout::timeout(15) do
+          client.validate_repo_slug(repo_slug: lesson).repo_slug
+        end
+      rescue Timeout::Error
+        if retries > 0
+          puts "There was a problem connecting to Learn. Retrying..."
+          ensure_correct_lesson(retries-1)
+        else
+          puts "Cannot connect to Learn right now. Please try again."
+          exit
+        end
+      end
+    end
+
+    def fork_repo(retries=3)
+      if !repo_exists?
+        puts "Forking lesson..."
+        begin
+          Timeout::timeout(15) do
+            client.fork_repo(repo_name: repo_dir)
+          end
+        rescue Timeout::Error
+          if retries > 0
+            puts "There was a problem forking this lesson. Retrying..."
+            fork_repo(retries-1)
+          else
+            puts "There is an issue connecting to Learn. Please try again."
+            exit
+          end
+        end
+      end
+    end
+
+    def clone_repo(retries=3)
       if !repo_exists?
         puts "Cloning lesson..."
-        Git.clone("git@github.com:#{lesson}.git", repo_dir, path: lessons_dir)
+        begin
+          Timeout::timeout(15) do
+            Git.clone("git@github.com:#{lesson}.git", repo_dir, path: lessons_dir)
+          end
+        rescue Timeout::Error
+          if retries > 0
+            puts "There was a problem cloning this lesson. Retrying..."
+            clone_repo(retries-1)
+          else
+            puts "Cannot clone this lesson right now. Please try again."
+            exit
+          end
+        end
       end
     end
 
