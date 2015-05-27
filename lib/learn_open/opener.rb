@@ -82,7 +82,7 @@ module LearnOpen
       system("bundle install")
 
       if editor
-        exec("#{ENV['SHELL']} && cd #{lessons_dir}/#{repo_dir} && #{editor} .")
+        exec("#{ENV['SHELL']} $(cd #{lessons_dir}/#{repo_dir} && #{editor} .)")
       else
         exec(ENV['SHELL'])
       end
