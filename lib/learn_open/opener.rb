@@ -34,8 +34,6 @@ module LearnOpen
       end
 
       self.repo_dir = lesson.split('/').last
-      puts "GOT BACK"
-      puts repo_dir
     end
 
     def current_lesson
@@ -47,12 +45,11 @@ module LearnOpen
     end
 
     def ensure_correct_lesson
-      correct_lesson_name = client.validate_repo_slug(repo_slug: lesson).repo_slug
-      # send given lesson to api and get back sanitized version
+      client.validate_repo_slug(repo_slug: lesson).repo_slug
     end
 
     def fork_repo
-      # send api request to fork
+      client.fork_repo(repo_name: repo_dir)
     end
 
     def clone_repo
