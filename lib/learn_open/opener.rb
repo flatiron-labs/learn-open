@@ -28,8 +28,10 @@ module LearnOpen
 
     def set_lesson
       if !lesson
+        puts "Getting current lesson..."
         self.lesson = get_current_lesson_forked_repo
       else
+        puts "Looking for lesson..."
         self.lesson = ensure_correct_lesson
       end
 
@@ -49,11 +51,15 @@ module LearnOpen
     end
 
     def fork_repo
-      client.fork_repo(repo_name: repo_dir)
+      if !repo_exists?
+        puts "Forking lesson..."
+        client.fork_repo(repo_name: repo_dir)
+      end
     end
 
     def clone_repo
       if !repo_exists?
+        puts "Cloning lesson..."
         Git.clone("git@github.com:#{lesson}.git", repo_dir, path: lessons_dir)
       end
     end
@@ -69,6 +75,7 @@ module LearnOpen
     end
 
     def cd_to_lesson
+      puts "Opening lesson..."
       Dir.chdir("#{lessons_dir}/#{repo_dir}")
       exec(ENV['SHELL'])
     end
