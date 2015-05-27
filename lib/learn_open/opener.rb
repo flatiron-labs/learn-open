@@ -20,9 +20,8 @@ module LearnOpen
       set_lesson
       fork_repo
       clone_repo
-      open_lesson
-      #cd_to_lesson
-      #open_with_editor
+      open_with_editor
+      cd_to_lesson
     end
 
     private
@@ -75,17 +74,12 @@ module LearnOpen
       end
     end
 
-    def open_lesson
+    def cd_to_lesson
       puts "Opening lesson..."
       Dir.chdir("#{lessons_dir}/#{repo_dir}")
       puts "Bundling..."
       system("bundle install")
-
-      if editor
-        exec("#{ENV['SHELL']} $(cd #{lessons_dir}/#{repo_dir} && #{editor} .)")
-      else
-        exec(ENV['SHELL'])
-      end
+      exec(ENV['SHELL'])
     end
   end
 end
