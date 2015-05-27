@@ -77,6 +77,7 @@ module LearnOpen
     def cd_to_lesson
       puts "Opening lesson..."
       Dir.chdir("#{lessons_dir}/#{repo_dir}")
+      system("bundle install")
       exec(ENV['SHELL'])
     end
   end
