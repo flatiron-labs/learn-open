@@ -1,7 +1,7 @@
 module LearnOpen
   class Opener
     attr_reader   :editor, :client, :lessons_dir
-    attr_accessor :lesson, :repo_dir, :lesson_is_lab
+    attr_accessor :lesson, :repo_dir, :lesson_is_lab, :lesson_id
 
     def self.run(lesson:, editor_specified:)
       new(lesson, editor_specified).run
@@ -20,7 +20,6 @@ module LearnOpen
       set_lesson
 
       if lesson_is_readme?
-        puts "I'm a readme!"
         open_readme
       else
         fork_repo
@@ -35,12 +34,14 @@ module LearnOpen
     def set_lesson
       if !lesson
         puts "Getting current lesson..."
-        self.lesson = get_current_lesson_forked_repo
+        self.lesson        = get_current_lesson_forked_repo
         self.lesson_is_lab = current_lesson.lab
+        self.lesson_id     = current_lesson.id
       else
         puts "Looking for lesson..."
-        self.lesson = ensure_correct_lesson.repo_slug
+        self.lesson        = ensure_correct_lesson.repo_slug
         self.lesson_is_lab = correct_lesson.lab
+        self.lesson_id     = correct_lesson.lesson_id
       end
 
       self.repo_dir = lesson.split('/').last
@@ -181,6 +182,7 @@ module LearnOpen
     end
 
     def bundle_install
+      # TODO: Don't bundle for other types of labs either
       if !ios_lesson?
         puts "Bundling..."
         system("bundle install &>/dev/null")
@@ -192,7 +194,33 @@ module LearnOpen
     end
 
     def open_readme
+      if can_open_readme?
+        puts "Opening readme..."
+        launch_browser
+      else
+        puts "You need to be running this on a Mac to open a Readme from the command line."
+        exit
+      end
+    end
 
+    def launch_browser
+      if chrome_installed?
+        open_chrome
+      else
+        open_safari
+      end
+    end
+
+    def chrome_installed?
+      File.exists?('/Applications/Google Chrome.app')
+    end
+
+    def open_chrome
+      system("open -a 'Google Chrome' https://learn.co/lessons/#{lesson_id}")
+    end
+
+    def open_safari
+      system("open -a Safari https://learn.co/lessons/#{lesson_id}")
     end
 
     def can_open_readme?
