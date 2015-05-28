@@ -163,10 +163,16 @@ module LearnOpen
     def cd_to_lesson
       puts "Opening lesson..."
       Dir.chdir("#{lessons_dir}/#{repo_dir}")
-      puts "Bundling..."
-      system("bundle install &>/dev/null")
+      bundle_install
       puts "Done."
       exec(ENV['SHELL'])
+    end
+
+    def bundle_install
+      if !ios_lesson?
+        puts "Bundling..."
+        system("bundle install &>/dev/null")
+      end
     end
   end
 end
