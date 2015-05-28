@@ -178,7 +178,7 @@ module LearnOpen
       Dir.chdir("#{lessons_dir}/#{repo_dir}")
       bundle_install
       puts "Done."
-      exec(ENV['SHELL'])
+      exec("#{ENV['SHELL']} -l")
     end
 
     def bundle_install
