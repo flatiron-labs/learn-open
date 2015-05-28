@@ -117,9 +117,47 @@ module LearnOpen
     end
 
     def open_with_editor
-      if editor
+      if ios_lesson?
+        open_ios_lesson
+      elsif editor
         system("cd #{lessons_dir}/#{repo_dir} && #{editor} .")
       end
+    end
+
+    def ios_lesson?
+      languages   = YAML.load(File.read("#{lessons_dir}/#{repo_dir}/.learn"))['languages']
+      ios_lang    = languages.any? {|l| ['objc', 'swift'].include?(l)}
+
+      ios_lang || xcodeproj_file? || xcworkspace_file?
+    end
+
+    def open_ios_lesson
+      if can_open_ios_lesson?
+        open_xcode
+      else
+        puts "You need to be on a Mac to work on iOS lessons."
+        exit
+      end
+    end
+
+    def can_open_ios_lesson?
+      !!RUBY_PLATFORM.match(/darwin/)
+    end
+
+    def open_xcode
+      if xcworkspace_file?
+        system("cd #{lessons_dir}/#{repo_dir} && open *.xcworkspace")
+      elsif xcodeproj_file?
+        system("cd #{lessons_dir}/#{repo_dir} && open *.xcodeproj")
+      end
+    end
+
+    def xcodeproj_file?
+      Dir.glob("#{lessons_dir}/#{repo_dir}/*.xcodeproj").any?
+    end
+
+    def xcworkspace_file?
+      Dir.glob("#{lessons_dir}/#{repo_dir}/*.xcworkspace").any?
     end
 
     def cd_to_lesson
