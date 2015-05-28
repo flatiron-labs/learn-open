@@ -1,7 +1,7 @@
 module LearnOpen
   class Opener
     attr_reader   :editor, :client, :lessons_dir
-    attr_accessor :lesson, :repo_dir
+    attr_accessor :lesson, :repo_dir, :lesson_is_lab
 
     def self.run(lesson:, editor_specified:)
       new(lesson, editor_specified).run
@@ -18,10 +18,16 @@ module LearnOpen
 
     def run
       set_lesson
-      fork_repo
-      clone_repo
-      open_with_editor
-      cd_to_lesson
+
+      if lesson_is_readme?
+        puts "I'm a readme!"
+        open_readme
+      else
+        fork_repo
+        clone_repo
+        open_with_editor
+        cd_to_lesson
+      end
     end
 
     private
@@ -30,9 +36,11 @@ module LearnOpen
       if !lesson
         puts "Getting current lesson..."
         self.lesson = get_current_lesson_forked_repo
+        self.lesson_is_lab = current_lesson.lab
       else
         puts "Looking for lesson..."
-        self.lesson = ensure_correct_lesson
+        self.lesson = ensure_correct_lesson.repo_slug
+        self.lesson_is_lab = correct_lesson.lab
       end
 
       self.repo_dir = lesson.split('/').last
@@ -58,15 +66,19 @@ module LearnOpen
       end
     end
 
-    def ensure_correct_lesson(retries=3)
-      begin
+    def ensure_correct_lesson
+      correct_lesson
+    end
+
+    def correct_lesson(retries=3)
+      @correct_lesson ||= begin
         Timeout::timeout(15) do
-          client.validate_repo_slug(repo_slug: lesson).repo_slug
+          client.validate_repo_slug(repo_slug: lesson)
         end
       rescue Timeout::Error
         if retries > 0
           puts "There was a problem connecting to Learn. Retrying..."
-          ensure_correct_lesson(retries-1)
+          correct_lesson(retries-1)
         else
           puts "Cannot connect to Learn right now. Please try again."
           exit
@@ -141,7 +153,7 @@ module LearnOpen
     end
 
     def can_open_ios_lesson?
-      !!RUBY_PLATFORM.match(/darwin/)
+      on_mac?
     end
 
     def open_xcode
@@ -173,6 +185,22 @@ module LearnOpen
         puts "Bundling..."
         system("bundle install &>/dev/null")
       end
+    end
+
+    def lesson_is_readme?
+      !lesson_is_lab
+    end
+
+    def open_readme
+
+    end
+
+    def can_open_readme?
+      on_mac?
+    end
+
+    def on_mac?
+      !!RUBY_PLATFORM.match(/darwin/)
     end
   end
 end
