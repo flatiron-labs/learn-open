@@ -24,6 +24,7 @@ module LearnOpen
       else
         fork_repo
         clone_repo
+        bundle_install
         open_with_editor
         cd_to_lesson
       end
@@ -176,16 +177,14 @@ module LearnOpen
     def cd_to_lesson
       puts "Opening lesson..."
       Dir.chdir("#{lessons_dir}/#{repo_dir}")
-      bundle_install
       puts "Done."
       exec("#{ENV['SHELL']} -l")
     end
 
     def bundle_install
-      # TODO: Don't bundle for other types of labs either
-      if !ios_lesson?
+      if !ios_lesson? && File.exists?("#{lessons_dir}/#{repo_dir}/Gemfile")
         puts "Bundling..."
-        system("bundle install &>/dev/null")
+        system("cd #{lessons_dir}/#{repo_dir} && bundle install &>/dev/null")
       end
     end
 
