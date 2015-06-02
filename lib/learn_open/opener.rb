@@ -1,6 +1,6 @@
 module LearnOpen
   class Opener
-    attr_reader   :editor, :client, :lessons_dir
+    attr_reader   :editor, :client, :lessons_dir, :file_path
     attr_accessor :lesson, :repo_dir, :lesson_is_lab, :lesson_id
 
     def self.run(lesson:, editor_specified:)
@@ -14,9 +14,12 @@ module LearnOpen
       @lesson       = lesson
       @editor       = editor
       @lessons_dir  = YAML.load(File.read(File.expand_path('~/.learn-config')))[:learn_directory]
+      @file_path    = File.expand_path('~/.learn-open-tmp')
     end
 
     def run
+      setup_tmp_file
+
       set_lesson
 
       if lesson_is_readme?
@@ -28,11 +31,24 @@ module LearnOpen
         open_with_editor
         cd_to_lesson
       end
+
+      cleanup_tmp_file
     end
 
     private
 
+    def setup_tmp_file
+      FileUtils.touch(file_path)
+      File.write(file_path, '')
+    end
+
+    def cleanup_tmp_file
+      File.write(file_path, 'Done.')
+    end
+
     def set_lesson
+      File.write(file_path, 'Getting lesson...')
+
       if !lesson
         puts "Getting current lesson..."
         self.lesson        = get_current_lesson_forked_repo
@@ -90,6 +106,7 @@ module LearnOpen
 
     def fork_repo(retries=3)
       if !repo_exists?
+        File.write(file_path, 'Forking repository...')
         puts "Forking lesson..."
         begin
           Timeout::timeout(15) do
@@ -109,6 +126,7 @@ module LearnOpen
 
     def clone_repo(retries=3)
       if !repo_exists?
+        File.write(file_path, 'Cloning to your machine...')
         puts "Cloning lesson..."
         begin
           Timeout::timeout(15) do
