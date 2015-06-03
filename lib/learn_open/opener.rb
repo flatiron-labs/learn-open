@@ -31,8 +31,6 @@ module LearnOpen
         open_with_editor
         cd_to_lesson
       end
-
-      cleanup_tmp_file
     end
 
     private
@@ -195,6 +193,7 @@ module LearnOpen
     def cd_to_lesson
       puts "Opening lesson..."
       Dir.chdir("#{lessons_dir}/#{repo_dir}")
+      cleanup_tmp_file
       puts "Done."
       exec("#{ENV['SHELL']} -l")
     end
