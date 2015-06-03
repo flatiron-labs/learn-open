@@ -1,21 +1,21 @@
 module LearnOpen
   class Opener
-    attr_reader   :editor, :client, :lessons_dir, :file_path, :next_lesson
+    attr_reader   :editor, :client, :lessons_dir, :file_path, :get_next_lesson
     attr_accessor :lesson, :repo_dir, :lesson_is_lab, :lesson_id
 
-    def self.run(lesson:, editor_specified:, next_lesson:)
-      new(lesson, editor_specified, next_lesson).run
+    def self.run(lesson:, editor_specified:, get_next_lesson:)
+      new(lesson, editor_specified, get_next_lesson).run
     end
 
-    def initialize(lesson, editor, next_lesson)
+    def initialize(lesson, editor, get_next_lesson)
       _login, token = Netrc.read['learn-config']
       @client       = LearnWeb::Client.new(token: token)
 
-      @lesson       = lesson
-      @editor       = editor
-      @next_lesson  = next_lesson
-      @lessons_dir  = YAML.load(File.read(File.expand_path('~/.learn-config')))[:learn_directory]
-      @file_path    = File.expand_path('~/.learn-open-tmp')
+      @lesson          = lesson
+      @editor          = editor
+      @get_next_lesson = get_next_lesson
+      @lessons_dir     = YAML.load(File.read(File.expand_path('~/.learn-config')))[:learn_directory]
+      @file_path       = File.expand_path('~/.learn-open-tmp')
     end
 
     def run
@@ -48,12 +48,12 @@ module LearnOpen
     def set_lesson
       File.write(file_path, 'Getting lesson...')
 
-      if !lesson && !next_lesson
+      if !lesson && !get_next_lesson
         puts "Getting current lesson..."
         self.lesson        = get_current_lesson_forked_repo
         self.lesson_is_lab = current_lesson.lab
         self.lesson_id     = current_lesson.id
-      elsif !lesson && next_lesson
+      elsif !lesson && get_next_lesson
         puts "Getting next lesson..."
         self.lesson        = get_next_lesson_forked_repo
         self.lesson_is_lab = next_lesson.lab
