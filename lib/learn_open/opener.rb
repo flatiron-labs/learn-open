@@ -87,7 +87,7 @@ module LearnOpen
           get_current_lesson_forked_repo(retries-1)
         else
           puts "There seems to be a problem connecting to Learn. Please try again."
-          File.write(file_path, 'Error connecting to Learn')
+          File.write(file_path, 'ERROR: Error connecting to Learn')
           exit
         end
       end
@@ -104,7 +104,7 @@ module LearnOpen
           get_next_lesson_forked_repo(retries-1)
         else
           puts "There seems to be a problem connecting to Learn. Please try again."
-          File.write(file_path, 'Error connecting to Learn')
+          File.write(file_path, 'ERROR: Error connecting to Learn')
           exit
         end
       end
@@ -125,7 +125,7 @@ module LearnOpen
           correct_lesson(retries-1)
         else
           puts "Cannot connect to Learn right now. Please try again."
-          File.write(file_path, 'Error connecting to Learn')
+          File.write(file_path, 'ERROR: Error connecting to Learn')
           exit
         end
       end
@@ -145,7 +145,7 @@ module LearnOpen
             fork_repo(retries-1)
           else
             puts "There is an issue connecting to Learn. Please try again."
-            File.write(file_path, 'Error connecting to Learn')
+            File.write(file_path, 'ERROR: Error connecting to Learn')
             exit
           end
         end
@@ -166,7 +166,7 @@ module LearnOpen
             clone_repo(retries-1)
           else
             puts "Cannot clone this lesson right now. Please try again."
-            File.write(file_path, 'Error cloning. Try again.')
+            File.write(file_path, 'ERROR: Error cloning. Try again.')
             exit
           end
         end
@@ -197,7 +197,7 @@ module LearnOpen
         else
           puts "Sorry, there seems to be a problem with this lesson. Please submit a bug report to bugs@learn.co and try again later."
           puts "If you'd like to work on your next lesson now, type: learn next"
-          File.write(file_path, 'Problem parsing lesson data. Try again.')
+          File.write(file_path, 'ERROR: Problem parsing lesson data. Try again.')
           exit
         end
       end
