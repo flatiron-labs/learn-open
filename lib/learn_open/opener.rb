@@ -1,18 +1,19 @@
 module LearnOpen
   class Opener
-    attr_reader   :editor, :client, :lessons_dir, :file_path
+    attr_reader   :editor, :client, :lessons_dir, :file_path, :next_lesson
     attr_accessor :lesson, :repo_dir, :lesson_is_lab, :lesson_id
 
-    def self.run(lesson:, editor_specified:)
-      new(lesson, editor_specified).run
+    def self.run(lesson:, editor_specified:, next_lesson:)
+      new(lesson, editor_specified, next_lesson).run
     end
 
-    def initialize(lesson, editor)
+    def initialize(lesson, editor, next_lesson)
       _login, token = Netrc.read['learn-config']
       @client       = LearnWeb::Client.new(token: token)
 
       @lesson       = lesson
       @editor       = editor
+      @next_lesson  = next_lesson
       @lessons_dir  = YAML.load(File.read(File.expand_path('~/.learn-config')))[:learn_directory]
       @file_path    = File.expand_path('~/.learn-open-tmp')
     end
@@ -47,11 +48,16 @@ module LearnOpen
     def set_lesson
       File.write(file_path, 'Getting lesson...')
 
-      if !lesson
+      if !lesson && !next_lesson
         puts "Getting current lesson..."
         self.lesson        = get_current_lesson_forked_repo
         self.lesson_is_lab = current_lesson.lab
         self.lesson_id     = current_lesson.id
+      elsif !lesson && next_lesson
+        puts "Getting next lesson..."
+        self.lesson        = get_next_lesson_forked_repo
+        self.lesson_is_lab = next_lesson.lab
+        self.lesson_id     = next_lesson.id
       else
         puts "Looking for lesson..."
         self.lesson        = ensure_correct_lesson.repo_slug
@@ -66,6 +72,10 @@ module LearnOpen
       @current_lesson ||= client.current_lesson
     end
 
+    def next_lesson
+      @next_lesson ||= client.next_lesson
+    end
+
     def get_current_lesson_forked_repo(retries=3)
       begin
         Timeout::timeout(15) do
@@ -75,6 +85,22 @@ module LearnOpen
         if retries > 0
           puts "There was a problem getting your lesson from Learn. Retrying..."
           get_current_lesson_forked_repo(retries-1)
+        else
+          puts "There seems to be a problem connecting to Learn. Please try again."
+          exit
+        end
+      end
+    end
+
+    def get_next_lesson_forked_repo(retries=3)
+      begin
+        Timeout::timeout(15) do
+          next_lesson.forked_repo
+        end
+      rescue Timeout::Error
+        if retries > 0
+          puts "There was a problem getting your next lesson from Learn. Retrying..."
+          get_next_lesson_forked_repo(retries-1)
         else
           puts "There seems to be a problem connecting to Learn. Please try again."
           exit
@@ -155,10 +181,19 @@ module LearnOpen
     end
 
     def ios_lesson?
-      languages   = YAML.load(File.read("#{lessons_dir}/#{repo_dir}/.learn"))['languages']
-      ios_lang    = languages.any? {|l| ['objc', 'swift'].include?(l)}
+      begin
+        languages   = YAML.load(File.read("#{lessons_dir}/#{repo_dir}/.learn"))['languages']
+        ios_lang    = languages.any? {|l| ['objc', 'swift'].include?(l)}
 
-      ios_lang || xcodeproj_file? || xcworkspace_file?
+        ios_lang || xcodeproj_file? || xcworkspace_file?
+      rescue Psych::SyntaxError
+        if xcodeproj_file? || xcworkspace_file?
+          true
+        else
+          puts "There seems to be a problem with this lesson. Please submit a bug report to bugs@learn.co. If you'd like to work on your next lesson, type: learn next"
+          exit
+        end
+      end
     end
 
     def open_ios_lesson

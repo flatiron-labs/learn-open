@@ -2,6 +2,6 @@
 
 require 'learn_open'
 
-lesson, editor_specified = LearnOpen::ArgumentParser.new(ARGV).execute
+lesson, editor_specified, next_lesson = LearnOpen::ArgumentParser.new(ARGV).execute
 
-LearnOpen::Opener.run(lesson: lesson, editor_specified: editor_specified)
+LearnOpen::Opener.run(lesson: lesson, editor_specified: editor_specified, next_lesson: next_lesson)
