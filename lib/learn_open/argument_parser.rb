@@ -8,7 +8,11 @@ module LearnOpen
 
     def execute
       config_path = File.expand_path('~/.learn-config')
-      editor_data = "'#{YAML.load(File.read(config_path))[:editor]}'"
+      editor_data = YAML.load(File.read(config_path))[:editor]
+      if editor_data.match(/ /)
+        editor_data = editor_data.split(' ').first
+      end
+
       lesson = nil
 
       configured_editor = !(editor_data.empty? || editor_data.nil?) ? editor_data : nil
