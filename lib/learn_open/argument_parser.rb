@@ -21,7 +21,7 @@ module LearnOpen
       open_after = !!editor_specified
 
       if !ARGV[0].start_with?('--editor=') && !ARGV[0].start_with?('--next')
-        lesson = ARGV[0]
+        lesson = ARGV[0].sub(/\/$/, '')
       elsif ARGV[0].start_with?('--next')
         next_lesson = true
       end
