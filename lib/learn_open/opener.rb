@@ -23,6 +23,8 @@ module LearnOpen
 
       set_lesson
 
+      warn_if_necessary
+
       if lesson_is_readme?
         open_readme
       else
@@ -35,6 +37,19 @@ module LearnOpen
     end
 
     private
+
+    def warn_if_necessary
+      if self.later_lesson
+        puts 'WARNING: You are attempting to open a lesson that is beyond your current lesson.'
+        print 'Are you sure you want to continue? [Yn]: '
+
+        warn_response = gets.chomp.downcase
+
+        if !warn_response.empty? && !['yes', 'y'].include?(warn_response)
+          exit
+        end
+      end
+    end
 
     def setup_tmp_file
       FileUtils.touch(file_path)
@@ -63,6 +78,7 @@ module LearnOpen
         self.lesson        = ensure_correct_lesson.repo_slug
         self.lesson_is_lab = correct_lesson.lab
         self.lesson_id     = correct_lesson.lesson_id
+        self.later_lesson  = correct_lesson.later_lesson
       end
 
       self.repo_dir = lesson.split('/').last
