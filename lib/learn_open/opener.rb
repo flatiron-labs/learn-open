@@ -39,14 +39,27 @@ module LearnOpen
     private
 
     def warn_if_necessary
+      temp_args = nil
+
       if self.later_lesson
         puts 'WARNING: You are attempting to open a lesson that is beyond your current lesson.'
         print 'Are you sure you want to continue? [Yn]: '
+
+        if ARGV.any?
+          temp_args = ARGV
+          ARGV.clear
+        end
 
         warn_response = gets.chomp.downcase
 
         if !warn_response.empty? && !['yes', 'y'].include?(warn_response)
           exit
+        end
+      end
+
+      if temp_args
+        temp_args.each do |arg|
+          ARGV << arg
         end
       end
     end
