@@ -1,7 +1,7 @@
 module LearnOpen
   class Opener
     attr_reader   :editor, :client, :lessons_dir, :file_path, :get_next_lesson
-    attr_accessor :lesson, :repo_dir, :lesson_is_lab, :lesson_id
+    attr_accessor :lesson, :repo_dir, :lesson_is_lab, :lesson_id, :later_lesson
 
     def self.run(lesson:, editor_specified:, get_next_lesson:)
       new(lesson, editor_specified, get_next_lesson).run
@@ -68,11 +68,13 @@ module LearnOpen
         self.lesson        = get_current_lesson_forked_repo
         self.lesson_is_lab = current_lesson.lab
         self.lesson_id     = current_lesson.id
+        self.later_lesson  = false
       elsif !lesson && get_next_lesson
         puts "Getting next lesson..."
         self.lesson        = get_next_lesson_forked_repo
         self.lesson_is_lab = next_lesson.lab
         self.lesson_id     = next_lesson.id
+        self.later_lesson  = false
       else
         puts "Looking for lesson..."
         self.lesson        = ensure_correct_lesson.repo_slug
