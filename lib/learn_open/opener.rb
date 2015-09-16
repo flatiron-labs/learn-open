@@ -191,7 +191,7 @@ module LearnOpen
           Timeout::timeout(15) do
             Git.clone("git@github.com:#{lesson}.git", repo_dir, path: lessons_dir)
           end
-        rescue Timeout::Error
+        rescue Timeout::Error, Git::GitExecuteError
           if retries > 0
             puts "There was a problem cloning this lesson. Retrying..."
             clone_repo(retries-1)
