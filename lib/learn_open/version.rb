@@ -1,3 +1,3 @@
 module LearnOpen
-  VERSION = '1.1.53'
+  VERSION = '1.1.54'
 end
