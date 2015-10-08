@@ -287,7 +287,7 @@ module LearnOpen
         puts "Opening readme..."
         launch_browser
       else
-        puts "You need to be running this on a Mac to open a Readme from the command line."
+        puts "It looks like this lesson is a Readme. Plese open it in your browser."
         exit
       end
     end
