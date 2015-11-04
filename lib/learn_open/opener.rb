@@ -241,6 +241,17 @@ module LearnOpen
           File.write(file_path, 'ERROR: Problem parsing lesson data. Try again.')
           exit
         end
+      rescue NoMethodError => e
+        if xcodeproj_file? || xcworkspace_file?
+          true
+        elsif e.message.match(/for false:FalseClass/)
+          false
+        else
+          puts "Sorry, there seems to be a problem with this lesson. Please submit a bug report to bugs@learn.co and try again later."
+          puts "If you'd like to work on your next lesson now, type: learn next"
+          File.write(file_path, 'ERROR: Problem parsing lesson data. Try again.')
+          exit
+        end
       end
     end
 
