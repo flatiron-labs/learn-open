@@ -31,6 +31,7 @@ module LearnOpen
         fork_repo
         clone_repo
         bundle_install
+        npm_install
         open_with_editor
         cd_to_lesson
       end
@@ -296,6 +297,13 @@ module LearnOpen
       if !ios_lesson? && File.exists?("#{lessons_dir}/#{repo_dir}/Gemfile")
         puts "Bundling..."
         system("cd #{lessons_dir}/#{repo_dir} && bundle install &>/dev/null")
+      end
+    end
+
+    def npm_install
+      if !ios_lesson? && File.exists?("#{lessons_dir}/#{repo_dir}/package.json")
+        puts "Running npm install..."
+        system("cd #{lessons_dir}/#{repo_dir} && npm install &>/dev/null")
       end
     end
 
