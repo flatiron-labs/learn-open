@@ -111,7 +111,7 @@ module LearnOpen
     def get_current_lesson_forked_repo(retries=3)
       begin
         Timeout::timeout(15) do
-          current_lesson.forked_repo
+          current_lesson.clone_repo
         end
       rescue Timeout::Error
         if retries > 0
@@ -128,7 +128,7 @@ module LearnOpen
     def get_next_lesson_forked_repo(retries=3)
       begin
         Timeout::timeout(15) do
-          next_lesson.forked_repo
+          next_lesson.clone_repo
         end
       rescue Timeout::Error
         if retries > 0
