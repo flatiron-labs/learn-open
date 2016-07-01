@@ -39,6 +39,10 @@ module LearnOpen
 
     private
 
+    def ping_fork_completion
+      # TODO: ping learn? ping ironbroker? and create fake fork submission
+    end
+
     def warn_if_necessary
       temp_args = nil
 
@@ -167,18 +171,21 @@ module LearnOpen
       if !repo_exists?
         File.write(file_path, 'Forking repository...')
         puts "Forking lesson..."
-        begin
-          Timeout::timeout(15) do
-            client.fork_repo(repo_name: repo_dir)
-          end
-        rescue Timeout::Error
-          if retries > 0
-            puts "There was a problem forking this lesson. Retrying..."
-            fork_repo(retries-1)
-          else
-            puts "There is an issue connecting to Learn. Please try again."
-            File.write(file_path, 'ERROR: Error connecting to Learn')
-            exit
+
+        if lesson.dot_learn['github'] != false
+          begin
+            Timeout::timeout(15) do
+              client.fork_repo(repo_name: repo_dir)
+            end
+          rescue Timeout::Error
+            if retries > 0
+              puts "There was a problem forking this lesson. Retrying..."
+              fork_repo(retries-1)
+            else
+              puts "There is an issue connecting to Learn. Please try again."
+              File.write(file_path, 'ERROR: Error connecting to Learn')
+              exit
+            end
           end
         end
       end
@@ -212,6 +219,10 @@ module LearnOpen
             exit
           end
         end
+      end
+
+      if lesson.dot_learn['github'] == false
+        ping_fork_completion
       end
     end
 
