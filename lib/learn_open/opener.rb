@@ -40,7 +40,25 @@ module LearnOpen
     private
 
     def ping_fork_completion
-      # TODO: ping learn? ping ironbroker? and create fake fork submission
+      begin
+        Timeout::timeout(15) do
+          client.submit_event(
+            event: 'fork',
+            learn_oauth_token: 'abc',
+            repo_name: repo_dir,
+            base_org_name: 'hi'
+          )
+        end
+      rescue Timeout::Error
+        if retries > 0
+          puts "There was a problem forking this lesson. Retrying..."
+          fork_repo(retries-1)
+        else
+          puts "There is an issue connecting to Learn. Please try again."
+          File.write(file_path, 'ERROR: Error connecting to Learn')
+          exit
+        end
+      end
     end
 
     def warn_if_necessary
