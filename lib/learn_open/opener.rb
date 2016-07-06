@@ -1,15 +1,15 @@
 module LearnOpen
   class Opener
-    attr_reader   :editor, :client, :lessons_dir, :file_path, :get_next_lesson
-    attr_accessor :lesson, :repo_dir, :lesson_is_lab, :lesson_id, :later_lesson
+    attr_reader   :editor, :client, :lessons_dir, :file_path, :get_next_lesson, :token
+    attr_accessor :lesson, :repo_dir, :lesson_is_lab, :lesson_id, :later_lesson, :dot_learn
 
     def self.run(lesson:, editor_specified:, get_next_lesson:)
       new(lesson, editor_specified, get_next_lesson).run
     end
 
     def initialize(lesson, editor, get_next_lesson)
-      _login, token = Netrc.read['learn-config']
-      @client       = LearnWeb::Client.new(token: token)
+      _login, @token = Netrc.read['learn-config']
+      @client        = LearnWeb::Client.new(token: @token)
 
       @lesson          = lesson
       @editor          = editor
@@ -39,20 +39,20 @@ module LearnOpen
 
     private
 
-    def ping_fork_completion
+    def ping_fork_completion(retries=3)
       begin
         Timeout::timeout(15) do
           client.submit_event(
             event: 'fork',
-            learn_oauth_token: 'abc',
+            learn_oauth_token: token,
             repo_name: repo_dir,
-            base_org_name: 'hi'
+            base_org_name: lesson.split('/')[0]
           )
         end
       rescue Timeout::Error
         if retries > 0
           puts "There was a problem forking this lesson. Retrying..."
-          fork_repo(retries-1)
+          ping_fork_completion(retries-1)
         else
           puts "There is an issue connecting to Learn. Please try again."
           File.write(file_path, 'ERROR: Error connecting to Learn')
@@ -105,18 +105,21 @@ module LearnOpen
         self.lesson_is_lab = current_lesson.lab
         self.lesson_id     = current_lesson.id
         self.later_lesson  = false
+        self.dot_learn     = current_lesson.dot_learn
       elsif !lesson && get_next_lesson
         puts "Getting next lesson..."
         self.lesson        = get_next_lesson_forked_repo
         self.lesson_is_lab = next_lesson.lab
         self.lesson_id     = next_lesson.id
         self.later_lesson  = false
+        self.dot_learn     = next_lesson.dot_learn
       else
         puts "Looking for lesson..."
         self.lesson        = ensure_correct_lesson.repo_slug
         self.lesson_is_lab = correct_lesson.lab
         self.lesson_id     = correct_lesson.lesson_id
         self.later_lesson  = correct_lesson.later_lesson
+        self.dot_learn     = correct_lesson.dot_learn
       end
 
       self.repo_dir = lesson.split('/').last
@@ -190,7 +193,7 @@ module LearnOpen
         File.write(file_path, 'Forking repository...')
         puts "Forking lesson..."
 
-        if lesson.dot_learn['github'] != false
+        if dot_learn[:github] != false
           begin
             Timeout::timeout(15) do
               client.fork_repo(repo_name: repo_dir)
@@ -239,7 +242,7 @@ module LearnOpen
         end
       end
 
-      if lesson.dot_learn['github'] == false
+      if dot_learn[:github] == false
         ping_fork_completion
       end
     end
