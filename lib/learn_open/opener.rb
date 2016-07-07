@@ -46,12 +46,13 @@ module LearnOpen
             event: 'fork',
             learn_oauth_token: token,
             repo_name: repo_dir,
-            base_org_name: lesson.split('/')[0]
+            base_org_name: lesson.split('/')[0],
+            forkee: { full_name: nil }
           )
         end
       rescue Timeout::Error
         if retries > 0
-          puts "There was a problem forking this lesson. Retrying..."
+          puts "There was a problem forking and cloning this lesson. Retrying..."
           ping_fork_completion(retries-1)
         else
           puts "There is an issue connecting to Learn. Please try again."
