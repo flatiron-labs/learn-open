@@ -194,7 +194,7 @@ module LearnOpen
         File.write(file_path, 'Forking repository...')
         puts "Forking lesson..."
 
-        if dot_learn[:github] != false
+        if !dot_learn || dot_learn[:github] != false
           begin
             Timeout::timeout(15) do
               client.fork_repo(repo_name: repo_dir)
@@ -243,7 +243,7 @@ module LearnOpen
         end
       end
 
-      if dot_learn[:github] == false
+      if dot_learn && dot_learn[:github] == false
         ping_fork_completion
       end
     end
