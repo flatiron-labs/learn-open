@@ -116,7 +116,7 @@ module LearnOpen
         self.dot_learn     = next_lesson.dot_learn
       else
         puts "Looking for lesson..."
-        self.lesson        = ensure_correct_lesson.repo_slug
+        self.lesson        = ensure_correct_lesson.clone_repo
         self.lesson_is_lab = correct_lesson.lab
         self.lesson_id     = correct_lesson.lesson_id
         self.later_lesson  = correct_lesson.later_lesson
