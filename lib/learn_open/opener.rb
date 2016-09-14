@@ -1,5 +1,6 @@
 module LearnOpen
   class Opener
+    HOME_DIR = File.expand_path("~")
     attr_reader   :editor, :client, :lessons_dir, :file_path, :get_next_lesson, :token
     attr_accessor :lesson, :repo_dir, :lesson_is_lab, :lesson_id, :later_lesson, :dot_learn
 
@@ -14,8 +15,8 @@ module LearnOpen
       @lesson          = lesson
       @editor          = editor
       @get_next_lesson = get_next_lesson
-      @lessons_dir     = YAML.load(File.read(File.expand_path('~/.learn-config')))[:learn_directory]
-      @file_path       = File.expand_path('~/.learn-open-tmp')
+      @lessons_dir     = YAML.load(File.read("#{HOME_DIR}/.learn-config"))[:learn_directory]
+      @file_path       = "#{HOME_DIR}/.learn-open-tmp"
     end
 
     def run
@@ -34,6 +35,18 @@ module LearnOpen
         npm_install
         open_with_editor
         cd_to_lesson
+      end
+    end
+
+    def repo_exists?
+      done_labs = "#{HOME_DIR}/.done_labs"
+      if File.exists?(done_labs)
+        File.
+          readlines(done_labs).
+          grep(/#{repo_dir}/).
+          any?
+      else
+        File.exists?("#{lessons_dir}/#{repo_dir}")
       end
     end
 
@@ -246,10 +259,6 @@ module LearnOpen
       if dot_learn && dot_learn[:github] == false
         ping_fork_completion
       end
-    end
-
-    def repo_exists?
-      File.exists?("#{lessons_dir}/#{repo_dir}")
     end
 
     def open_with_editor
