@@ -39,12 +39,18 @@ module LearnOpen
     end
 
     def repo_exists?
-      done_labs = "#{HOME_DIR}/.done_labs"
-      if File.exists?(done_labs)
-        File.
-          readlines(done_labs).
-          grep(/#{repo_dir}/).
-          any?
+      cloned_labs = "#{HOME_DIR}/.cloned_labs"
+      if File.exists?(cloned_labs)
+        if File.readlines(cloned_labs).grep(/#{repo_dir}/).any?
+          until File.exists?("#{lessons_dir}/#{repo_dir}")
+            puts "Loading..."
+            puts Dir["#{lessons_dir}/*"].count
+            sleep 1
+          end
+          true
+        else
+          false
+        end
       else
         File.exists?("#{lessons_dir}/#{repo_dir}")
       end
