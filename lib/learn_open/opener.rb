@@ -363,7 +363,7 @@ module LearnOpen
         puts "Opening readme..."
         launch_browser
       else
-        puts "It looks like this lesson is a Readme. Plese open it in your browser."
+        puts "It looks like this lesson is a Readme. Please open it in your browser."
         exit
       end
     end
