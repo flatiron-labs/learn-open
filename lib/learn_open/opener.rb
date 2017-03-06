@@ -349,8 +349,13 @@ module LearnOpen
 
     def npm_install
       if !ios_lesson? && File.exists?("#{lessons_dir}/#{repo_dir}/package.json")
-        puts "Running npm install..."
-        system("cd #{lessons_dir}/#{repo_dir} && npm install > /dev/null 2>&1")
+        puts 'Installing dependencies...'
+
+        if ide_environment?
+          system("cd #{lessons_dir}/#{repo_dir} && yarn install --no-lockfile")
+        else
+          system("cd #{lessons_dir}/#{repo_dir} && npm install")
+        end
       end
     end
 
@@ -394,6 +399,10 @@ module LearnOpen
 
     def on_mac?
       !!RUBY_PLATFORM.match(/darwin/)
+    end
+
+    def ide_environment?
+      ENV['IDE_CONTAINER'] == "true"
     end
   end
 end
