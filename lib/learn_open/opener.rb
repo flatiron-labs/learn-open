@@ -31,10 +31,10 @@ module LearnOpen
       else
         fork_repo
         clone_repo
+        cd_to_lesson
+        open_with_editor
         bundle_install
         npm_install
-        open_with_editor
-        cd_to_lesson
       end
     end
 
