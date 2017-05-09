@@ -270,7 +270,7 @@ module LearnOpen
       if ios_lesson?
         open_ios_lesson
       elsif editor
-        system("cd #{lessons_dir}/#{repo_dir} && #{editor} .")
+        system("#{editor} .")
       end
     end
 
