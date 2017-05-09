@@ -343,7 +343,7 @@ module LearnOpen
     def bundle_install
       if !ios_lesson? && File.exists?("#{lessons_dir}/#{repo_dir}/Gemfile")
         puts "Bundling..."
-        system("cd #{lessons_dir}/#{repo_dir} && bundle install > /dev/null 2>&1")
+        system("bundle install > /dev/null 2>&1")
       end
     end
 
@@ -352,9 +352,9 @@ module LearnOpen
         puts 'Installing dependencies...'
 
         if ide_environment?
-          system("cd #{lessons_dir}/#{repo_dir} && yarn install --no-lockfile")
+          system("yarn install --no-lockfile")
         else
-          system("cd #{lessons_dir}/#{repo_dir} && npm install")
+          system("npm install")
         end
       end
     end
