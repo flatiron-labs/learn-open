@@ -29,12 +29,10 @@ module LearnOpen
       if lesson_is_readme?
         open_readme
       else
-        fork_repo
-        clone_repo
-        cd_to_lesson
-        open_with_editor
-        bundle_install
-        npm_install
+        git_tasks
+        file_tasks
+        dependency_tasks
+        completion_tasks
       end
     end
 
@@ -335,9 +333,6 @@ module LearnOpen
     def cd_to_lesson
       puts "Opening lesson..."
       Dir.chdir("#{lessons_dir}/#{repo_dir}")
-      cleanup_tmp_file
-      puts "Done."
-      exec("#{ENV['SHELL']} -l")
     end
 
     def bundle_install
@@ -403,6 +398,27 @@ module LearnOpen
 
     def ide_environment?
       ENV['IDE_CONTAINER'] == "true"
+    end
+
+    def git_tasks
+      fork_repo
+      clone_repo
+    end
+
+    def file_tasks
+      cd_to_lesson
+      open_with_editor
+    end
+
+    def dependency_tasks
+      bundle_install
+      npm_install
+    end
+
+    def completion_tasks
+      cleanup_tmp_file
+      puts "Done."
+      exec("#{ENV['SHELL']} -l")
     end
   end
 end
