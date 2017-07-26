@@ -29,12 +29,10 @@ module LearnOpen
       if lesson_is_readme?
         open_readme
       else
-        fork_repo
-        clone_repo
-        bundle_install
-        npm_install
-        open_with_editor
-        cd_to_lesson
+        git_tasks
+        file_tasks
+        dependency_tasks
+        completion_tasks
       end
     end
 
@@ -270,7 +268,7 @@ module LearnOpen
       if ios_lesson?
         open_ios_lesson
       elsif editor
-        system("cd #{lessons_dir}/#{repo_dir} && #{editor} .")
+        system("#{editor} .")
       end
     end
 
@@ -335,15 +333,12 @@ module LearnOpen
     def cd_to_lesson
       puts "Opening lesson..."
       Dir.chdir("#{lessons_dir}/#{repo_dir}")
-      cleanup_tmp_file
-      puts "Done."
-      exec("#{ENV['SHELL']} -l")
     end
 
     def bundle_install
       if !ios_lesson? && File.exists?("#{lessons_dir}/#{repo_dir}/Gemfile")
         puts "Bundling..."
-        system("cd #{lessons_dir}/#{repo_dir} && bundle install > /dev/null 2>&1")
+        system("bundle install > /dev/null 2>&1")
       end
     end
 
@@ -352,9 +347,9 @@ module LearnOpen
         puts 'Installing dependencies...'
 
         if ide_environment?
-          system("cd #{lessons_dir}/#{repo_dir} && yarn install --no-lockfile")
+          system("yarn install --no-lockfile")
         else
-          system("cd #{lessons_dir}/#{repo_dir} && npm install")
+          system("npm install")
         end
       end
     end
@@ -403,6 +398,27 @@ module LearnOpen
 
     def ide_environment?
       ENV['IDE_CONTAINER'] == "true"
+    end
+
+    def git_tasks
+      fork_repo
+      clone_repo
+    end
+
+    def file_tasks
+      cd_to_lesson
+      open_with_editor
+    end
+
+    def dependency_tasks
+      bundle_install
+      npm_install
+    end
+
+    def completion_tasks
+      cleanup_tmp_file
+      puts "Done."
+      exec("#{ENV['SHELL']} -l")
     end
   end
 end
