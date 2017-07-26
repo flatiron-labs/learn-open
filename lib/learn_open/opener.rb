@@ -37,20 +37,7 @@ module LearnOpen
     end
 
     def repo_exists?
-      cloned_labs = "#{HOME_DIR}/.cloned_labs"
-      if File.exists?(cloned_labs)
-        puts "Loading..."
-        syncing_done = "#{HOME_DIR}/.syncing_started"
-        sleep 1 until File.exists?(syncing_done)
-        if File.readlines(cloned_labs).grep(/#{repo_dir}/).any?
-          sleep 1 until File.exists?("#{lessons_dir}/#{repo_dir}")
-          true
-        else
-          false
-        end
-      else
-        File.exists?("#{lessons_dir}/#{repo_dir}")
-      end
+      File.exists?("#{lessons_dir}/#{repo_dir}/.git")
     end
 
     private
