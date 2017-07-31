@@ -334,7 +334,7 @@ module LearnOpen
     def bundle_install
       if !ios_lesson? && File.exists?("#{lessons_dir}/#{repo_dir}/Gemfile")
         puts "Bundling..."
-        system("bundle install > /dev/null 2>&1")
+        system("bundle install")
       end
     end
 
