@@ -387,6 +387,10 @@ module LearnOpen
       ENV['IDE_CONTAINER'] == "true"
     end
 
+    def ide_git_wip_enabled?
+      ENV['IDE_GIT_WIP'] == "true"
+    end
+
     def git_tasks
       fork_repo
       clone_repo
@@ -414,7 +418,7 @@ module LearnOpen
     def completion_tasks
       cleanup_tmp_file
       puts "Done."
-      if ide_environment?
+      if ide_environment? && ide_git_wip_enabled?
         restore_files
         watch_for_changes
       end
