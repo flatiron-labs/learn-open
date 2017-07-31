@@ -412,7 +412,7 @@ module LearnOpen
     end
 
     def watch_for_changes
-      Process.spawn("while inotifywait -e close_write,create,moved_to -r /home/$CREATED_USER/$LAB_NAME; do backup-lab; done", [:out, :err] => File::NULL)
+      Process.spawn("while inotifywait -e close_write,create,moved_to -r #{lessons_dir}/#{repo_dir}; do backup-lab; done", [:out, :err] => File::NULL)
     end
 
     def completion_tasks
