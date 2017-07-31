@@ -24,6 +24,15 @@ module LearnOpen
 
       set_lesson
 
+      if ide_version_3?
+        if self.lesson != ENV['CURRENT_LAB']
+          File.open(".custom_commands.log", "w+") do |f|
+            f.puts %Q{{"command": "open_lab", "lab_name": #{self.lesson}}}
+          end
+          exit
+        end
+      end
+
       warn_if_necessary
 
       if lesson_is_readme?
@@ -389,6 +398,10 @@ module LearnOpen
 
     def ide_git_wip_enabled?
       ENV['IDE_GIT_WIP'] == "true"
+    end
+
+    def ide_version_3?
+      ENV['IDE_VERSION'] == "3"
     end
 
     def git_tasks
