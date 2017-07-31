@@ -40,6 +40,7 @@ module LearnOpen
       else
         git_tasks
         file_tasks
+        setup_backup_if_needed
         dependency_tasks
         completion_tasks
       end
@@ -50,6 +51,13 @@ module LearnOpen
     end
 
     private
+
+    def setup_backup_if_needed
+      if ide_environment? && ide_git_wip_enabled?
+        restore_files
+        watch_for_changes
+      end
+    end
 
     def ping_fork_completion(retries=3)
       begin
@@ -435,10 +443,6 @@ module LearnOpen
     def completion_tasks
       cleanup_tmp_file
       puts "Done."
-      if ide_environment? && ide_git_wip_enabled?
-        restore_files
-        watch_for_changes
-      end
       exec("#{ENV['SHELL']} -l")
     end
   end
