@@ -24,6 +24,15 @@ module LearnOpen
 
       set_lesson
 
+      if ide_version_3?
+        if self.repo_dir != ENV['LAB_NAME']
+          File.open(".custom_commands.log", "w+") do |f|
+            f.puts %Q{{"command": "open_lab", "lab_name": #{self.lesson}}}
+          end
+          exit
+        end
+      end
+
       warn_if_necessary
 
       if lesson_is_readme?
@@ -31,6 +40,7 @@ module LearnOpen
       else
         git_tasks
         file_tasks
+        setup_backup_if_needed
         dependency_tasks
         completion_tasks
       end
@@ -41,6 +51,13 @@ module LearnOpen
     end
 
     private
+
+    def setup_backup_if_needed
+      if ide_environment? && ide_git_wip_enabled?
+        restore_files
+        watch_for_changes
+      end
+    end
 
     def ping_fork_completion(retries=3)
       begin
@@ -325,7 +342,7 @@ module LearnOpen
     def bundle_install
       if !ios_lesson? && File.exists?("#{lessons_dir}/#{repo_dir}/Gemfile")
         puts "Bundling..."
-        system("bundle install > /dev/null 2>&1")
+        system("bundle install")
       end
     end
 
@@ -346,7 +363,11 @@ module LearnOpen
     end
 
     def open_readme
-      if can_open_readme?
+      if ide_environment?
+        File.open(".custom_commands.log", "w+") do |f|
+          f.puts %Q{{"command": "browser_open", "url": "https://learn.co/lessons/#{lesson_id}"}}
+        end
+      elsif can_open_readme?
         puts "Opening readme..."
         launch_browser
       else
@@ -391,6 +412,10 @@ module LearnOpen
       ENV['IDE_GIT_WIP'] == "true"
     end
 
+    def ide_version_3?
+      ENV['IDE_VERSION'] == "3"
+    end
+
     def git_tasks
       fork_repo
       clone_repo
@@ -418,10 +443,6 @@ module LearnOpen
     def completion_tasks
       cleanup_tmp_file
       puts "Done."
-      if ide_environment? && ide_git_wip_enabled?
-        restore_files
-        watch_for_changes
-      end
       exec("#{ENV['SHELL']} -l")
     end
   end
