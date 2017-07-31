@@ -25,7 +25,7 @@ module LearnOpen
       set_lesson
 
       if ide_version_3?
-        if self.lesson != ENV['CURRENT_LAB']
+        if self.repo_dir != ENV['LAB_NAME']
           File.open(".custom_commands.log", "w+") do |f|
             f.puts %Q{{"command": "open_lab", "lab_name": #{self.lesson}}}
           end
