@@ -355,7 +355,11 @@ module LearnOpen
     end
 
     def open_readme
-      if can_open_readme?
+      if ide_environment?
+        File.open(".custom_commands.log", "w+") do |f|
+          f.puts %Q{{"command": "browser_open", "url": "https://learn.co/lessons/#{lesson_id}"}}
+        end
+      elsif can_open_readme?
         puts "Opening readme..."
         launch_browser
       else
