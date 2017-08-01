@@ -27,7 +27,7 @@ module LearnOpen
       if ide_version_3?
         if self.repo_dir != ENV['LAB_NAME']
           home_dir = "/home/#{ENV['CREATED_USER']}"
-          File.open("#{home_dir}/.custom_commands.log", "w+") do |f|
+          File.open("#{home_dir}/.custom_commands.log", "a") do |f|
             f.puts %Q{{"command": "open_lab", "lab_name": "#{self.repo_dir}"}}
           end
           exit
@@ -364,7 +364,7 @@ module LearnOpen
     def open_readme
       if ide_environment?
         puts "Opening readme..."
-        File.open(".custom_commands.log", "w+") do |f|
+        File.open(".custom_commands.log", "a") do |f|
           f.puts %Q{{"command": "browser_open", "url": "https://learn.co/lessons/#{lesson_id}"}}
         end
       elsif can_open_readme?
