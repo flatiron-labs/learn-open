@@ -34,6 +34,7 @@ module LearnOpen
         end
       end
 
+      puts "Looking for lesson..."
       warn_if_necessary
 
       if lesson_is_readme?
@@ -122,21 +123,18 @@ module LearnOpen
       File.write(file_path, 'Getting lesson...')
 
       if !lesson && !get_next_lesson
-        puts "Getting current lesson..."
         self.lesson        = get_current_lesson_forked_repo
         self.lesson_is_lab = current_lesson.lab
         self.lesson_id     = current_lesson.id
         self.later_lesson  = false
         self.dot_learn     = current_lesson.dot_learn
       elsif !lesson && get_next_lesson
-        puts "Getting next lesson..."
         self.lesson        = get_next_lesson_forked_repo
         self.lesson_is_lab = next_lesson.lab
         self.lesson_id     = next_lesson.id
         self.later_lesson  = false
         self.dot_learn     = next_lesson.dot_learn
       else
-        puts "Looking for lesson..."
         self.lesson        = ensure_correct_lesson.clone_repo
         self.lesson_is_lab = correct_lesson.lab
         self.lesson_id     = correct_lesson.lesson_id
@@ -365,6 +363,7 @@ module LearnOpen
 
     def open_readme
       if ide_environment?
+        puts "Opening readme..."
         File.open(".custom_commands.log", "w+") do |f|
           f.puts %Q{{"command": "browser_open", "url": "https://learn.co/lessons/#{lesson_id}"}}
         end
