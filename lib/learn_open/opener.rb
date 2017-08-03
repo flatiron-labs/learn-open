@@ -409,6 +409,7 @@ module LearnOpen
     end
 
     def ide_git_wip_enabled?
+      return false if dot_learn && dot_learn[:github] == false
       ENV['IDE_GIT_WIP'] == "true"
     end
 
