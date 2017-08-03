@@ -213,7 +213,7 @@ module LearnOpen
         File.write(file_path, 'Forking repository...')
         puts "Forking lesson..."
 
-        if !dot_learn || dot_learn[:github] != false
+        if !github_disabled?
           begin
             Timeout::timeout(15) do
               client.fork_repo(repo_name: repo_dir)
@@ -262,7 +262,7 @@ module LearnOpen
         end
       end
 
-      if dot_learn && dot_learn[:github] == false
+      if github_disabled?
         ping_fork_completion
       end
     end
@@ -404,12 +404,17 @@ module LearnOpen
       !!RUBY_PLATFORM.match(/darwin/)
     end
 
+    def github_disabled?
+      !dot_learn.nil? && dot_learn[:github] == false
+    end
+
     def ide_environment?
       ENV['IDE_CONTAINER'] == "true"
     end
 
     def ide_git_wip_enabled?
-      return false if dot_learn && dot_learn[:github] == false
+      return false if github_disabled?
+
       ENV['IDE_GIT_WIP'] == "true"
     end
 
