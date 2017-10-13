@@ -124,19 +124,19 @@ module LearnOpen
 
       if !lesson && !get_next_lesson
         self.lesson        = get_current_lesson_forked_repo
-        self.lesson_is_lab = current_lesson.lab
+        self.lesson_is_lab = current_lesson.is_lab?
         self.lesson_id     = current_lesson.id
         self.later_lesson  = false
         self.dot_learn     = current_lesson.dot_learn
       elsif !lesson && get_next_lesson
         self.lesson        = get_next_lesson_forked_repo
-        self.lesson_is_lab = next_lesson.lab
+        self.lesson_is_lab = next_lesson.is_lab?
         self.lesson_id     = next_lesson.id
         self.later_lesson  = false
         self.dot_learn     = next_lesson.dot_learn
       else
         self.lesson        = ensure_correct_lesson.clone_repo
-        self.lesson_is_lab = correct_lesson.lab
+        self.lesson_is_lab = correct_lesson.is_lab?
         self.lesson_id     = correct_lesson.lesson_id
         self.later_lesson  = correct_lesson.later_lesson
         self.dot_learn     = correct_lesson.dot_learn
@@ -374,6 +374,10 @@ module LearnOpen
         puts "It looks like this lesson is a Readme. Please open it in your browser."
         exit
       end
+    end
+
+    def is_lab?
+      !!lab || !!project
     end
 
     def launch_browser
