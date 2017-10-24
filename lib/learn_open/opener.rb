@@ -443,7 +443,7 @@ module LearnOpen
     end
 
     def watch_for_changes
-      Process.spawn("while inotifywait -re create,delete,move,close_write #{lessons_dir}/#{repo_dir}; do backup-lab; done", [:out, :err] => File::NULL)
+      Process.spawn("while inotifywait -qre create,delete,move,close_write #{lessons_dir}/#{repo_dir}; do backup-lab; done", [:out, :err] => File::NULL)
     end
 
     def completion_tasks
