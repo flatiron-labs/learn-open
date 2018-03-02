@@ -431,7 +431,7 @@ module LearnOpen
     end
 
     def jupyter_notebook_environment?
-      ENV['LEARNING_ENVIRONMENT'] == 'jupyter_notebook'
+      ENV['JUPYTER_CONTAINER'] == "true"
     end
 
     def git_tasks
