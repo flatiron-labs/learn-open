@@ -37,15 +37,23 @@ module LearnOpen
       puts "Looking for lesson..."
       warn_if_necessary
 
-      if lesson_is_readme?
-        open_readme
-      else
+      if jupyter_notebook_environment?
         git_tasks
         file_tasks
         setup_backup_if_needed
-        dependency_tasks
         completion_tasks
+      else
+        if lesson_is_readme?
+          open_readme
+        else
+          git_tasks
+          file_tasks
+          setup_backup_if_needed
+          dependency_tasks
+          completion_tasks
+        end
       end
+
     end
 
     def repo_exists?
@@ -55,7 +63,7 @@ module LearnOpen
     private
 
     def setup_backup_if_needed
-      if ide_environment? && ide_git_wip_enabled?
+      if ide_environment? && ide_git_wip_enabled? || jupyter_notebook_environment?
         restore_files
         watch_for_changes
       end
@@ -420,6 +428,10 @@ module LearnOpen
 
     def ide_version_3?
       ENV['IDE_VERSION'] == "3"
+    end
+
+    def jupyter_notebook_environment?
+      ENV['JUPYTER_CONTAINER'] == "true"
     end
 
     def git_tasks
