@@ -31,10 +31,10 @@ module LearnOpen
       with_retries(->{client.fork_repo(repo_name: repo_name)}, &block)
     end
 
-    def clone_repo(repo_name, dest_dir, &block)
+    def clone_repo(full_repo_path, dest_dir, &block)
       block ||= NO_OP_BLOCK
       block.call(:starting)
-      do_clone_repo(repo_name, dest_dir, &block)
+      do_clone_repo(full_repo_path, dest_dir, &block)
     end
 
     def ping_fork_completion(full_repo_path, &block)
