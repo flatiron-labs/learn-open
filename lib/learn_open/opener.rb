@@ -5,12 +5,12 @@ module LearnOpen
     attr_accessor :lesson, :repo_dir, :repo_name, :full_repo_path, :lesson_is_lab, :lesson_id, :later_lesson, :dot_learn
 
     def self.run(lesson:, editor_specified:, get_next_lesson:)
-      new(lesson, editor_specified, get_next_lesson).run
+      new(lesson, editor_specified, get_next_lesson, LearnWrapper).run
     end
 
-    def initialize(lesson, editor, get_next_lesson)
-      _login, @token = Netrc.read['learn-config']
-      @client        = LearnWrapper.new(token: @token)
+    def initialize(lesson, editor, get_next_lesson, learn_wrapper=LearnWrapper)
+      _login, @token   = Netrc.read['learn-config']
+      @client          = learn_wrapper.new(token: @token)
 
       @lesson          = lesson
       @editor          = editor
