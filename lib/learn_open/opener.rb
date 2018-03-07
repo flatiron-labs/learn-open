@@ -10,7 +10,7 @@ module LearnOpen
 
     def initialize(lesson, editor, get_next_lesson)
       _login, @token = Netrc.read['learn-config']
-      @client        = LearnWeb::Client.new(token: @token)
+      @client        = LearnWrapper.new(token: @token)
 
       @lesson          = lesson
       @editor          = editor
@@ -69,29 +69,6 @@ module LearnOpen
       end
     end
 
-    def ping_fork_completion(retries=3)
-      begin
-        Timeout::timeout(15) do
-          client.submit_event(
-            event: 'fork',
-            learn_oauth_token: token,
-            repo_name: repo_dir,
-            base_org_name: lesson.split('/')[0],
-            forkee: { full_name: nil }
-          )
-        end
-      rescue Timeout::Error
-        if retries > 0
-          puts "There was a problem forking and cloning this lesson. Retrying..."
-          ping_fork_completion(retries-1)
-        else
-          puts "There is an issue connecting to Learn. Please try again."
-          File.write(file_path, 'ERROR: Error connecting to Learn')
-          exit
-        end
-      end
-    end
-
     def warn_if_necessary
       temp_args = nil
 
@@ -131,63 +108,47 @@ module LearnOpen
       File.write(file_path, 'Getting lesson...')
 
       if !lesson && !get_next_lesson
-        self.lesson        = get_current_lesson_forked_repo
+        self.lesson        = current_lesson.clone_repo
         self.lesson_is_lab = current_lesson.lab
         self.lesson_id     = current_lesson.id
         self.later_lesson  = false
         self.dot_learn     = current_lesson.dot_learn
       elsif !lesson && get_next_lesson
-        self.lesson        = get_next_lesson_forked_repo
+        self.lesson        = next_lesson.clone_repo
         self.lesson_is_lab = next_lesson.lab
         self.lesson_id     = next_lesson.id
         self.later_lesson  = false
         self.dot_learn     = next_lesson.dot_learn
       else
-        self.lesson        = ensure_correct_lesson.clone_repo
-        self.lesson_is_lab = correct_lesson.lab
-        self.lesson_id     = correct_lesson.lesson_id
-        self.later_lesson  = correct_lesson.later_lesson
-        self.dot_learn     = correct_lesson.dot_learn
+        self.lesson        = requested_lesson.clone_repo
+        self.lesson_is_lab = requested_lesson.lab
+        self.lesson_id     = requested_lesson.lesson_id
+        self.later_lesson  = requested_lesson.later_lesson
+        self.dot_learn     = requested_lesson.dot_learn
       end
 
       self.repo_dir = lesson.split('/').last
     end
 
     def current_lesson
-      @current_lesson ||= client.current_lesson
+      @current_lesson ||= client.current_lesson do |status|
+        case status
+        when :retrying
+          puts "There was a problem getting your lesson from Learn. Retrying..."
+        when :retries_exceeded
+          puts "There seems to be a problem connecting to Learn. Please try again."
+          File.write(file_path, 'ERROR: Error connecting to Learn')
+          exit
+        end
+      end
     end
 
     def next_lesson
-      @next_lesson ||= client.next_lesson
-    end
-
-    def get_current_lesson_forked_repo(retries=3)
-      begin
-        Timeout::timeout(15) do
-          current_lesson.clone_repo
-        end
-      rescue Timeout::Error
-        if retries > 0
-          puts "There was a problem getting your lesson from Learn. Retrying..."
-          get_current_lesson_forked_repo(retries-1)
-        else
-          puts "There seems to be a problem connecting to Learn. Please try again."
-          File.write(file_path, 'ERROR: Error connecting to Learn')
-          exit
-        end
-      end
-    end
-
-    def get_next_lesson_forked_repo(retries=3)
-      begin
-        Timeout::timeout(15) do
-          next_lesson.clone_repo
-        end
-      rescue Timeout::Error
-        if retries > 0
+      @next_lesson ||= client.next_lesson do |status|
+        case status
+        when :retrying
           puts "There was a problem getting your next lesson from Learn. Retrying..."
-          get_next_lesson_forked_repo(retries-1)
-        else
+        when :retries_exceeded
           puts "There seems to be a problem connecting to Learn. Please try again."
           File.write(file_path, 'ERROR: Error connecting to Learn')
           exit
@@ -195,83 +156,16 @@ module LearnOpen
       end
     end
 
-    def ensure_correct_lesson
-      correct_lesson
-    end
-
-    def correct_lesson(retries=3)
-      @correct_lesson ||= begin
-        Timeout::timeout(15) do
-          client.validate_repo_slug(repo_slug: lesson)
-        end
-      rescue Timeout::Error
-        if retries > 0
+    def requested_lesson(repo_slug)
+      @requested_lesson ||= client.lesson_by_name(repo_slug) do |status|
+        case status
+        when :retrying
           puts "There was a problem connecting to Learn. Retrying..."
-          correct_lesson(retries-1)
-        else
+        when :retries_exceeded
           puts "Cannot connect to Learn right now. Please try again."
           File.write(file_path, 'ERROR: Error connecting to Learn')
           exit
         end
-      end
-    end
-
-    def fork_repo(retries=3)
-      if !repo_exists?
-        File.write(file_path, 'Forking repository...')
-        puts "Forking lesson..."
-
-        if !github_disabled?
-          begin
-            Timeout::timeout(15) do
-              client.fork_repo(repo_name: repo_dir)
-            end
-          rescue Timeout::Error
-            if retries > 0
-              puts "There was a problem forking this lesson. Retrying..."
-              fork_repo(retries-1)
-            else
-              puts "There is an issue connecting to Learn. Please try again."
-              File.write(file_path, 'ERROR: Error connecting to Learn')
-              exit
-            end
-          end
-        end
-      end
-    end
-
-    def clone_repo(retries=3)
-      if !repo_exists?
-        File.write(file_path, 'Cloning to your machine...')
-        puts "Cloning lesson..."
-        begin
-          Timeout::timeout(15) do
-            Git.clone("git@github.com:#{lesson}.git", repo_dir, path: lessons_dir)
-          end
-        rescue Git::GitExecuteError
-          if retries > 0
-            puts "There was a problem cloning this lesson. Retrying..." if retries > 1
-            sleep(1)
-            clone_repo(retries-1)
-          else
-            puts "Cannot clone this lesson right now. Please try again."
-            File.write(file_path, 'ERROR: Error cloning. Try again.')
-            exit
-          end
-        rescue Timeout::Error
-          if retries > 0
-            puts "There was a problem cloning this lesson. Retrying..."
-            clone_repo(retries-1)
-          else
-            puts "Cannot clone this lesson right now. Please try again."
-            File.write(file_path, 'ERROR: Error cloning. Try again.')
-            exit
-          end
-        end
-      end
-
-      if github_disabled?
-        ping_fork_completion
       end
     end
 
@@ -435,8 +329,65 @@ module LearnOpen
     end
 
     def git_tasks
-      fork_repo
-      clone_repo
+      fork_repo(repo_name)
+      clone_repo(repo_name)
+    end
+
+    def fake_github_fork
+      File.write(file_path, 'Forking repository...')
+      puts "Forking lesson..."
+    end
+
+    def fork_repo(repo_name)
+      if !repo_exists?
+        if github_disabled?
+          fake_github_fork
+        else
+          client.fork_repo(repo_name) do |status|
+            case status
+            when :starting
+              File.write(file_path, 'Forking repository...')
+              puts "Forking lesson..."
+            when :retrying
+              puts "There was a problem forking this lesson. Retrying..."
+            when :retries_exceeded
+              puts "There is an issue connecting to Learn. Please try again."
+              File.write(file_path, 'ERROR: Error connecting to Learn')
+              exit
+            end
+          end
+        end
+      end
+    end
+
+    def clone_repo(repo_name)
+      if !repo_exists?
+        client.clone_repo(repo_name) do |status|
+          case status
+          when :start
+            File.write(file_path, 'Cloning to your machine...')
+            puts "Cloning lesson..."
+          when :retrying
+            puts "There was a problem cloning this lesson. Retrying..."
+          when :retries_exceeded
+            puts "Cannot clone this lesson right now. Please try again."
+            File.write(file_path, 'ERROR: Error cloning. Try again.')
+            exit
+          end
+        end
+      end
+      if github_disabled?
+        client.ping_fork_completion(org_name, repo_name) do |status|
+          case status
+          when :retrying
+          puts "There was a problem forking and cloning this lesson. Retrying..."
+          when :retries_exceeded
+            puts "There is an issue connecting to Learn. Please try again."
+            File.write(file_path, 'ERROR: Error connecting to Learn')
+            exit
+          end
+        end
+      end
     end
 
     def file_tasks
