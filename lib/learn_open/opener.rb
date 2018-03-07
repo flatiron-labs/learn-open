@@ -346,6 +346,13 @@ module LearnOpen
       Dir.chdir("#{lessons_dir}/#{repo_dir}")
     end
 
+    def pip_install
+      if !ios_lesson? && File.exists?("#{lessons_dir}/#{repo_dir}/requirements.txt")
+        puts "Installing pip dependencies..."
+        system("pip install -r requirements.txt")
+      end
+    end
+
     def bundle_install
       if !ios_lesson? && File.exists?("#{lessons_dir}/#{repo_dir}/Gemfile")
         puts "Bundling..."
@@ -355,7 +362,7 @@ module LearnOpen
 
     def npm_install
       if !ios_lesson? && File.exists?("#{lessons_dir}/#{repo_dir}/package.json")
-        puts 'Installing dependencies...'
+        puts 'Installing npm dependencies...'
 
         if ide_environment?
           system("yarn install --no-lockfile")
@@ -447,6 +454,7 @@ module LearnOpen
     def dependency_tasks
       bundle_install
       npm_install
+      pip_install
     end
 
     def restore_files
