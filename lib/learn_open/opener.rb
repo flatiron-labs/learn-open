@@ -1,27 +1,26 @@
 module LearnOpen
   class Opener
     HOME_DIR = File.expand_path("~")
-    attr_reader   :editor, :client, :lessons_dir, :file_path, :get_next_lesson, :token
-    attr_accessor :lesson, :repo_dir, :lesson_is_lab, :lesson_id, :later_lesson, :dot_learn
+    attr_reader   :editor, :client, :lessons_dir, :file_path, :get_next_lesson, :token, :logger
+    attr_accessor :lesson, :repo_dir, :repo_name, :full_repo_path, :lesson_is_lab, :lesson_id, :later_lesson, :dot_learn
 
     def self.run(lesson:, editor_specified:, get_next_lesson:)
-      new(lesson, editor_specified, get_next_lesson).run
+      new(lesson, editor_specified, get_next_lesson, LearnWrapper).run
     end
 
-    def initialize(lesson, editor, get_next_lesson)
-      _login, @token = Netrc.read['learn-config']
-      @client        = LearnWrapper.new(token: @token)
+    def initialize(lesson, editor, get_next_lesson, learn_wrapper=LearnWrapper)
+      _login, @token   = Netrc.read['learn-config']
+      @client          = learn_wrapper.new(token: @token)
 
       @lesson          = lesson
       @editor          = editor
       @get_next_lesson = get_next_lesson
       @lessons_dir     = YAML.load(File.read("#{HOME_DIR}/.learn-config"))[:learn_directory]
       @file_path       = "#{HOME_DIR}/.learn-open-tmp"
+      @logger          = DebugLogger.new(@file_path)
     end
 
     def run
-      setup_tmp_file
-
       set_lesson
 
       if ide_version_3?
@@ -95,17 +94,12 @@ module LearnOpen
       end
     end
 
-    def setup_tmp_file
-      FileUtils.touch(file_path)
-      File.write(file_path, '')
-    end
-
     def cleanup_tmp_file
-      File.write(file_path, 'Done.')
+      logger.log_done
     end
 
     def set_lesson
-      File.write(file_path, 'Getting lesson...')
+      logger.log_getting_lesson
 
       if !lesson && !get_next_lesson
         self.lesson        = current_lesson.clone_repo
@@ -120,6 +114,7 @@ module LearnOpen
         self.later_lesson  = false
         self.dot_learn     = next_lesson.dot_learn
       else
+        requested_lesson = lesson_by_name(lesson)
         self.lesson        = requested_lesson.clone_repo
         self.lesson_is_lab = requested_lesson.lab
         self.lesson_id     = requested_lesson.lesson_id
@@ -128,45 +123,21 @@ module LearnOpen
       end
 
       self.repo_dir = lesson.split('/').last
+      self.repo_name = lesson.split('/').last
+      self.full_repo_path = lesson
     end
 
+
     def current_lesson
-      @current_lesson ||= client.current_lesson do |status|
-        case status
-        when :retrying
-          puts "There was a problem getting your lesson from Learn. Retrying..."
-        when :retries_exceeded
-          puts "There seems to be a problem connecting to Learn. Please try again."
-          File.write(file_path, 'ERROR: Error connecting to Learn')
-          exit
-        end
-      end
+      @current_lesson ||= client.current_lesson(&logger.method(:log_fetch_current_lesson))
     end
 
     def next_lesson
-      @next_lesson ||= client.next_lesson do |status|
-        case status
-        when :retrying
-          puts "There was a problem getting your next lesson from Learn. Retrying..."
-        when :retries_exceeded
-          puts "There seems to be a problem connecting to Learn. Please try again."
-          File.write(file_path, 'ERROR: Error connecting to Learn')
-          exit
-        end
-      end
+      @next_lesson ||= client.next_lesson(&logger.method(:log_fetch_next_lesson))
     end
 
-    def requested_lesson(repo_slug)
-      @requested_lesson ||= client.lesson_by_name(repo_slug) do |status|
-        case status
-        when :retrying
-          puts "There was a problem connecting to Learn. Retrying..."
-        when :retries_exceeded
-          puts "Cannot connect to Learn right now. Please try again."
-          File.write(file_path, 'ERROR: Error connecting to Learn')
-          exit
-        end
-      end
+    def lesson_by_name(repo_slug)
+      client.lesson_by_name(repo_slug, &logger.method(:log_fetch_lesson))
     end
 
     def open_with_editor
@@ -337,12 +308,11 @@ module LearnOpen
 
     def git_tasks
       fork_repo(repo_name)
-      clone_repo(repo_name)
+      clone_repo(full_repo_path, lessons_dir)
     end
 
     def fake_github_fork
-      File.write(file_path, 'Forking repository...')
-      puts "Forking lesson..."
+      logger.log_fork_repo(:fake_starting)
     end
 
     def fork_repo(repo_name)
@@ -350,50 +320,17 @@ module LearnOpen
         if github_disabled?
           fake_github_fork
         else
-          client.fork_repo(repo_name) do |status|
-            case status
-            when :starting
-              File.write(file_path, 'Forking repository...')
-              puts "Forking lesson..."
-            when :retrying
-              puts "There was a problem forking this lesson. Retrying..."
-            when :retries_exceeded
-              puts "There is an issue connecting to Learn. Please try again."
-              File.write(file_path, 'ERROR: Error connecting to Learn')
-              exit
-            end
-          end
+          client.fork_repo(repo_name, &logger.method(:log_fork_repo))
         end
       end
     end
 
-    def clone_repo(repo_name)
+    def clone_repo(full_repo_path, repo_name)
       if !repo_exists?
-        client.clone_repo(repo_name) do |status|
-          case status
-          when :start
-            File.write(file_path, 'Cloning to your machine...')
-            puts "Cloning lesson..."
-          when :retrying
-            puts "There was a problem cloning this lesson. Retrying..."
-          when :retries_exceeded
-            puts "Cannot clone this lesson right now. Please try again."
-            File.write(file_path, 'ERROR: Error cloning. Try again.')
-            exit
-          end
-        end
+        client.clone_repo(full_repo_path, repo_name, &logger.method(:log_clone_repo))
       end
       if github_disabled?
-        client.ping_fork_completion(org_name, repo_name) do |status|
-          case status
-          when :retrying
-          puts "There was a problem forking and cloning this lesson. Retrying..."
-          when :retries_exceeded
-            puts "There is an issue connecting to Learn. Please try again."
-            File.write(file_path, 'ERROR: Error connecting to Learn')
-            exit
-          end
-        end
+        client.ping_fork_completion(org_name, repo_name, &logger.method(:log_ping_fork_completion))
       end
     end
 
@@ -418,8 +355,7 @@ module LearnOpen
     end
 
     def completion_tasks
-      cleanup_tmp_file
-      puts "Done."
+      logger.log_done
       exec("#{ENV['SHELL']} -l")
     end
   end
