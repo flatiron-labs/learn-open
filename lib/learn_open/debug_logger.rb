@@ -82,6 +82,7 @@ module LearnOpen
 
     def log_getting_lesson
       File.write(file_path, 'Getting lesson...')
+      puts "Looking for lesson..."
     end
 
     def log_done
