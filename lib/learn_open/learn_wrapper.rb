@@ -10,18 +10,31 @@ module LearnOpen
 
     def current_lesson(&block)
       block ||= NO_OP_BLOCK
-      with_retries(->{ client.current_lesson}, &block)
+      with_retries(-> do
+        result = client
+        .current_lesson
+        .data
+        .merge(later_lesson: false)
+      end, &block)
     end
 
     def next_lesson(&block)
       block ||= NO_OP_BLOCK
-      with_retries(->{ client.next_lesson}, &block)
+      with_retries(-> do
+        result = client
+        .next_lesson
+        .data
+        .merge(later_lesson: false)
+      end, &block)
+
     end
 
     def lesson_by_name(repo_name, &block)
       block ||= NO_OP_BLOCK
       with_retries(-> do
-        client.validate_repo_slug(repo_slug: repo_name)
+        result = client
+        .validate_repo_slug(repo_slug: repo_name)
+        .data
       end, &block)
     end
 
