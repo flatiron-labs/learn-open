@@ -35,14 +35,15 @@ module LearnOpen
       end
 
       puts "Looking for lesson..."
-      warn_if_necessary
 
       if jupyter_notebook_environment?
         git_tasks
         file_tasks
-        setup_backup_if_needed
+        restore_files
+        watch_for_changes
         completion_tasks
       else
+        warn_if_necessary
         if lesson_is_readme?
           open_readme
         else
@@ -63,7 +64,7 @@ module LearnOpen
     private
 
     def setup_backup_if_needed
-      if ide_environment? && ide_git_wip_enabled? || jupyter_notebook_environment?
+      if ide_environment? && ide_git_wip_enabled?
         restore_files
         watch_for_changes
       end
