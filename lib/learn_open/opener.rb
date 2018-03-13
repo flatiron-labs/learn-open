@@ -1,58 +1,33 @@
 module LearnOpen
   class Opener
     HOME_DIR = File.expand_path("~")
-    attr_reader   :editor, :client, :lessons_dir, :file_path, :get_next_lesson, :token, :logger
-    attr_accessor :lesson, :repo_dir, :repo_name, :full_repo_path, :lesson_is_lab, :lesson_id, :later_lesson, :dot_learn
+    attr_reader   :editor, :client, :lessons_dir, :file_path, :get_next_lesson, :token, :logger, :lesson
+    attr_accessor :requested_lesson, :repo_dir, :repo_name, :full_repo_path, :lesson_is_lab, :lesson_id, :later_lesson, :dot_learn
 
-    def self.run(lesson:, editor_specified:, get_next_lesson:)
-      new(lesson, editor_specified, get_next_lesson, LearnWrapper).run
+    def self.run(requested_lesson:, editor_specified:, get_next_lesson:)
+      new(requested_lesson, editor_specified, get_next_lesson, LearnWrapper).run
     end
 
-    def initialize(lesson, editor, get_next_lesson, learn_wrapper=LearnWrapper)
-      _login, @token   = Netrc.read['learn-config']
-      @client          = learn_wrapper.new(token: @token)
+    def initialize(requested_lesson, editor, get_next_lesson, learn_wrapper=LearnWrapper)
+      _login, @token    = Netrc.read['learn-config']
+      @client           = learn_wrapper.new(token: @token)
 
-      @lesson          = lesson
-      @editor          = editor
-      @get_next_lesson = get_next_lesson
-      @lessons_dir     = YAML.load(File.read("#{HOME_DIR}/.learn-config"))[:learn_directory]
-      @file_path       = "#{HOME_DIR}/.learn-open-tmp"
-      @logger          = DebugLogger.new(@file_path)
+      @requested_lesson = requested_lesson
+      @file_path        = "#{HOME_DIR}/.learn-open-tmp"
+      @logger           = DebugLogger.new(@file_path)
+      @lesson           = Lessons.get(requested_lesson: requested_lesson, editor: editor, next_lesson_requested: get_next_lesson, client: @client, logger: @logger)
+      @editor           = editor
+      @get_next_lesson  = get_next_lesson
+      @lessons_dir      = YAML.load(File.read("#{HOME_DIR}/.learn-config"))[:learn_directory]
     end
 
     def run
-      set_lesson
-
-      if ide_version_3?
-        if self.repo_dir != ENV['LAB_NAME']
-          home_dir = "/home/#{ENV['CREATED_USER']}"
-          File.open("#{home_dir}/.custom_commands.log", "a") do |f|
-            f.puts %Q{{"command": "open_lab", "lab_name": "#{self.repo_dir}"}}
-          end
-          exit
-        end
-      end
-
-      puts "Looking for lesson..."
-      warn_if_necessary
-
-      if jupyter_notebook_environment?
-        git_tasks
-        file_tasks
-        setup_backup_if_needed
-        completion_tasks
+      if environment.valid?(lesson)
+        puts "Looking for lesson..."
+        lesson.open
       else
-        if lesson_is_readme?
-          open_readme
-        else
-          git_tasks
-          file_tasks
-          setup_backup_if_needed
-          dependency_tasks
-          completion_tasks
-        end
+        environment.open(lesson)
       end
-
     end
 
     def repo_exists?
@@ -61,37 +36,12 @@ module LearnOpen
 
     private
 
-    def setup_backup_if_needed
-      if ide_environment? && ide_git_wip_enabled? || jupyter_notebook_environment?
-        restore_files
-        watch_for_changes
-      end
-    end
+    def warn_skipping_lessons
+      puts 'WARNING: You are attempting to open a lesson that is beyond your current lesson.'
+      print 'Are you sure you want to continue? [Yn]: '
 
-    def warn_if_necessary
-      temp_args = nil
-
-      if self.later_lesson
-        puts 'WARNING: You are attempting to open a lesson that is beyond your current lesson.'
-        print 'Are you sure you want to continue? [Yn]: '
-
-        if ARGV.any?
-          temp_args = ARGV
-          ARGV.clear
-        end
-
-        warn_response = gets.chomp.downcase
-
-        if !warn_response.empty? && !['yes', 'y'].include?(warn_response)
-          exit
-        end
-      end
-
-      if temp_args
-        temp_args.each do |arg|
-          ARGV << arg
-        end
-      end
+      warn_response = STDIN.gets.chomp.downcase
+      exit if !['yes', 'y'].include?(warn_response)
     end
 
     def cleanup_tmp_file
@@ -101,30 +51,24 @@ module LearnOpen
     def set_lesson
       logger.log_getting_lesson
 
-      if !lesson && !get_next_lesson
-        self.lesson        = current_lesson.clone_repo
-        self.lesson_is_lab = current_lesson.lab
-        self.lesson_id     = current_lesson.id
-        self.later_lesson  = false
-        self.dot_learn     = current_lesson.dot_learn
-      elsif !lesson && get_next_lesson
-        self.lesson        = next_lesson.clone_repo
-        self.lesson_is_lab = next_lesson.lab
-        self.lesson_id     = next_lesson.id
-        self.later_lesson  = false
-        self.dot_learn     = next_lesson.dot_learn
+      lesson = if !requested_lesson && !get_next_lesson
+        current_lesson
+      elsif !requested_lesson && get_next_lesson
+        next_lesson
       else
-        requested_lesson = lesson_by_name(lesson)
-        self.lesson        = requested_lesson.clone_repo
-        self.lesson_is_lab = requested_lesson.lab
-        self.lesson_id     = requested_lesson.lesson_id
-        self.later_lesson  = requested_lesson.later_lesson
-        self.dot_learn     = requested_lesson.dot_learn
+        lesson_by_name(requested_lesson)
       end
 
-      self.repo_dir = lesson.split('/').last
-      self.repo_name = lesson.split('/').last
-      self.full_repo_path = lesson
+      self.lesson        = lesson[:clone_repo]
+      self.lesson_is_lab = lesson[:lab]
+      self.lesson_id     = lesson[:lesson_id]
+      self.later_lesson  = lesson[:later_lesson]
+      self.dot_learn     = lesson[:dot_learn]
+
+      self.repo_dir = self.lesson.split('/').last
+      self.repo_name = self.lesson.split('/').last
+      self.full_repo_path = self.lesson
+      lesson
     end
 
 
@@ -302,8 +246,12 @@ module LearnOpen
       ENV['IDE_VERSION'] == "3"
     end
 
-    def jupyter_notebook_environment?
+    def managed_jupyter_environment?
       ENV['JUPYTER_CONTAINER'] == "true"
+    end
+
+    def jupyter_notebook_lab?
+      Dir.glob("#{lessons_dir}/#{repo_dir}/*.ipynb").any?
     end
 
     def git_tasks
