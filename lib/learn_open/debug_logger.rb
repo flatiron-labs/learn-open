@@ -89,5 +89,13 @@ module LearnOpen
       File.write(file_path, 'Done.')
       puts "Done."
     end
+
+    def log_failed_to_open_readme
+      puts "It looks like this lesson is a Readme. Please open it in your browser."
+    end
+
+    def log_opening_readme
+      puts "Opening readme..."
+    end
   end
 end

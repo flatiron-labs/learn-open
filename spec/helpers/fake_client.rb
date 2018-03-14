@@ -75,9 +75,9 @@ class FakeClient
        :later_lesson=>true,
        :dot_learn=>{:jupyter_notebook=>true}}
      when "no_github"
-       {:clone_repo=>"StevenNunez/calculating-distance-lab-data-science-alpha",
-       :repo_name=>"calculating-distance-lab-data-science-alpha",
-       :repo_slug=>"StevenNunez/calculating-distance-lab-data-science-alpha",
+       {:clone_repo=>"StevenNunez/no_github",
+       :repo_name=>"no_github",
+       :repo_slug=>"StevenNunez/no_github",
        :lab=>true,
        :lesson_id=>32310,
        :later_lesson=>true,

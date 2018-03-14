@@ -7,7 +7,7 @@ module LearnOpen
         elsif jupyter_notebook_lab?(lesson_data, environment)
           JupyterLab.new(lesson_data, editor: editor, client: client, environment: environment, logger: logger)
         elsif github_disabled_lab?(lesson_data, environment)
-          GithubDisabled.new(lesson_data, editor: editor, client: client, environment: environment, logger: logger)
+          GithubDisabledLab.new(lesson_data, editor: editor, client: client, environment: environment, logger: logger)
         else
           GenericLab.new(lesson_data, editor: editor, client: client, environment: environment, logger: logger)
         end

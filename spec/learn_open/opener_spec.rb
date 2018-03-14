@@ -29,9 +29,25 @@ describe LearnOpen::Opener do
       expect(opener.lesson).to be_a(LearnOpen::Lessons::Readme)
     end
 
-    it "sets type to readme" do
+    it "sets type to jupyter lab" do
       opener = LearnOpen::Opener.new("jupyter_lab", nil, nil, FakeClient)
       expect(opener.lesson).to be_a(LearnOpen::Lessons::JupyterLab)
     end
+
+    it "sets type to generic lab" do
+      opener = LearnOpen::Opener.new("lab", nil, nil, FakeClient)
+      expect(opener.lesson).to be_a(LearnOpen::Lessons::GenericLab)
+    end
+
+    it "sets type to generic lab" do
+      opener = LearnOpen::Opener.new("lab", nil, nil, FakeClient)
+      expect(opener.lesson).to be_a(LearnOpen::Lessons::GenericLab)
+    end
+
+    it "sets type to github disabled lab" do
+      opener = LearnOpen::Opener.new("no_github", nil, nil, FakeClient)
+      expect(opener.lesson).to be_a(LearnOpen::Lessons::GithubDisabledLab)
+    end
+
   end
 end

@@ -9,7 +9,7 @@ module LearnOpen
       else
         client.lesson_by_name(requested_lesson)
       end
-      return Readme.new(lesson_data, client: client, environment: environment, logger: logger) unless lesson_data[:lab]
+      return Readme.new(lesson_data, environment: environment, logger: logger) unless lesson_data[:lab]
 
       LabFactory.get(lesson_data, editor: editor, client: client, environment: environment, logger: logger)
     end

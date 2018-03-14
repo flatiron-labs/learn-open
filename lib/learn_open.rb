@@ -17,6 +17,7 @@ require 'learn_open/lessons/base_lab'
 require 'learn_open/lessons/readme'
 require 'learn_open/lessons/jupyter_lab'
 require 'learn_open/lessons/generic_lab'
+require 'learn_open/lessons/github_disabled_lab'
 require 'learn_open/lessons'
 require 'learn_open/lessons/lab_factory'
 

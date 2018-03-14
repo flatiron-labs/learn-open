@@ -1,11 +1,12 @@
 module LearnOpen
   module Lessons
     class BaseLab < BaseLesson
-      attr_reader :editor, :logger
+      attr_reader :editor, :logger, :client
       def initialize(lesson_data, editor:, client:, logger:, environment: Environment)
-        super(lesson_data, client: client, environment: environment)
+        super(lesson_data, environment: environment)
         @editor = editor
         @logger = logger
+        @client = client
       end
 
       def git_tasks

@@ -1,6 +1,6 @@
 module LearnOpen
   module Lessons
-    class GithubDisabled < BaseLab
+    class GithubDisabledLab < BaseLab
       def open
         warn_skipping_lessons if later_lesson
         git_tasks

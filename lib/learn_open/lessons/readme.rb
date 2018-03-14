@@ -1,18 +1,18 @@
 module LearnOpen
   module Lessons
     class Readme < BaseLesson
-      def open(environment=Environment)
+      def open
         if environment.ide?
           warn_skipping_lessons if later_lesson
-          puts "Opening readme..."
+          logger.log_opening_readme
           File.open(".custom_commands.log", "a") do |f|
             f.puts %Q{{"command": "browser_open", "url": "https://learn.co/lessons/#{self.id}"}}
           end
         elsif environment.mac?
-          puts "Opening readme..."
+          logger.log_opening_readme
           launch_browser
         else
-          puts "It looks like this lesson is a Readme. Please open it in your browser."
+          logger.log_failed_to_open_readme
         end
       end
 
