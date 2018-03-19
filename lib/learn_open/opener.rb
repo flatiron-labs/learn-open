@@ -41,6 +41,7 @@ module LearnOpen
         file_tasks
         restore_files
         watch_for_changes
+        dependency_tasks
         completion_tasks
       else
         warn_if_necessary
