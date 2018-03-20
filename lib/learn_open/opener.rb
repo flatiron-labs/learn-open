@@ -15,7 +15,7 @@ module LearnOpen
       @requested_lesson = requested_lesson
       @file_path        = "#{HOME_DIR}/.learn-open-tmp"
       @logger           = DebugLogger.new(@file_path)
-      @lesson           = Lessons.get(requested_lesson: requested_lesson, editor: editor, next_lesson_requested: get_next_lesson, client: @client, logger: @logger)
+      @lesson           = Lessons::LessonFactory.get(requested_lesson: requested_lesson, editor: editor, next_lesson_requested: get_next_lesson, client: @client, logger: @logger)
       @editor           = editor
       @get_next_lesson  = get_next_lesson
       @lessons_dir      = YAML.load(File.read("#{HOME_DIR}/.learn-config"))[:learn_directory]

@@ -82,6 +82,14 @@ class FakeClient
        :lesson_id=>32310,
        :later_lesson=>true,
        :dot_learn=>{:github=>false}}
+     when "ios"
+       {:clone_repo=>"StevenNunez/ios",
+       :repo_name=>"ios",
+       :repo_slug=>"StevenNunez/ios",
+       :lab=>true,
+       :lesson_id=>32310,
+       :later_lesson=>true,
+       :dot_learn=>{:languages => ["swift"]}}
      else
        raise "lesson not found"
     end
