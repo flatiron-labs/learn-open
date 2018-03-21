@@ -351,7 +351,8 @@ module LearnOpen
     def pip_install
       if !ios_lesson? && File.exists?("#{lessons_dir}/#{repo_dir}/requirements.txt")
         puts "Installing pip dependencies..."
-        system("pip install -r requirements.txt")
+        # This has to be inside a controller jupyter env
+        system("/opt/conda/bin -m pip install -r requirements.txt")
       end
     end
 
