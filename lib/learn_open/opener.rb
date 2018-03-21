@@ -41,7 +41,7 @@ module LearnOpen
         file_tasks
         restore_files
         watch_for_changes
-        dependency_tasks
+        jupyter_pip_install
         completion_tasks
       else
         warn_if_necessary
@@ -351,8 +351,14 @@ module LearnOpen
     def pip_install
       if !ios_lesson? && File.exists?("#{lessons_dir}/#{repo_dir}/requirements.txt")
         puts "Installing pip dependencies..."
-        # This has to be inside a controller jupyter env
-        system("/opt/conda/bin -m pip install -r requirements.txt")
+        system("python -m pip install -r requirements.txt")
+      end
+    end
+
+    def jupyter_pip_install
+      if !ios_lesson? && File.exists?("#{lessons_dir}/#{repo_dir}/requirements.txt")
+        puts "Installing pip dependencies..."
+        system("/opt/conda/bin/python -m pip install -r requirements.txt")
       end
     end
 
