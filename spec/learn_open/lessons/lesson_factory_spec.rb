@@ -99,5 +99,8 @@ describe LearnOpen::Lessons::LessonFactory do
       expect(lesson.environment).to be_a(LearnOpen::Environments::Generic)
     end
   end
-  context "fetching correct lesson"
+  context "fetching correct lesson" do
+    it "fetches the next lesson"
+    it "fetches the current lesson"
+  end
 end

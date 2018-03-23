@@ -1,7 +1,7 @@
 module LearnOpen
   module Environments
     class BaseEnvironment
-      def valid?(_lesson); true; end
+      def valid?(_lesson, _file_system=File); true; end
       def open(_lesson); nil; end
       def open_brower(_id); nil; end
       def lessons_dir

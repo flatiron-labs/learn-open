@@ -1,7 +1,7 @@
 module LearnOpen
   module Lessons
     module LessonFactory
-      def self.get(editor:, client:, requested_lesson: nil, next_lesson_requested: nil, environment: Environment, logger:)
+      def self.get(editor:, client:, requested_lesson: nil, next_lesson_requested: nil, logger:)
         lesson_data = if !requested_lesson && !get_next_lesson
           client.current_lesson
         elsif !requested_lesson && get_next_lesson
