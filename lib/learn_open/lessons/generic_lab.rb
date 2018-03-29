@@ -1,6 +1,9 @@
 module LearnOpen
   module Lessons
     class GenericLab < BaseLab
+      def self.detect(_,_)
+        false
+      end
       def open
         environment.warn_skipping_lessons if later_lesson
         git_tasks

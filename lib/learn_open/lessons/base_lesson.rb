@@ -2,7 +2,7 @@ module LearnOpen
   module Lessons
     class BaseLesson
       attr_reader :full_path, :name, :repo_slug, :id, :later_lesson, :dot_learn, :logger, :environment
-      def initialize(lesson_data, environment: Environment, logger:)
+      def initialize(lesson_data, environment:, logger:)
         @full_path    = lesson_data.fetch(:clone_repo)
         @name         = lesson_data.fetch(:repo_name)
         @repo_slug    = lesson_data.fetch(:repo_slug)

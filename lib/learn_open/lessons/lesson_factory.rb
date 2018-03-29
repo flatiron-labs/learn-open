@@ -10,17 +10,7 @@ module LearnOpen
           client.lesson_by_name(requested_lesson)
         end
 
-        if ENV['IDE_CONTAINER']
-          if ENV['IDE_VERSION'] == "3"
-            environment = Environments::IDEV3.new
-          else
-            environment = Environments::IDELegacy.new
-          end
-        elsif !!RUBY_PLATFORM.match(/darwin/)
-          environment = Environments::MacOSX.new
-        else
-          environment = Environments::Generic.new
-        end
+        environment = LearnOpen::Environments::EnvironmentsFactory.get
         # Return an environment MacEnvironment, IDEv3Environment, IDEv2Environment, ManagedJupyterEnvironment
         return Readme.new(lesson_data, environment: environment, logger: logger) unless lesson_data[:lab]
 

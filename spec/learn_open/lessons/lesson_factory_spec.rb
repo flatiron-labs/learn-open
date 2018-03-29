@@ -21,6 +21,9 @@ describe LearnOpen::Lessons::LessonFactory do
     end
 
     it "sets type to jupyter lab" do
+      allow_any_instance_of(LearnOpen::Environments::BaseEnvironment)
+        .to receive(:lesson_files)
+        .and_return(["index.ipynb"])
       lesson = LearnOpen::Lessons::LessonFactory.get(
         requested_lesson: "jupyter_lab",
         editor: editor,

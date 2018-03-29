@@ -86,6 +86,7 @@ module LearnOpen
         logger.log_done
         exec("#{ENV['SHELL']} -l")
       end
+      def detect; false; end
     end
   end
 end
