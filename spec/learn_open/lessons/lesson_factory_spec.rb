@@ -68,7 +68,7 @@ describe LearnOpen::Lessons::LessonFactory do
         editor: editor,
         client: client,
         logger: logger)
-      expect(lesson.environment).to be_a(LearnOpen::Environments::IDEV3)
+      expect(lesson.environment).to be_a(LearnOpen::Environments::IDEV3Environment)
     end
 
     it "assigns ide legacy environment" do
@@ -78,7 +78,7 @@ describe LearnOpen::Lessons::LessonFactory do
         editor: editor,
         client: client,
         logger: logger)
-      expect(lesson.environment).to be_a(LearnOpen::Environments::IDELegacy)
+      expect(lesson.environment).to be_a(LearnOpen::Environments::IDELegacyEnvironment)
     end
 
     it "assigns the Mac Environment" do
@@ -89,7 +89,7 @@ describe LearnOpen::Lessons::LessonFactory do
         editor: editor,
         client: client,
         logger: logger)
-      expect(lesson.environment).to be_a(LearnOpen::Environments::MacOSX)
+      expect(lesson.environment).to be_a(LearnOpen::Environments::MacOSXEnvironment)
       RUBY_PLATFORM = original_value
     end
 
@@ -99,7 +99,7 @@ describe LearnOpen::Lessons::LessonFactory do
         editor: editor,
         client: client,
         logger: logger)
-      expect(lesson.environment).to be_a(LearnOpen::Environments::Generic)
+      expect(lesson.environment).to be_a(LearnOpen::Environments::GenericEnvironment)
     end
   end
   context "fetching correct lesson" do

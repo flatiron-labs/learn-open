@@ -4,6 +4,7 @@ module LearnOpen
       def valid?(_lesson, _file_system=File); true; end
       def open(_lesson); nil; end
       def open_brower(_id); nil; end
+      def supports_wip?; false; end
       def lessons_dir
         YAML.load(File.read("#{home_dir}/.learn-config"))[:learn_directory]
       end

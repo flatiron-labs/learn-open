@@ -5,14 +5,14 @@ module LearnOpen
         # Dirty
         if ENV['IDE_CONTAINER']
           if ENV['IDE_VERSION'] == "3"
-            Environments::IDEV3.new
+            Environments::IDEV3Environment.new
           else
-            Environments::IDELegacy.new
+            Environments::IDELegacyEnvironment.new
           end
         elsif !!RUBY_PLATFORM.match(/darwin/)
-          Environments::MacOSX.new
+          Environments::MacOSXEnvironment.new
         else
-          Environments::Generic.new
+          Environments::GenericEnvironment.new
         end
       end
     end

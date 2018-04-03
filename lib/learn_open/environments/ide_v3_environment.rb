@@ -1,6 +1,7 @@
 module LearnOpen
   module Environments
-    class IDEV3 < BaseEnvironment
+    class IDEV3Environment < BaseEnvironment
+      def supports_wip?; true; end
       def valid?(lesson)
         lesson.name == ide_lab_name
       end

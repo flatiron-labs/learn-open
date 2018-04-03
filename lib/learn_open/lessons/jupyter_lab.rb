@@ -9,7 +9,7 @@ module LearnOpen
         git_tasks
         cd_to_lesson
         system("#{editor} .")
-        if environment.managed_jupyter_environment?
+        if environment.supports_wip?
           restore_files
           watch_for_changes
         end

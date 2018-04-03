@@ -1,6 +1,6 @@
 module LearnOpen
   module Environments
-    class IDELegacy < BaseEnvironment
+    class GenericEnvironment < BaseEnvironment
     end
   end
 end
