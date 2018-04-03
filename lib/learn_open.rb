@@ -12,6 +12,7 @@ require 'learn_open/debug_logger'
 
 require 'learn_open/environment'
 require 'learn_open/environments/base_environment'
+require 'learn_open/environments/environments_factory'
 require 'learn_open/environments/ide_v3'
 require 'learn_open/environments/ide_legacy'
 require 'learn_open/environments/mac_osx'

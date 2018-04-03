@@ -7,30 +7,30 @@ module LearnOpen
     end
 
     def execute
+      editor_data = from_config(:editor)
+
+      options = {
+        editor: String(editor_data),
+        next: false
+      }
+
+      opts_parser = OptionParser.new do |opts|
+        opts.on("-eEDITOR", "--editor=EDITOR", "specify editor" ) do |o|
+          options[:editor] = o unless o.empty?
+        end
+        opts.on("-n", "--next", "open next lab") do
+          options[:next] = true
+        end
+      end.parse!(args)
+      [args.first, options[:editor], options[:next]]
+    end
+
+    private
+    def from_config(option)
       config_path = File.expand_path('~/.learn-config')
-      editor_data = YAML.load(File.read(config_path))[:editor]
-      if editor_data.match(/ /)
-        editor_data = editor_data.split(' ').first
-      end
-
-      lesson = nil
-      next_lesson = false
-
-      configured_editor = !(editor_data.empty? || editor_data.nil?) ? editor_data : nil
-      editor_specified = ARGV.detect {|arg| arg.start_with?('--editor=')}.match(/\-\-editor=(.+)/) || configured_editor
-      open_after = !!editor_specified
-
-      if !ARGV[0].start_with?('--editor=') && !ARGV[0].start_with?('--next')
-        lesson = ARGV[0].sub(/\/$/, '')
-      elsif ARGV[0].start_with?('--next')
-        next_lesson = true
-      end
-
-      if open_after
-        editor_specified = editor_specified.is_a?(String) ? editor_specified : editor_specified[1]
-      end
-
-      [lesson, editor_specified, next_lesson]
+      config = YAML.load(File.read(config_path))
+      result = config[option.to_sym] || config[option.to_s]
+      result.split(' ').first
     end
   end
 end

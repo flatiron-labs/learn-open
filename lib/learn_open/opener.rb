@@ -4,8 +4,8 @@ module LearnOpen
     attr_reader   :editor, :client, :lessons_dir, :file_path, :get_next_lesson, :token, :logger, :lesson
     attr_accessor :requested_lesson, :repo_dir, :repo_name, :full_repo_path, :lesson_is_lab, :lesson_id, :later_lesson, :dot_learn
 
-    def self.run(requested_lesson:, editor_specified:, get_next_lesson:)
-      new(requested_lesson, editor_specified, get_next_lesson, LearnWrapper).run
+    def self.run(requested_lesson:, editor:, get_next_lesson:)
+      new(requested_lesson, editor, get_next_lesson, LearnWrapper).run
     end
 
     def initialize(requested_lesson, editor, get_next_lesson, learn_wrapper=LearnWrapper)
