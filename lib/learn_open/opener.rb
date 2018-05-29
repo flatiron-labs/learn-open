@@ -1,19 +1,20 @@
 module LearnOpen
   class Opener
-    attr_reader   :editor, :client, :lessons_dir, :file_path, :get_next_lesson, :token, :environment_adapter
+    attr_reader   :editor, :client, :lessons_dir, :file_path, :get_next_lesson, :token, :environment_adapter, :git_adapter
     attr_accessor :lesson, :repo_dir, :lesson_is_lab, :lesson_id, :later_lesson, :dot_learn
 
     def self.run(lesson:, editor_specified:, get_next_lesson:)
       new(lesson, editor_specified, get_next_lesson).run
     end
 
-    def initialize(lesson, editor, get_next_lesson, learn_client_class: LearnWeb::Client, file_system_adapter: FileUtils, environment_adapter: ENV)
+    def initialize(lesson, editor, get_next_lesson, learn_client_class: LearnWeb::Client, file_system_adapter: FileUtils, environment_adapter: ENV, git_adapter: Git)
       @lesson          = lesson
       @editor          = editor
       @get_next_lesson = get_next_lesson
 
       @file_system_adapter = file_system_adapter
       @environment_adapter = environment_adapter
+      @git_adapter         = git_adapter
 
       home_dir         = File.expand_path("~")
       netrc_path     ||= "#{home_dir}/.netrc"
@@ -254,7 +255,7 @@ module LearnOpen
         puts "Cloning lesson..."
         begin
           Timeout::timeout(15) do
-            Git.clone("git@github.com:#{lesson}.git", repo_dir, path: lessons_dir)
+            git_adapter.clone("git@github.com:#{lesson}.git", repo_dir, path: lessons_dir)
           end
         rescue Git::GitExecuteError
           if retries > 0

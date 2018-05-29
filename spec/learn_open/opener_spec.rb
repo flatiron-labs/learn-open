@@ -23,33 +23,6 @@ describe LearnOpen::Opener do
   #  end
   #end
 
-  def home_dir
-    Dir.home
-  end
-  def create_home_dir
-    FileUtils.mkdir_p home_dir
-  end
-
-  def create_netrc_file
-    File.open("#{home_dir}/.netrc", "w+") do |f|
-      f.write(<<-EOF)
-machine learn-config
-  login learn
-  password some-amazing-password
-EOF
-    end
-    File.chmod(0600, "#{home_dir}/.netrc")
-  end
-
-  def create_learn_config_file
-    File.open("#{home_dir}/.learn-config", "w+") do |f|
-      f.write(<<-EOF)
----
-:learn_directory: "#{Dir.home}/Development/code"
-:editor: atom
-EOF
-    end
-  end
   let(:learn_client_class) { double("Learn Client Class Double") }
 
   before do
@@ -95,22 +68,29 @@ EOF
 
   context "running the opener" do
     it "opens the next lesson" do
-      learn_client_double = double("Learn Client Instance Double", next_lesson: double({
-        clone_repo: "StevenNunez/ttt-2-board-rb-v-000",
-        lab: false,
-        id: 123,
-        dot_learn: {:tags=>["variables", "arrays", "tictactoe"], :languages=>["ruby"], :resources=>0},
-      }))
+      learn_client_double = double("Learn Client Instance Double", 
+                                   next_lesson: double(next_lesson))
+      # Need smarter object here that creates dir on "Clone"
+      # Or we can change the endpoint to clone from based on environment (local)
+      git_adapter = spy("Git Spy")
+      expect(git_adapter).to receive(:clone).with("git@github.com:StevenNunez/ttt-2-board-rb-v-000.git", "", path: "")
+
+      expect(learn_client_double)
+        .to receive(:fork_repo)
+        .with(repo_name: "rails-dynamic-request-lab-cb-000")
+
       expect(learn_client_class).to receive(:new)
         .with(token: "some-amazing-password")
         .and_return(learn_client_double)
 
-      opener = LearnOpen::Opener.new(nil, "", true, learn_client_class: learn_client_class)
+      opener = LearnOpen::Opener.new(nil, "", true, learn_client_class: learn_client_class, git_adapter: git_adapter)
       opener.run
       expect(opener.lesson).to eq("StevenNunez/ttt-2-board-rb-v-000")
       expect(opener.lesson_is_lab).to eq(false)
       expect(opener.later_lesson).to eq(false)
       expect(opener.dot_learn).to eq({:tags=>["variables", "arrays", "tictactoe"], :languages=>["ruby"], :resources=>0})
+    end
+    it "opens a specified lesson" do
     end
   end
 end
