@@ -50,6 +50,7 @@ EOF
 EOF
     end
   end
+  let(:learn_client_class) { double("Learn Client Class Double") }
 
   before do
     create_home_dir
@@ -83,7 +84,6 @@ EOF
   end
 
   it "instantiates client with token" do
-    learn_client_class = double("Learn Client Double")
     expect(learn_client_class).to receive(:new).with(token: "some-amazing-password")
     LearnOpen::Opener.new("", "", "", learn_client_class: learn_client_class)
   end
@@ -92,4 +92,33 @@ EOF
     opener = LearnOpen::Opener.new("", "", "", learn_client_class: spy)
     expect(opener.file_path).to eq("#{home_dir}/.learn-open-tmp")
   end
+
+  context "running the opener" do
+    it "opens the next lesson" do
+      learn_client_double = double("Learn Client Instance Double", next_lesson: double({
+        clone_repo: "StevenNunez/ttt-2-board-rb-v-000",
+        lab: false,
+        id: 123,
+        dot_learn: {:tags=>["variables", "arrays", "tictactoe"], :languages=>["ruby"], :resources=>0},
+      }))
+      expect(learn_client_class).to receive(:new)
+        .with(token: "some-amazing-password")
+        .and_return(learn_client_double)
+
+      opener = LearnOpen::Opener.new(nil, "", true, learn_client_class: learn_client_class)
+      opener.run
+      expect(opener.lesson).to eq("StevenNunez/ttt-2-board-rb-v-000")
+      expect(opener.lesson_is_lab).to eq(false)
+      expect(opener.later_lesson).to eq(false)
+      expect(opener.dot_learn).to eq({:tags=>["variables", "arrays", "tictactoe"], :languages=>["ruby"], :resources=>0})
+    end
+  end
 end
+
+=begin
+Things to test
+Logging
+Setting the "lesson" we're going to be opening
+  name passed in? asked for next? Nothing passed in?
+=end
+

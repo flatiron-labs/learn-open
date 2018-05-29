@@ -1,6 +1,6 @@
 module LearnOpen
   class Opener
-    attr_reader   :editor, :client, :lessons_dir, :file_path, :get_next_lesson, :token
+    attr_reader   :editor, :client, :lessons_dir, :file_path, :get_next_lesson, :token, :environment_adapter
     attr_accessor :lesson, :repo_dir, :lesson_is_lab, :lesson_id, :later_lesson, :dot_learn
 
     def self.run(lesson:, editor_specified:, get_next_lesson:)
@@ -13,6 +13,7 @@ module LearnOpen
       @get_next_lesson = get_next_lesson
 
       @file_system_adapter = file_system_adapter
+      @environment_adapter = environment_adapter
 
       home_dir         = File.expand_path("~")
       netrc_path     ||= "#{home_dir}/.netrc"
@@ -67,7 +68,7 @@ module LearnOpen
     end
 
     private
-    attr_reader :File, :file_system_adapter
+    attr_reader :file_system_adapter
 
     def setup_backup_if_needed
       if ide_environment? && ide_git_wip_enabled?
@@ -406,6 +407,7 @@ module LearnOpen
     end
 
     def launch_browser
+      return if ENV["GEM_ENV"] == 'test' # not great
       if chrome_installed?
         open_chrome
       else
