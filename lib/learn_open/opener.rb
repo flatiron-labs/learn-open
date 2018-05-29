@@ -1,6 +1,5 @@
 module LearnOpen
   class Opener
-    HOME_DIR = File.expand_path("~")
     attr_reader   :editor, :client, :lessons_dir, :file_path, :get_next_lesson, :token
     attr_accessor :lesson, :repo_dir, :lesson_is_lab, :lesson_id, :later_lesson, :dot_learn
 
@@ -8,15 +7,21 @@ module LearnOpen
       new(lesson, editor_specified, get_next_lesson).run
     end
 
-    def initialize(lesson, editor, get_next_lesson)
-      _login, @token = Netrc.read['learn-config']
-      @client        = LearnWeb::Client.new(token: @token)
-
+    def initialize(lesson, editor, get_next_lesson, netrc_adapter: Netrc, learn_client_class: LearnWeb::Client, file_access_adapter: File, file_system_adapter: FileUtils, environment_adapter: ENV)
       @lesson          = lesson
       @editor          = editor
       @get_next_lesson = get_next_lesson
-      @lessons_dir     = YAML.load(File.read("#{HOME_DIR}/.learn-config"))[:learn_directory]
-      @file_path       = "#{HOME_DIR}/.learn-open-tmp"
+
+      @file_access_adapter = file_access_adapter
+      @file_system_adapter = file_system_adapter
+
+      home_dir         = file_access_adapter.expand_path("~")
+      netrc_path     ||= "#{home_dir}/.netrc"
+      _login, @token   = netrc_adapter.read['learn-config']
+      @client          = learn_client_class.new(token: @token)
+      @lessons_dir     = YAML.load(file_access_adapter.read("#{home_dir}/.learn-config"))[:learn_directory]
+      @file_path       = "#{home_dir}/.learn-open-tmp"
+
     end
 
     def run
@@ -25,9 +30,9 @@ module LearnOpen
       set_lesson
 
       if ide_version_3?
-        if self.repo_dir != ENV['LAB_NAME']
-          home_dir = "/home/#{ENV['CREATED_USER']}"
-          File.open("#{home_dir}/.custom_commands.log", "a") do |f|
+        if self.repo_dir != environment_adapter['LAB_NAME']
+         home_dir = "/home/#{environment_adapter['CREATED_USER']}"
+          file_access_adapter.open("#{home_dir}/.custom_commands.log", "a") do |f|
             f.puts %Q{{"command": "open_lab", "lab_name": "#{self.repo_dir}"}}
           end
           exit
@@ -59,10 +64,11 @@ module LearnOpen
     end
 
     def repo_exists?
-      File.exists?("#{lessons_dir}/#{repo_dir}/.git")
+      file_access_adapter.exists?("#{lessons_dir}/#{repo_dir}/.git")
     end
 
     private
+    attr_reader :file_access_adapter, :file_system_adapter
 
     def setup_backup_if_needed
       if ide_environment? && ide_git_wip_enabled?
@@ -88,7 +94,7 @@ module LearnOpen
           ping_fork_completion(retries-1)
         else
           puts "There is an issue connecting to Learn. Please try again."
-          File.write(file_path, 'ERROR: Error connecting to Learn')
+          file_access_adapter.write(file_path, 'ERROR: Error connecting to Learn')
           exit
         end
       end
@@ -121,16 +127,16 @@ module LearnOpen
     end
 
     def setup_tmp_file
-      FileUtils.touch(file_path)
-      File.write(file_path, '')
+      file_system_adapter.touch(file_path)
+      file_access_adapter.write(file_path, '')
     end
 
     def cleanup_tmp_file
-      File.write(file_path, 'Done.')
+      file_access_adapter.write(file_path, 'Done.')
     end
 
     def set_lesson
-      File.write(file_path, 'Getting lesson...')
+      file_access_adapter.write(file_path, 'Getting lesson...')
 
       if !lesson && !get_next_lesson
         self.lesson        = get_current_lesson_forked_repo
@@ -174,7 +180,7 @@ module LearnOpen
           get_current_lesson_forked_repo(retries-1)
         else
           puts "There seems to be a problem connecting to Learn. Please try again."
-          File.write(file_path, 'ERROR: Error connecting to Learn')
+          file_access_adapter.write(file_path, 'ERROR: Error connecting to Learn')
           exit
         end
       end
@@ -191,7 +197,7 @@ module LearnOpen
           get_next_lesson_forked_repo(retries-1)
         else
           puts "There seems to be a problem connecting to Learn. Please try again."
-          File.write(file_path, 'ERROR: Error connecting to Learn')
+          file_access_adapter.write(file_path, 'ERROR: Error connecting to Learn')
           exit
         end
       end
@@ -212,7 +218,7 @@ module LearnOpen
           correct_lesson(retries-1)
         else
           puts "Cannot connect to Learn right now. Please try again."
-          File.write(file_path, 'ERROR: Error connecting to Learn')
+          file_access_adapter.write(file_path, 'ERROR: Error connecting to Learn')
           exit
         end
       end
@@ -220,7 +226,7 @@ module LearnOpen
 
     def fork_repo(retries=3)
       if !repo_exists?
-        File.write(file_path, 'Forking repository...')
+        file_access_adapter.write(file_path, 'Forking repository...')
         puts "Forking lesson..."
 
         if !github_disabled?
@@ -234,7 +240,7 @@ module LearnOpen
               fork_repo(retries-1)
             else
               puts "There is an issue connecting to Learn. Please try again."
-              File.write(file_path, 'ERROR: Error connecting to Learn')
+              file_access_adapter.write(file_path, 'ERROR: Error connecting to Learn')
               exit
             end
           end
@@ -244,7 +250,7 @@ module LearnOpen
 
     def clone_repo(retries=3)
       if !repo_exists?
-        File.write(file_path, 'Cloning to your machine...')
+        file_access_adapter.write(file_path, 'Cloning to your machine...')
         puts "Cloning lesson..."
         begin
           Timeout::timeout(15) do
@@ -257,7 +263,7 @@ module LearnOpen
             clone_repo(retries-1)
           else
             puts "Cannot clone this lesson right now. Please try again."
-            File.write(file_path, 'ERROR: Error cloning. Try again.')
+            file_access_adapter.write(file_path, 'ERROR: Error cloning. Try again.')
             exit
           end
         rescue Timeout::Error
@@ -266,7 +272,7 @@ module LearnOpen
             clone_repo(retries-1)
           else
             puts "Cannot clone this lesson right now. Please try again."
-            File.write(file_path, 'ERROR: Error cloning. Try again.')
+            file_access_adapter.write(file_path, 'ERROR: Error cloning. Try again.')
             exit
           end
         end
@@ -287,7 +293,7 @@ module LearnOpen
 
     def ios_lesson?
       begin
-        languages   = YAML.load(File.read("#{lessons_dir}/#{repo_dir}/.learn"))['languages']
+        languages   = YAML.load(file_access_adapter.read("#{lessons_dir}/#{repo_dir}/.learn"))['languages']
         ios_lang    = languages.any? {|l| ['objc', 'swift'].include?(l)}
 
         ios_lang || xcodeproj_file? || xcworkspace_file?
@@ -297,7 +303,7 @@ module LearnOpen
         else
           puts "Sorry, there seems to be a problem with this lesson. Please submit a bug report to bugs@learn.co and try again later."
           puts "If you'd like to work on your next lesson now, type: learn next"
-          File.write(file_path, 'ERROR: Problem parsing lesson data. Try again.')
+          file_access_adapter.write(file_path, 'ERROR: Problem parsing lesson data. Try again.')
           exit
         end
       rescue NoMethodError, Errno::ENOENT => e
@@ -308,7 +314,7 @@ module LearnOpen
         else
           puts "Sorry, there seems to be a problem with this lesson. Please submit a bug report to bugs@learn.co and try again later."
           puts "If you'd like to work on your next lesson now, type: learn next"
-          File.write(file_path, 'ERROR: Problem parsing lesson data. Try again.')
+          file_access_adapter.write(file_path, 'ERROR: Problem parsing lesson data. Try again.')
           exit
         end
       end
@@ -349,28 +355,28 @@ module LearnOpen
     end
 
     def pip_install
-      if !ios_lesson? && File.exists?("#{lessons_dir}/#{repo_dir}/requirements.txt")
+      if !ios_lesson? && file_access_adapter.exists?("#{lessons_dir}/#{repo_dir}/requirements.txt")
         puts "Installing pip dependencies..."
         system("python -m pip install -r requirements.txt")
       end
     end
 
     def jupyter_pip_install
-      if !ios_lesson? && File.exists?("#{lessons_dir}/#{repo_dir}/requirements.txt")
+      if !ios_lesson? && file_access_adapter.exists?("#{lessons_dir}/#{repo_dir}/requirements.txt")
         puts "Installing pip dependencies..."
         system("/opt/conda/bin/python -m pip install -r requirements.txt")
       end
     end
 
     def bundle_install
-      if !ios_lesson? && File.exists?("#{lessons_dir}/#{repo_dir}/Gemfile")
+      if !ios_lesson? && file_access_adapter.exists?("#{lessons_dir}/#{repo_dir}/Gemfile")
         puts "Bundling..."
         system("bundle install")
       end
     end
 
     def npm_install
-      if !ios_lesson? && File.exists?("#{lessons_dir}/#{repo_dir}/package.json")
+      if !ios_lesson? && file_access_adapter.exists?("#{lessons_dir}/#{repo_dir}/package.json")
         puts 'Installing npm dependencies...'
 
         if ide_environment?
@@ -388,7 +394,7 @@ module LearnOpen
     def open_readme
       if ide_environment?
         puts "Opening readme..."
-        File.open(".custom_commands.log", "a") do |f|
+        file_access_adapter.open(".custom_commands.log", "a") do |f|
           f.puts %Q{{"command": "browser_open", "url": "https://learn.co/lessons/#{lesson_id}"}}
         end
       elsif can_open_readme?
@@ -409,7 +415,7 @@ module LearnOpen
     end
 
     def chrome_installed?
-      File.exists?('/Applications/Google Chrome.app')
+      file_access_adapter.exists?('/Applications/Google Chrome.app')
     end
 
     def open_chrome
@@ -433,21 +439,21 @@ module LearnOpen
     end
 
     def ide_environment?
-      ENV['IDE_CONTAINER'] == "true"
+      environment_adapter['IDE_CONTAINER'] == "true"
     end
 
     def ide_git_wip_enabled?
       return false if github_disabled?
 
-      ENV['IDE_GIT_WIP'] == "true"
+      environment_adapter['IDE_GIT_WIP'] == "true"
     end
 
     def ide_version_3?
-      ENV['IDE_VERSION'] == "3"
+      environment_adapter['IDE_VERSION'] == "3"
     end
 
     def jupyter_notebook_environment?
-      ENV['JUPYTER_CONTAINER'] == "true"
+      environment_adapter['JUPYTER_CONTAINER'] == "true"
     end
 
     def git_tasks
@@ -478,7 +484,7 @@ module LearnOpen
     def completion_tasks
       cleanup_tmp_file
       puts "Done."
-      exec("#{ENV['SHELL']} -l")
+      exec("#{environment_adapter['SHELL']} -l")
     end
   end
 end
