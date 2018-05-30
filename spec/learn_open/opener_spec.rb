@@ -68,7 +68,8 @@ describe LearnOpen::Opener do
                                      learn_client_class: learn_client_class,
                                      git_adapter: git_adapter,
 																		 environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
-                                     system_adapter: system_adapter)
+                                     system_adapter: system_adapter,
+                                     io: spy)
       opener.run
     end
     it "sets values of next lesson from client payload" do
@@ -81,7 +82,8 @@ describe LearnOpen::Opener do
                                      learn_client_class: learn_client_class,
                                      git_adapter: git_adapter,
 																		 environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
-                                     system_adapter: system_adapter)
+                                     system_adapter: system_adapter,
+                                     io: spy)
       opener.run
       expect(opener.lesson).to eq("StevenNunez/rails-dynamic-request-lab-cb-000")
       expect(opener.lesson_is_lab).to eq(true)
@@ -98,8 +100,9 @@ describe LearnOpen::Opener do
       opener = LearnOpen::Opener.new(nil, "atom", false,
                                      learn_client_class: learn_client_class,
                                      git_adapter: git_adapter,
-																		 environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
-                                     system_adapter: system_adapter)
+                                     environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                     system_adapter: system_adapter,
+                                     io: spy)
       opener.run
       expect(opener.lesson).to eq("StevenNunez/ttt-2-board-rb-v-000")
       expect(opener.lesson_is_lab).to eq(true)
@@ -130,7 +133,8 @@ describe LearnOpen::Opener do
                                        learn_client_class: learn_client_class,
                                        git_adapter: git_adapter,
                                        environment_adapter: environment,
-                                       system_adapter: system_adapter)
+                                       system_adapter: system_adapter,
+                                       io: spy)
         opener.run
         expect(File.exist?("#{home_dir}/.custom_commands.log")).to eq(false)
       end
@@ -148,7 +152,8 @@ describe LearnOpen::Opener do
                                        learn_client_class: learn_client_class,
                                        git_adapter: git_adapter,
                                        environment_adapter: environment,
-                                       system_adapter: system_adapter)
+                                       system_adapter: system_adapter,
+                                       io: spy)
         opener.run
         custom_commands_log = File.read("#{home_dir}/.custom_commands.log")
         expect(custom_commands_log).to eq("{\"command\": \"open_lab\", \"lab_name\": \"rails-dynamic-request-lab-cb-000\"}\n")
@@ -167,7 +172,8 @@ describe LearnOpen::Opener do
                                        learn_client_class: learn_client_class,
                                        git_adapter: git_adapter,
                                        environment_adapter: environment,
-                                       system_adapter: system_adapter)
+                                       system_adapter: system_adapter,
+                                       io: spy)
         opener.run
         expect(File.exist?("#{home_dir}/.custom_commands.log")).to eq(false)
       end
