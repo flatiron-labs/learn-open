@@ -1,8 +1,13 @@
 require 'spec_helper'
 require 'fakefs/spec_helpers'
+require 'pry'
 
 describe LearnOpen::Opener do
   include FakeFS::SpecHelpers
+  let(:learn_client_class)     { class_double(LearnWeb::Client) }
+  let(:learn_client_double)    { FakeLearnClient.new }
+  let(:git_adapter)            { FakeGit.new }
+  let(:system_adapter)         { class_double(LearnOpen::SystemAdapter) }
 
   before do
     create_home_dir
@@ -42,10 +47,6 @@ describe LearnOpen::Opener do
   end
 
   context "running the opener" do
-    let(:learn_client_class)     { class_double(LearnWeb::Client) }
-    let(:learn_client_double)    { FakeLearnClient.new }
-    let(:git_adapter)            { FakeGit.new }
-    let(:system_adapter)         { class_double(LearnOpen::SystemAdapter) }
     it "calls its collaborators" do
       expect(system_adapter)
         .to receive(:open_editor)
@@ -105,6 +106,81 @@ describe LearnOpen::Opener do
       expect(opener.later_lesson).to eq(false)
       expect(opener.dot_learn).to eq({:tags=>["variables", "arrays", "tictactoe"], :languages=>["ruby"], :resources=>0})
     end
+    # if the directory exists, don't clone
+    # github_disabled stuff
+  end
+  context "Opening on specific environments" do
+    before do
+      allow(system_adapter).to receive(:open_editor)
+      allow(system_adapter).to receive(:open_login_shell)
+      allow(learn_client_double).to receive(:fork_repo)
+      allow(learn_client_class).to receive(:new).and_return(learn_client_double)
+    end
+    context "IDE" do
+      it "does not write to the custom commands log if environment is for intended lab" do
+        environment = {
+          "SHELL" => "/usr/local/bin/fish",
+          "LAB_NAME" => "rails-dynamic-request-lab-cb-000",
+          "CREATED_USER" => "bobby",
+          "IDE_VERSION" => "3"
+        }
+
+        home_dir = create_linux_home_dir("bobby")
+        opener = LearnOpen::Opener.new(nil, "atom", true,
+                                       learn_client_class: learn_client_class,
+                                       git_adapter: git_adapter,
+                                       environment_adapter: environment,
+                                       system_adapter: system_adapter)
+        opener.run
+        expect(File.exist?("#{home_dir}/.custom_commands.log")).to eq(false)
+      end
+
+      it "writes to custom_commands_log if lab name doesn't match env" do
+        environment = {
+          "SHELL" => "/usr/local/bin/fish",
+          "LAB_NAME" => "Something wild",
+          "CREATED_USER" => "bobby",
+          "IDE_VERSION" => "3"
+        }
+
+        home_dir = create_linux_home_dir("bobby")
+        opener = LearnOpen::Opener.new(nil, "atom", true,
+                                       learn_client_class: learn_client_class,
+                                       git_adapter: git_adapter,
+                                       environment_adapter: environment,
+                                       system_adapter: system_adapter)
+        opener.run
+        custom_commands_log = File.read("#{home_dir}/.custom_commands.log")
+        expect(custom_commands_log).to eq("{\"command\": \"open_lab\", \"lab_name\": \"rails-dynamic-request-lab-cb-000\"}\n")
+      end
+
+      it "writes to custom_commands_log if only if it's IDE v3" do
+        environment = {
+          "SHELL" => "/usr/local/bin/fish",
+          "LAB_NAME" => "Something wild",
+          "CREATED_USER" => "bobby",
+          "IDE_VERSION" => "2"
+        }
+
+        home_dir = create_linux_home_dir("bobby")
+        opener = LearnOpen::Opener.new(nil, "atom", true,
+                                       learn_client_class: learn_client_class,
+                                       git_adapter: git_adapter,
+                                       environment_adapter: environment,
+                                       system_adapter: system_adapter)
+        opener.run
+        expect(File.exist?("#{home_dir}/.custom_commands.log")).to eq(false)
+      end
+    end
+    # on IDE
+    # on mac
+    #   with chrome
+    # jupyter lab
+    #   pip install
+    # jupyter readme
+    # readme
+    # lab
+    #   Maybe bundle, pip, ios
   end
 end
 

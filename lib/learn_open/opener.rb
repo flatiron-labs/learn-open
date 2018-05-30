@@ -41,11 +41,11 @@ module LearnOpen
 
       if ide_version_3?
         if self.repo_dir != environment_adapter['LAB_NAME']
-         home_dir = "/home/#{environment_adapter['CREATED_USER']}"
+          home_dir = "/home/#{environment_adapter['CREATED_USER']}"
           File.open("#{home_dir}/.custom_commands.log", "a") do |f|
             f.puts %Q{{"command": "open_lab", "lab_name": "#{self.repo_dir}"}}
           end
-          exit
+          return File.read("#{home_dir}/.custom_commands.log")
         end
       end
 

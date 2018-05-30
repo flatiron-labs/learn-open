@@ -1,3 +1,4 @@
+require 'diff/lcs'
 require_relative '../lib/learn_open'
 require_relative 'fakes/fake_git.rb'
 require_relative 'fakes/fake_learn_client.rb'
@@ -10,6 +11,12 @@ end
 
 def create_home_dir
   FileUtils.mkdir_p home_dir
+end
+
+def create_linux_home_dir(username)
+  home_dir = "/home/#{username}"
+  FileUtils.mkdir_p home_dir
+  home_dir
 end
 
 def create_netrc_file
