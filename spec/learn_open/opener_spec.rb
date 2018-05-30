@@ -3,33 +3,13 @@ require 'fakefs/spec_helpers'
 
 describe LearnOpen::Opener do
   include FakeFS::SpecHelpers
-  #context "Verifying repo existance" do
-  #  let(:opener) { LearnOpen::Opener.new("","","") }
-  #  after do
-  #    path = File.join(__dir__, "..", "home_dir", "code")
-  #    FileUtils.rm_rf(path)
-  #  end
-
-  #  it "returns true if .git directory for lab exists" do
-  #    expect(opener).to receive(:repo_dir).and_return("js-rubber-duck-wrangling")
-  #    FileUtils.mkdir_p("#{opener.lessons_dir}/js-rubber-duck-wrangling/.git")
-
-  #    expect(opener.repo_exists?).to be_truthy
-  #  end
-
-  #  it "returns false if directory for lab doesn't exists" do
-  #    expect(opener).to receive(:repo_dir).and_return("js-rubber-duck-wrangling")
-  #    expect(opener.repo_exists?).to be_falsy
-  #  end
-  #end
-
-  let(:learn_client_class) { double("Learn Client Class Double") }
 
   before do
     create_home_dir
     create_netrc_file
     create_learn_config_file
   end
+
   context "asking for a specific lesson" do
     it "sets the lesson" do
       opener = LearnOpen::Opener.new("ttt-2-board-rb-v-000","", false)
@@ -56,24 +36,24 @@ describe LearnOpen::Opener do
     expect(opener.token).to eq("some-amazing-password")
   end
 
-  it "instantiates client with token" do
-    expect(learn_client_class).to receive(:new).with(token: "some-amazing-password")
-    LearnOpen::Opener.new("", "", "", learn_client_class: learn_client_class)
-  end
-
   it "loads lesson directory from learn-config" do
     opener = LearnOpen::Opener.new("", "", "", learn_client_class: spy)
     expect(opener.file_path).to eq("#{home_dir}/.learn-open-tmp")
   end
 
   context "running the opener" do
-    it "opens the next lesson" do
-      learn_client_double = double("Learn Client Instance Double", 
-                                   next_lesson: double(next_lesson))
-      # Need smarter object here that creates dir on "Clone"
-      # Or we can change the endpoint to clone from based on environment (local)
-      git_adapter = spy("Git Spy")
-      expect(git_adapter).to receive(:clone).with("git@github.com:StevenNunez/ttt-2-board-rb-v-000.git", "", path: "")
+    let(:learn_client_class)     { class_double(LearnWeb::Client) }
+    let(:learn_client_double)    { FakeLearnClient.new }
+    let(:git_adapter)            { FakeGit.new }
+    let(:system_adapter)         { class_double(LearnOpen::SystemAdapter) }
+    it "calls its collaborators" do
+      expect(system_adapter)
+        .to receive(:open_editor)
+        .with("atom", path: ".")
+
+      expect(system_adapter)
+        .to receive(:open_login_shell)
+        .with("/usr/local/bin/fish")
 
       expect(learn_client_double)
         .to receive(:fork_repo)
@@ -83,22 +63,57 @@ describe LearnOpen::Opener do
         .with(token: "some-amazing-password")
         .and_return(learn_client_double)
 
-      opener = LearnOpen::Opener.new(nil, "", true, learn_client_class: learn_client_class, git_adapter: git_adapter)
+      opener = LearnOpen::Opener.new(nil, "atom", true,
+                                     learn_client_class: learn_client_class,
+                                     git_adapter: git_adapter,
+																		 environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                     system_adapter: system_adapter)
+      opener.run
+    end
+    it "sets values of next lesson from client payload" do
+      allow(system_adapter).to receive(:open_editor)
+      allow(system_adapter).to receive(:open_login_shell)
+      allow(learn_client_double).to receive(:fork_repo)
+      allow(learn_client_class).to receive(:new).and_return(learn_client_double)
+
+      opener = LearnOpen::Opener.new(nil, "atom", true,
+                                     learn_client_class: learn_client_class,
+                                     git_adapter: git_adapter,
+																		 environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                     system_adapter: system_adapter)
+      opener.run
+      expect(opener.lesson).to eq("StevenNunez/rails-dynamic-request-lab-cb-000")
+      expect(opener.lesson_is_lab).to eq(true)
+      expect(opener.later_lesson).to eq(false)
+      expect(opener.dot_learn).to eq({:tags=>["dynamic routes", "controllers", "rspec", "capybara", "mvc"], :languages=>["ruby"], :type=>["lab"], :resources=>2})
+    end
+
+    it "opens the current lesson" do
+      allow(system_adapter).to receive(:open_editor)
+      allow(system_adapter).to receive(:open_login_shell)
+      allow(learn_client_double).to receive(:fork_repo)
+      allow(learn_client_class).to receive(:new).and_return(learn_client_double)
+
+      opener = LearnOpen::Opener.new(nil, "atom", false,
+                                     learn_client_class: learn_client_class,
+                                     git_adapter: git_adapter,
+																		 environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                     system_adapter: system_adapter)
       opener.run
       expect(opener.lesson).to eq("StevenNunez/ttt-2-board-rb-v-000")
-      expect(opener.lesson_is_lab).to eq(false)
+      expect(opener.lesson_is_lab).to eq(true)
       expect(opener.later_lesson).to eq(false)
       expect(opener.dot_learn).to eq({:tags=>["variables", "arrays", "tictactoe"], :languages=>["ruby"], :resources=>0})
-    end
-    it "opens a specified lesson" do
     end
   end
 end
 
 =begin
 Things to test
+Current Lesson
 Logging
 Setting the "lesson" we're going to be opening
   name passed in? asked for next? Nothing passed in?
+Most tests for IOS and jupter will be where we explicitly pass in a lesson name that's setup to be IOS/jupyter-y
 =end
 

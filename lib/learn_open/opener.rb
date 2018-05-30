@@ -1,13 +1,21 @@
 module LearnOpen
   class Opener
-    attr_reader   :editor, :client, :lessons_dir, :file_path, :get_next_lesson, :token, :environment_adapter, :git_adapter
+    attr_reader :editor,
+                :client,
+                :lessons_dir,
+                :file_path,
+                :get_next_lesson,
+                :token,
+                :environment_adapter,
+                :git_adapter,
+                :system_adapter
     attr_accessor :lesson, :repo_dir, :lesson_is_lab, :lesson_id, :later_lesson, :dot_learn
 
     def self.run(lesson:, editor_specified:, get_next_lesson:)
       new(lesson, editor_specified, get_next_lesson).run
     end
 
-    def initialize(lesson, editor, get_next_lesson, learn_client_class: LearnWeb::Client, file_system_adapter: FileUtils, environment_adapter: ENV, git_adapter: Git)
+    def initialize(lesson, editor, get_next_lesson, learn_client_class: LearnWeb::Client, file_system_adapter: FileUtils, environment_adapter: ENV, git_adapter: Git, system_adapter: SystemAdapter)
       @lesson          = lesson
       @editor          = editor
       @get_next_lesson = get_next_lesson
@@ -15,6 +23,7 @@ module LearnOpen
       @file_system_adapter = file_system_adapter
       @environment_adapter = environment_adapter
       @git_adapter         = git_adapter
+      @system_adapter      = system_adapter
 
       home_dir         = File.expand_path("~")
       netrc_path     ||= "#{home_dir}/.netrc"
@@ -41,7 +50,6 @@ module LearnOpen
       end
 
       puts "Looking for lesson..."
-
       if jupyter_notebook_environment?
         git_tasks
         file_tasks
@@ -152,6 +160,7 @@ module LearnOpen
         self.later_lesson  = false
         self.dot_learn     = next_lesson.dot_learn
       else
+        # You gave me a specific lesson, verify then fetch
         self.lesson        = ensure_correct_lesson.clone_repo
         self.lesson_is_lab = correct_lesson.lab
         self.lesson_id     = correct_lesson.lesson_id
@@ -288,7 +297,7 @@ module LearnOpen
       if ios_lesson?
         open_ios_lesson
       elsif editor
-        system("#{editor} .")
+        system_adapter.open_editor(editor, path: ".")
       end
     end
 
@@ -486,7 +495,7 @@ module LearnOpen
     def completion_tasks
       cleanup_tmp_file
       puts "Done."
-      exec("#{environment_adapter['SHELL']} -l")
+      system_adapter.open_login_shell(environment_adapter['SHELL'])
     end
   end
 end
