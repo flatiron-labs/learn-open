@@ -200,9 +200,11 @@ describe LearnOpen::Opener do
         expect_any_instance_of(learn_client_class)
           .to receive(:fork_repo)
           .with(repo_name: "jupyter_lab")
+
         expect(git_adapter)
           .to receive(:clone)
           .with("git@github.com:StevenNunez/jupyter_lab.git", "jupyter_lab", {:path=>"/home/bobby/Development/code"})
+          .and_call_original
 
         expect(system_adapter)
           .to receive_messages(
@@ -210,7 +212,9 @@ describe LearnOpen::Opener do
             spawn: ["restore-lab", {:block=>true}],
             watch_dir: ["/home/bobby/Development/code/jupyter_lab", "backup-lab"],
             open_login_shell: "/usr/local/bin/fish",
-           change_context_directory: "/home/bobby/Development/code/jupyter_lab",
+            change_context_directory: "/home/bobby/Development/code/jupyter_lab",
+            run_command: "/opt/conda/bin/python -m pip install -r requirements.txt",
+
         )
 
         opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,

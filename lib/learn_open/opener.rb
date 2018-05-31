@@ -1,4 +1,3 @@
-# changing how system commands run. I wonder if this breaks other stuff
 module LearnOpen
   class Opener
     attr_reader :editor,
