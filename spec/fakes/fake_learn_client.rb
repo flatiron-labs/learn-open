@@ -1,5 +1,9 @@
 require 'ostruct'
 class FakeLearnClient
+  attr_reader :token
+  def initialize(token:)
+    @token = token
+  end
   def current_lesson
     OpenStruct.new({:id=>31322,
      :title=>"Tic Tac Toe Board",

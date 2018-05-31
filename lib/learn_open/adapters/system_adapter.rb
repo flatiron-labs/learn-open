@@ -20,5 +20,9 @@ module LearnOpen
     def self.run_command(command)
       system(command)
     end
+
+    def self.change_context_directory(dir)
+      Dir.chdir(dir)
+    end
   end
 end

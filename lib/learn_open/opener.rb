@@ -366,7 +366,7 @@ module LearnOpen
 
     def cd_to_lesson
       io.puts "Opening lesson..."
-      Dir.chdir("#{lessons_dir}/#{repo_dir}")
+      system_adapter.change_context_directory("#{lessons_dir}/#{repo_dir}")
     end
 
     def pip_install

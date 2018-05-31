@@ -14,3 +14,5 @@
 *.gem
 mkmf.log
 notes
+*swp
+*swo

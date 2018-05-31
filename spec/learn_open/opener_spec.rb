@@ -4,8 +4,7 @@ require 'pry'
 
 describe LearnOpen::Opener do
   include FakeFS::SpecHelpers
-  let(:learn_client_class)     { class_double(LearnWeb::Client) }
-  let(:learn_client_double)    { FakeLearnClient.new }
+  let(:learn_client_class)     { FakeLearnClient }
   let(:git_adapter)            { FakeGit.new }
   let(:system_adapter)         { class_double(LearnOpen::SystemAdapter) }
 
@@ -53,19 +52,16 @@ describe LearnOpen::Opener do
         .with("atom", path: ".")
 
       expect(system_adapter)
-        .to receive(:open_login_shell)
-        .with("/usr/local/bin/fish")
+        .to receive_messages(
+          open_login_shell: "/usr/local/bin/fish",
+          change_context_directory: "/home/bobby/Development/code/jupyter_lab")
 
-      expect(learn_client_double)
+      expect_any_instance_of(learn_client_class)
         .to receive(:fork_repo)
         .with(repo_name: "rails-dynamic-request-lab-cb-000")
 
-      expect(learn_client_class).to receive(:new)
-        .with(token: "some-amazing-password")
-        .and_return(learn_client_double)
-
       opener = LearnOpen::Opener.new(nil, "atom", true,
-                                     learn_client_class: learn_client_class,
+                                     learn_client_class: FakeLearnClient,
                                      git_adapter: git_adapter,
 																		 environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
                                      system_adapter: system_adapter,
@@ -73,10 +69,13 @@ describe LearnOpen::Opener do
       opener.run
     end
     it "sets values of next lesson from client payload" do
-      allow(system_adapter).to receive(:open_editor)
-      allow(system_adapter).to receive(:open_login_shell)
-      allow(learn_client_double).to receive(:fork_repo)
-      allow(learn_client_class).to receive(:new).and_return(learn_client_double)
+      allow(system_adapter)
+        .to receive_messages(
+          open_editor: :noop,
+          open_login_shell: :noop,
+          change_context_directory: :noop
+      )
+      allow_any_instance_of(learn_client_class).to receive(:fork_repo)
 
       opener = LearnOpen::Opener.new(nil, "atom", true,
                                      learn_client_class: learn_client_class,
@@ -92,10 +91,12 @@ describe LearnOpen::Opener do
     end
 
     it "opens the current lesson" do
-      allow(system_adapter).to receive(:open_editor)
-      allow(system_adapter).to receive(:open_login_shell)
-      allow(learn_client_double).to receive(:fork_repo)
-      allow(learn_client_class).to receive(:new).and_return(learn_client_double)
+      allow(system_adapter).to receive_messages(
+          open_editor: :noop,
+          open_login_shell: :noop,
+          change_context_directory: :noop
+      )
+      allow_any_instance_of(learn_client_class).to receive(:fork_repo)
 
       opener = LearnOpen::Opener.new(nil, "atom", false,
                                      learn_client_class: learn_client_class,
@@ -114,10 +115,12 @@ describe LearnOpen::Opener do
   end
   context "Opening on specific environments" do
     before do
-      allow(system_adapter).to receive(:open_editor)
-      allow(system_adapter).to receive(:open_login_shell)
-      allow(learn_client_double).to receive(:fork_repo)
-      allow(learn_client_class).to receive(:new).and_return(learn_client_double)
+      allow(system_adapter).to receive_messages(
+          open_editor: :noop,
+          open_login_shell: :noop,
+          change_context_directory: :noop
+      )
+      allow_any_instance_of(learn_client_class).to receive(:fork_repo)
     end
     context "IDE" do
       it "does not write to the custom commands log if environment is for intended lab" do
@@ -177,7 +180,6 @@ describe LearnOpen::Opener do
         opener.run
         expect(File.exist?("#{home_dir}/.custom_commands.log")).to eq(false)
       end
-
     end
     # on IDE
     # on mac
@@ -192,38 +194,24 @@ describe LearnOpen::Opener do
   end
   context "Lab Types" do
     context "Jupyter Labs" do
+      let(:environment) {{ "SHELL" => "/usr/local/bin/fish", "JUPYTER_CONTAINER" => "true" }}
+
       it "correctly opens jupter lab" do
-        environment = {
-          "SHELL" => "/usr/local/bin/fish",
-          "JUPYTER_CONTAINER" => "true"
-        }
-
-        allow(system_adapter).to receive(:open_editor)
-
-        expect(learn_client_class).to receive(:new)
-          .with(token: "some-amazing-password")
-          .and_return(learn_client_double)
-
-        expect(learn_client_double)
+        expect_any_instance_of(learn_client_class)
           .to receive(:fork_repo)
           .with(repo_name: "jupyter_lab")
-
-        expect(system_adapter)
-          .to receive(:spawn)
-          .with("restore-lab", {:block=>true})
-
-        expect(system_adapter)
-          .to receive(:watch_dir)
-          .with("/home/bobby/Development/code/jupyter_lab", "backup-lab")
-
-        expect(system_adapter)
-          .to receive(:open_login_shell)
-          .with("/usr/local/bin/fish")
-
         expect(git_adapter)
-          .to_not receive(:clone_repo)
-          #.with("git@github.com:StevenNunez/jupyter_lab.git", "jupyter_lab", path: "/home/bobby/Development/code")
-          #.and_call_original
+          .to receive(:clone)
+          .with("git@github.com:StevenNunez/jupyter_lab.git", "jupyter_lab", {:path=>"/home/bobby/Development/code"})
+
+        expect(system_adapter)
+          .to receive_messages(
+            open_editor: ["atom", {:path=>"."}],
+            spawn: ["restore-lab", {:block=>true}],
+            watch_dir: ["/home/bobby/Development/code/jupyter_lab", "backup-lab"],
+            open_login_shell: "/usr/local/bin/fish",
+           change_context_directory: "/home/bobby/Development/code/jupyter_lab",
+        )
 
         opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
                                        learn_client_class: learn_client_class,
@@ -232,9 +220,6 @@ describe LearnOpen::Opener do
                                        system_adapter: system_adapter,
                                        io: spy)
         opener.run
-        expect(git_adapter.messages).to eq([{
-          :method=>:clone,
-          :args=> ["git@github.com:StevenNunez/jupyter_lab.git", "jupyter_lab", {:path=>"/home/bobby/Development/code"}]}])
       end
     end
   end
