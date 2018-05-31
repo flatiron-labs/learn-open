@@ -34,7 +34,7 @@ def create_learn_config_file
   File.open("#{home_dir}/.learn-config", "w+") do |f|
     f.write(<<-EOF)
 ---
-:learn_directory: "#{Dir.home}/Development/code"
+:learn_directory: "/home/bobby/Development/code"
 :editor: atom
     EOF
   end

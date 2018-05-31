@@ -179,30 +179,6 @@ describe LearnOpen::Opener do
       end
 
     end
-    context "Jupyter Labs" do
-      it "correctly opens jupter lab" do
-        environment = {
-          "SHELL" => "/usr/local/bin/fish",
-          "JUPYTER_CONTAINER" => "true"
-        }
-
-        expect(learn_client_double)
-          .to receive(:fork_repo)
-          .with(repo_name: "jupyter_lab")
-
-        expect(git_adapter)
-          .to receive(:clone_repo)
-          .with("git@githb.com:/StevenNunez/")
-
-        opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
-                                       learn_client_class: learn_client_class,
-                                       git_adapter: git_adapter,
-                                       environment_adapter: environment,
-                                       system_adapter: system_adapter,
-                                       io: spy)
-        opener.run
-      end
-    end
     # on IDE
     # on mac
     #   with chrome
@@ -213,6 +189,54 @@ describe LearnOpen::Opener do
     # lab
     #   Maybe bundle, pip, ios
     # Test messages printed on screen
+  end
+  context "Lab Types" do
+    context "Jupyter Labs" do
+      it "correctly opens jupter lab" do
+        environment = {
+          "SHELL" => "/usr/local/bin/fish",
+          "JUPYTER_CONTAINER" => "true"
+        }
+
+        allow(system_adapter).to receive(:open_editor)
+
+        expect(learn_client_class).to receive(:new)
+          .with(token: "some-amazing-password")
+          .and_return(learn_client_double)
+
+        expect(learn_client_double)
+          .to receive(:fork_repo)
+          .with(repo_name: "jupyter_lab")
+
+        expect(system_adapter)
+          .to receive(:spawn)
+          .with("restore-lab", {:block=>true})
+
+        expect(system_adapter)
+          .to receive(:watch_dir)
+          .with("/home/bobby/Development/code/jupyter_lab", "backup-lab")
+
+        expect(system_adapter)
+          .to receive(:open_login_shell)
+          .with("/usr/local/bin/fish")
+
+        expect(git_adapter)
+          .to_not receive(:clone_repo)
+          #.with("git@github.com:StevenNunez/jupyter_lab.git", "jupyter_lab", path: "/home/bobby/Development/code")
+          #.and_call_original
+
+        opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
+                                       learn_client_class: learn_client_class,
+                                       git_adapter: git_adapter,
+                                       environment_adapter: environment,
+                                       system_adapter: system_adapter,
+                                       io: spy)
+        opener.run
+        expect(git_adapter.messages).to eq([{
+          :method=>:clone,
+          :args=> ["git@github.com:StevenNunez/jupyter_lab.git", "jupyter_lab", {:path=>"/home/bobby/Development/code"}]}])
+      end
+    end
   end
 end
 

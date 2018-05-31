@@ -23,23 +23,43 @@ class FakeLearnClient
   #client.validate_repo_slug(repo_slug: lesson)
   #client.fork_repo(repo_name: repo_dir)
 
-  def validate_repo_slug
-    OpenStruct.new({
-      :clone_repo=>"StevenNunez/ttt-2-board-rb-v-000",
-      :repo_name=>"ttt-2-board-rb-v-000",
-      :repo_slug=>"StevenNunez/ttt-2-board-rb-v-000",
-      :lab=>true,
-      :lesson_id=>31322,
-      :later_lesson=>false,
-      :dot_learn=>{
-        :tags=>[
-          "variables",
-          "arrays",
-          "tictactoe"
-        ], 
-        :languages=>["ruby"], 
-        :resources=>0}
-    })
+  def validate_repo_slug(repo_slug:)
+    case repo_slug
+    when "jupyter_lab"
+      OpenStruct.new({
+        :clone_repo=>"StevenNunez/jupyter_lab",
+        :repo_name=>"jupyter_lab",
+        :repo_slug=>"StevenNunez/jupyter_lab",
+        :lab=>true,
+        :lesson_id=>31322,
+        :later_lesson=>false,
+        :dot_learn=>{
+          :tags=>[
+            "variables",
+            "arrays",
+            "tictactoe"
+          ],
+          :languages=>["ruby"],
+          :resources=>0}
+      })
+    else
+      OpenStruct.new({
+        :clone_repo=>"StevenNunez/ttt-2-board-rb-v-000",
+        :repo_name=>"ttt-2-board-rb-v-000",
+        :repo_slug=>"StevenNunez/ttt-2-board-rb-v-000",
+        :lab=>true,
+        :lesson_id=>31322,
+        :later_lesson=>false,
+        :dot_learn=>{
+          :tags=>[
+            "variables",
+            "arrays",
+            "tictactoe"
+          ],
+          :languages=>["ruby"],
+          :resources=>0}
+      })
+    end
   end
 
   def next_lesson

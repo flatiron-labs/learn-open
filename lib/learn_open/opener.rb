@@ -268,6 +268,7 @@ module LearnOpen
         io.puts "Cloning lesson..."
         begin
           Timeout::timeout(15) do
+            io.puts "DOing the thing"
             git_adapter.clone("git@github.com:#{lesson}.git", repo_dir, path: lessons_dir)
           end
         rescue Git::GitExecuteError
