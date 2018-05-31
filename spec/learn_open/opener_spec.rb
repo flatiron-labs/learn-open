@@ -177,6 +177,31 @@ describe LearnOpen::Opener do
         opener.run
         expect(File.exist?("#{home_dir}/.custom_commands.log")).to eq(false)
       end
+
+    end
+    context "Jupyter Labs" do
+      it "correctly opens jupter lab" do
+        environment = {
+          "SHELL" => "/usr/local/bin/fish",
+          "JUPYTER_CONTAINER" => "true"
+        }
+
+        expect(learn_client_double)
+          .to receive(:fork_repo)
+          .with(repo_name: "jupyter_lab")
+
+        expect(git_adapter)
+          .to receive(:clone_repo)
+          .with("git@githb.com:/StevenNunez/")
+
+        opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
+                                       learn_client_class: learn_client_class,
+                                       git_adapter: git_adapter,
+                                       environment_adapter: environment,
+                                       system_adapter: system_adapter,
+                                       io: spy)
+        opener.run
+      end
     end
     # on IDE
     # on mac
@@ -187,6 +212,7 @@ describe LearnOpen::Opener do
     # readme
     # lab
     #   Maybe bundle, pip, ios
+    # Test messages printed on screen
   end
 end
 

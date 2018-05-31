@@ -1,3 +1,4 @@
+# changing how system commands run. I wonder if this breaks other stuff
 module LearnOpen
   class Opener
     attr_reader :editor,
@@ -48,7 +49,7 @@ module LearnOpen
           File.open("#{home_dir}/.custom_commands.log", "a") do |f|
             f.puts %Q{{"command": "open_lab", "lab_name": "#{self.repo_dir}"}}
           end
-          return File.read("#{home_dir}/.custom_commands.log")
+          return
         end
       end
 
@@ -348,9 +349,9 @@ module LearnOpen
 
     def open_xcode
       if xcworkspace_file?
-        system("cd #{lessons_dir}/#{repo_dir} && open *.xcworkspace")
+        system_adapter.run_command("cd #{lessons_dir}/#{repo_dir} && open *.xcworkspace")
       elsif xcodeproj_file?
-        system("cd #{lessons_dir}/#{repo_dir} && open *.xcodeproj")
+        system_adapter.run_command("cd #{lessons_dir}/#{repo_dir} && open *.xcodeproj")
       end
     end
 
@@ -370,21 +371,21 @@ module LearnOpen
     def pip_install
       if !ios_lesson? && File.exists?("#{lessons_dir}/#{repo_dir}/requirements.txt")
         io.puts "Installing pip dependencies..."
-        system("python -m pip install -r requirements.txt")
+        system_adapter.run_command("python -m pip install -r requirements.txt")
       end
     end
 
     def jupyter_pip_install
       if !ios_lesson? && File.exists?("#{lessons_dir}/#{repo_dir}/requirements.txt")
         io.puts "Installing pip dependencies..."
-        system("/opt/conda/bin/python -m pip install -r requirements.txt")
+        system_adapter.run_command("/opt/conda/bin/python -m pip install -r requirements.txt")
       end
     end
 
     def bundle_install
       if !ios_lesson? && File.exists?("#{lessons_dir}/#{repo_dir}/Gemfile")
         io.puts "Bundling..."
-        system("bundle install")
+        system_adapter.run_command("bundle install")
       end
     end
 
@@ -393,9 +394,9 @@ module LearnOpen
         io.puts 'Installing npm dependencies...'
 
         if ide_environment?
-          system("yarn install --no-lockfile")
+          system_adapter.run_command("yarn install --no-lockfile")
         else
-          system("npm install")
+          system_adapter.run_command("npm install")
         end
       end
     end
@@ -433,11 +434,11 @@ module LearnOpen
     end
 
     def open_chrome
-      system("open -a 'Google Chrome' https://learn.co/lessons/#{lesson_id}")
+      system_adapter.run_command("open -a 'Google Chrome' https://learn.co/lessons/#{lesson_id}")
     end
 
     def open_safari
-      system("open -a Safari https://learn.co/lessons/#{lesson_id}")
+      system_adapter.run_command("open -a Safari https://learn.co/lessons/#{lesson_id}")
     end
 
     def can_open_readme?
@@ -487,12 +488,11 @@ module LearnOpen
     end
 
     def restore_files
-      pid = Process.spawn("restore-lab", [:out, :err] => File::NULL)
-      Process.waitpid(pid)
+      system_adapter.spawn("restore-lab", block: true)
     end
 
     def watch_for_changes
-      Process.spawn("while inotifywait -e close_write,create,moved_to -r #{lessons_dir}/#{repo_dir}; do backup-lab; done", [:out, :err] => File::NULL)
+      system_adapter.watch_dir("#{lessons_dir}/#{repo_dir}", "backup-lab")
     end
 
     def completion_tasks
