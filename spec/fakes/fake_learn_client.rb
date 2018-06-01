@@ -25,7 +25,7 @@ class FakeLearnClient
   #client.current_lesson
   #client.next_lesson
   #client.validate_repo_slug(repo_slug: lesson)
-  #client.fork_repo(repo_name: repo_dir)
+  def fork_repo(repo_name: ); :noop; end
 
   def validate_repo_slug(repo_slug:)
     case repo_slug

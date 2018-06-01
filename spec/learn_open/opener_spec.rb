@@ -225,6 +225,64 @@ describe LearnOpen::Opener do
                                        io: spy)
         opener.run
       end
+      it "prints the right things" do
+        allow_any_instance_of(learn_client_class).to receive(:fork_repo)
+
+        allow(git_adapter).to receive(:clone).and_call_original
+
+        allow(system_adapter).to receive_messages(
+            open_editor: nil,
+            spawn: nil,
+            watch_dir: nil,
+            open_login_shell: nil,
+            change_context_directory: nil,
+            run_command: nil,
+        )
+
+        io = StringIO.new
+
+        opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
+                                       learn_client_class: learn_client_class,
+                                       git_adapter: git_adapter,
+                                       environment_adapter: environment,
+                                       system_adapter: system_adapter,
+                                       io: io)
+        opener.run
+        io.rewind
+        expect(io.read).to eq(<<-EOF)
+Looking for lesson...
+Forking lesson...
+Cloning lesson...
+Opening lesson...
+Installing pip dependencies...
+Done.
+EOF
+      end
+
+      it "logs final status in file" do
+        allow_any_instance_of(learn_client_class).to receive(:fork_repo)
+
+        allow(git_adapter).to receive(:clone).and_call_original
+
+        allow(system_adapter).to receive_messages(
+            open_editor: nil,
+            spawn: nil,
+            watch_dir: nil,
+            open_login_shell: nil,
+            change_context_directory: nil,
+            run_command: nil,
+        )
+
+
+        opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
+                                       learn_client_class: learn_client_class,
+                                       git_adapter: git_adapter,
+                                       environment_adapter: environment,
+                                       system_adapter: system_adapter,
+                                       io: spy)
+        opener.run
+        expect(File.read("#{home_dir}/.learn-open-tmp")).to eq("Done.")
+      end
     end
   end
 end
