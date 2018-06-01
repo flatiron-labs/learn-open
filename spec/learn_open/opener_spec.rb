@@ -53,8 +53,8 @@ describe LearnOpen::Opener do
 
       expect(system_adapter)
         .to receive_messages(
-          open_login_shell: "/usr/local/bin/fish",
-          change_context_directory: "/home/bobby/Development/code/jupyter_lab")
+      open_login_shell: "/usr/local/bin/fish",
+      change_context_directory: "/home/bobby/Development/code/jupyter_lab")
 
       expect_any_instance_of(learn_client_class)
         .to receive(:fork_repo)
@@ -63,7 +63,7 @@ describe LearnOpen::Opener do
       opener = LearnOpen::Opener.new(nil, "atom", true,
                                      learn_client_class: FakeLearnClient,
                                      git_adapter: git_adapter,
-																		 environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                     environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
                                      system_adapter: system_adapter,
                                      io: spy)
       opener.run
@@ -71,16 +71,16 @@ describe LearnOpen::Opener do
     it "sets values of next lesson from client payload" do
       allow(system_adapter)
         .to receive_messages(
-          open_editor: :noop,
-          open_login_shell: :noop,
-          change_context_directory: :noop
+      open_editor: :noop,
+      open_login_shell: :noop,
+      change_context_directory: :noop
       )
       allow_any_instance_of(learn_client_class).to receive(:fork_repo)
 
       opener = LearnOpen::Opener.new(nil, "atom", true,
                                      learn_client_class: learn_client_class,
                                      git_adapter: git_adapter,
-																		 environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                     environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
                                      system_adapter: system_adapter,
                                      io: spy)
       opener.run
@@ -92,9 +92,9 @@ describe LearnOpen::Opener do
 
     it "opens the current lesson" do
       allow(system_adapter).to receive_messages(
-          open_editor: :noop,
-          open_login_shell: :noop,
-          change_context_directory: :noop
+        open_editor: :noop,
+        open_login_shell: :noop,
+        change_context_directory: :noop
       )
       allow_any_instance_of(learn_client_class).to receive(:fork_repo)
 
@@ -116,9 +116,9 @@ describe LearnOpen::Opener do
   context "Opening on specific environments" do
     before do
       allow(system_adapter).to receive_messages(
-          open_editor: :noop,
-          open_login_shell: :noop,
-          change_context_directory: :noop
+        open_editor: :noop,
+        open_login_shell: :noop,
+        change_context_directory: :noop
       )
       allow_any_instance_of(learn_client_class).to receive(:fork_repo)
     end
@@ -192,6 +192,67 @@ describe LearnOpen::Opener do
     #   Maybe bundle, pip, ios
     # Test messages printed on screen
   end
+  context "Logging" do
+    let(:environment) {{ "SHELL" => "/usr/local/bin/fish", "JUPYTER_CONTAINER" => "true" }}
+    it "prints the right things" do
+      allow_any_instance_of(learn_client_class).to receive(:fork_repo)
+
+      allow(git_adapter).to receive(:clone).and_call_original
+
+      allow(system_adapter).to receive_messages(
+        open_editor: nil,
+        spawn: nil,
+        watch_dir: nil,
+        open_login_shell: nil,
+        change_context_directory: nil,
+        run_command: nil,
+      )
+
+      io = StringIO.new
+
+      opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
+                                     learn_client_class: learn_client_class,
+                                     git_adapter: git_adapter,
+                                     environment_adapter: environment,
+                                     system_adapter: system_adapter,
+                                     io: io)
+      opener.run
+      io.rewind
+      expect(io.read).to eq(<<-EOF)
+Looking for lesson...
+Forking lesson...
+Cloning lesson...
+Opening lesson...
+Installing pip dependencies...
+Done.
+      EOF
+    end
+
+    it "logs final status in file" do
+      allow_any_instance_of(learn_client_class).to receive(:fork_repo)
+
+      allow(git_adapter).to receive(:clone).and_call_original
+
+      allow(system_adapter).to receive_messages(
+        open_editor: nil,
+        spawn: nil,
+        watch_dir: nil,
+        open_login_shell: nil,
+        change_context_directory: nil,
+        run_command: nil,
+      )
+
+
+      opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
+                                     learn_client_class: learn_client_class,
+                                     git_adapter: git_adapter,
+                                     environment_adapter: environment,
+                                     system_adapter: system_adapter,
+                                     io: spy)
+      opener.run
+      expect(File.read("#{home_dir}/.learn-open-tmp")).to eq("Done.")
+    end
+  end
   context "Lab Types" do
     context "Jupyter Labs" do
       let(:environment) {{ "SHELL" => "/usr/local/bin/fish", "JUPYTER_CONTAINER" => "true" }}
@@ -208,12 +269,12 @@ describe LearnOpen::Opener do
 
         expect(system_adapter)
           .to receive_messages(
-            open_editor: ["atom", {:path=>"."}],
-            spawn: ["restore-lab", {:block=>true}],
-            watch_dir: ["/home/bobby/Development/code/jupyter_lab", "backup-lab"],
-            open_login_shell: "/usr/local/bin/fish",
-            change_context_directory: "/home/bobby/Development/code/jupyter_lab",
-            run_command: "/opt/conda/bin/python -m pip install -r requirements.txt",
+        open_editor: ["atom", {:path=>"."}],
+        spawn: ["restore-lab", {:block=>true}],
+        watch_dir: ["/home/bobby/Development/code/jupyter_lab", "backup-lab"],
+        open_login_shell: "/usr/local/bin/fish",
+        change_context_directory: "/home/bobby/Development/code/jupyter_lab",
+        run_command: "/opt/conda/bin/python -m pip install -r requirements.txt",
 
         )
 
@@ -225,63 +286,38 @@ describe LearnOpen::Opener do
                                        io: spy)
         opener.run
       end
-      it "prints the right things" do
-        allow_any_instance_of(learn_client_class).to receive(:fork_repo)
+    end
+    context "Labs"
+    context "Readme" do
+      let(:environment) {{ "SHELL" => "/usr/local/bin/fish"}}
+      it "opens them in the browser if possible" do
+        expect_any_instance_of(learn_client_class)
+          .to receive(:fork_repo)
+          .with(repo_name: "jupyter_lab")
 
-        allow(git_adapter).to receive(:clone).and_call_original
+        expect(git_adapter)
+          .to receive(:clone)
+          .with("git@github.com:StevenNunez/jupyter_lab.git", "jupyter_lab", {:path=>"/home/bobby/Development/code"})
+          .and_call_original
 
-        allow(system_adapter).to receive_messages(
-            open_editor: nil,
-            spawn: nil,
-            watch_dir: nil,
-            open_login_shell: nil,
-            change_context_directory: nil,
-            run_command: nil,
+        expect(system_adapter)
+          .to receive_messages(
+        open_editor: ["atom", {:path=>"."}],
+        spawn: ["restore-lab", {:block=>true}],
+        watch_dir: ["/home/bobby/Development/code/jupyter_lab", "backup-lab"],
+        open_login_shell: "/usr/local/bin/fish",
+        change_context_directory: "/home/bobby/Development/code/jupyter_lab",
+        run_command: "/opt/conda/bin/python -m pip install -r requirements.txt",
+
         )
 
-        io = StringIO.new
-
-        opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
-                                       learn_client_class: learn_client_class,
-                                       git_adapter: git_adapter,
-                                       environment_adapter: environment,
-                                       system_adapter: system_adapter,
-                                       io: io)
-        opener.run
-        io.rewind
-        expect(io.read).to eq(<<-EOF)
-Looking for lesson...
-Forking lesson...
-Cloning lesson...
-Opening lesson...
-Installing pip dependencies...
-Done.
-EOF
-      end
-
-      it "logs final status in file" do
-        allow_any_instance_of(learn_client_class).to receive(:fork_repo)
-
-        allow(git_adapter).to receive(:clone).and_call_original
-
-        allow(system_adapter).to receive_messages(
-            open_editor: nil,
-            spawn: nil,
-            watch_dir: nil,
-            open_login_shell: nil,
-            change_context_directory: nil,
-            run_command: nil,
-        )
-
-
-        opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
+        opener = LearnOpen::Opener.new("readme", "atom", false,
                                        learn_client_class: learn_client_class,
                                        git_adapter: git_adapter,
                                        environment_adapter: environment,
                                        system_adapter: system_adapter,
                                        io: spy)
         opener.run
-        expect(File.read("#{home_dir}/.learn-open-tmp")).to eq("Done.")
       end
     end
   end
@@ -290,7 +326,6 @@ end
 =begin
 Things to test
 Current Lesson
-Logging
 Setting the "lesson" we're going to be opening
   name passed in? asked for next? Nothing passed in?
 Most tests for IOS and jupter will be where we explicitly pass in a lesson name that's setup to be IOS/jupyter-y

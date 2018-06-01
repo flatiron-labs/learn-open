@@ -63,6 +63,7 @@ module LearnOpen
       else
         warn_if_necessary
         if lesson_is_readme?
+          puts "OPENING README!!"
           open_readme
         else
           git_tasks

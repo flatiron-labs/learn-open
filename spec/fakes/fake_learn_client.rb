@@ -39,9 +39,37 @@ class FakeLearnClient
         :later_lesson=>false,
         :dot_learn=>{
           :tags=>[
-            "variables",
-            "arrays",
-            "tictactoe"
+            "jupyter_notebook"
+          ],
+          :languages=>["ruby"],
+          :resources=>0}
+      })
+    when "lab"
+      OpenStruct.new({
+        :clone_repo=>"StevenNunez/lab",
+        :repo_name=>"lab",
+        :repo_slug=>"StevenNunez/lab",
+        :lab=>true,
+        :lesson_id=>31322,
+        :later_lesson=>false,
+        :dot_learn=>{
+          :tags=>[
+            "jupyter_notebook"
+          ],
+          :languages=>["ruby"],
+          :resources=>0}
+      })
+    when "readme"
+      OpenStruct.new({
+        :clone_repo=>"StevenNunez/lab",
+        :repo_name=>"lab",
+        :repo_slug=>"StevenNunez/lab",
+        :lab=>false,
+        :lesson_id=>31322,
+        :later_lesson=>false,
+        :dot_learn=>{
+          :tags=>[
+            "Reading things"
           ],
           :languages=>["ruby"],
           :resources=>0}
