@@ -293,43 +293,43 @@ Done.
       end
     end
     context "Readme" do
-      let(:environment)    {{ "SHELL" => "/usr/local/bin/fish"}}
       let(:system_adapter) { class_double(LearnOpen::SystemAdapter) }
-      it "opens them in the browser if possible" do
-        expect_any_instance_of(learn_client_class)
-          .to receive(:fork_repo)
-          .with(repo_name: "jupyter_lab")
+      it "does not open readme if on unsupported environment" do
+        io = StringIO.new
+        opener = LearnOpen::Opener.new("readme", "atom", false,
+                                       learn_client_class: learn_client_class,
+                                       git_adapter: git_adapter,
+                                       environment_adapter: {},
+                                       system_adapter: system_adapter,
+                                       io: io)
+        opener.run
 
-        expect(git_adapter)
-          .to receive(:clone)
-          .with("git@github.com:StevenNunez/jupyter_lab.git", "jupyter_lab", {:path=>"/home/bobby/Development/code"})
-          .and_call_original
+        io.rewind
+        expect(io.read).to eq(<<-EOF)
+Looking for lesson...
+It looks like this lesson is a Readme. Please open it in your browser.
+EOF
+      end
 
-        expect(system_adapter)
-          .to receive(:open_editor)
-          .with("atom", path: ".")
-        expect(system_adapter)
-          .to receive(:spawn)
-          .with("restore-lab", {:block=>true})
-        expect(system_adapter)
-          .to receive(:watch_dir)
-          .with("/home/bobby/Development/code/jupyter_lab", "backup-lab")
-        expect(system_adapter)
-          .to receive(:open_login_shell)
-          .with("/usr/local/bin/fish")
-        expect(system_adapter)
-          .to receive(:change_context_directory)
-          .with("/home/bobby/Development/code/jupyter_lab")
-        expect(system_adapter)
-          .to receive(:run_command)
-          .with("/opt/conda/bin/python -m pip install -r requirements.txt")
+      it "writes to custom_commands_log on IDE" do
+        environment = {"CREATED_USER" => "bobby", "IDE_CONTAINER" => "true"}
+        io = StringIO.new
+        home_dir = create_linux_home_dir("bobby")
         opener = LearnOpen::Opener.new("readme", "atom", false,
                                        learn_client_class: learn_client_class,
                                        git_adapter: git_adapter,
                                        environment_adapter: environment,
                                        system_adapter: system_adapter,
-                                       io: spy)
+                                       io: io)
         opener.run
+
+        io.rewind
+        expect(io.read).to eq(<<-EOF)
+Looking for lesson...
+Opening readme...
+EOF
+        custom_commands_log = File.read("#{home_dir}/.custom_commands.log")
+        expect(custom_commands_log).to eq("{\"command\": \"browser_open\", \"url\": \"https://learn.co/lessons/31322\"}\n")
       end
     end
   end

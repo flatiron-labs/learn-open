@@ -407,7 +407,8 @@ module LearnOpen
     def open_readme
       if ide_environment?
         io.puts "Opening readme..."
-        File.open(".custom_commands.log", "a") do |f|
+          home_dir = "/home/#{environment_adapter['CREATED_USER']}"
+          File.open("#{home_dir}/.custom_commands.log", "a") do |f|
           f.puts %Q{{"command": "browser_open", "url": "https://learn.co/lessons/#{lesson_id}"}}
         end
       elsif can_open_readme?
