@@ -411,7 +411,7 @@ module LearnOpen
           File.open("#{home_dir}/.custom_commands.log", "a") do |f|
           f.puts %Q{{"command": "browser_open", "url": "https://learn.co/lessons/#{lesson_id}"}}
         end
-      elsif can_open_readme?
+      elsif on_mac?
         io.puts "Opening readme..."
         launch_browser
       else
@@ -420,7 +420,6 @@ module LearnOpen
     end
 
     def launch_browser
-      return if ENV["GEM_ENV"] == 'test' # not great
       if chrome_installed?
         open_chrome
       else
@@ -438,10 +437,6 @@ module LearnOpen
 
     def open_safari
       system_adapter.run_command("open -a Safari https://learn.co/lessons/#{lesson_id}")
-    end
-
-    def can_open_readme?
-      on_mac?
     end
 
     def on_mac?

@@ -265,23 +265,14 @@ Done.
           .and_call_original
 
         expect(system_adapter)
-          .to receive(:open_editor)
-          .with("atom", path: ".")
-        expect(system_adapter)
-          .to receive(:spawn)
-          .with("restore-lab", {:block=>true})
-        expect(system_adapter)
-          .to receive(:watch_dir)
-          .with("/home/bobby/Development/code/jupyter_lab", "backup-lab")
-        expect(system_adapter)
-          .to receive(:open_login_shell)
-          .with("/usr/local/bin/fish")
-        expect(system_adapter)
-          .to receive(:change_context_directory)
-          .with("/home/bobby/Development/code/jupyter_lab")
-        expect(system_adapter)
-          .to receive(:run_command)
-          .with("/opt/conda/bin/python -m pip install -r requirements.txt")
+          .to receive_messages(
+            open_editor: ["atom", {path: "."}],
+            spawn: ["restore-lab", {:block=>true}],
+            watch_dir: ["/home/bobby/Development/code/jupyter_lab", "backup-lab"],
+            open_login_shell: ["/usr/local/bin/fish"],
+            change_context_directory: ["/home/bobby/Development/code/jupyter_lab"],
+            run_command: ["/opt/conda/bin/python -m pip install -r requirements.txt"]
+        )
 
         opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
                                        learn_client_class: learn_client_class,
@@ -293,7 +284,6 @@ Done.
       end
     end
     context "Readme" do
-      let(:system_adapter) { class_double(LearnOpen::SystemAdapter) }
       it "does not open readme if on unsupported environment" do
         io = StringIO.new
         opener = LearnOpen::Opener.new("readme", "atom", false,
@@ -330,6 +320,61 @@ Opening readme...
 EOF
         custom_commands_log = File.read("#{home_dir}/.custom_commands.log")
         expect(custom_commands_log).to eq("{\"command\": \"browser_open\", \"url\": \"https://learn.co/lessons/31322\"}\n")
+      end
+      context "on a mac" do
+        before do
+          ORIGINAL_RUBY_PLATFORM = RUBY_PLATFORM
+          RUBY_PLATFORM = "darwin" # Ruby setup constant Gross
+        end
+
+        after do
+          RUBY_PLATFORM = ORIGINAL_RUBY_PLATFORM
+        end
+
+        it "opens safari by default" do
+          io = StringIO.new
+          expect(system_adapter)
+            .to receive(:run_command)
+            .with("open -a Safari https://learn.co/lessons/31322")
+
+          opener = LearnOpen::Opener.new("readme", "atom", false,
+                                         learn_client_class: learn_client_class,
+                                         git_adapter: git_adapter,
+                                         environment_adapter: {},
+                                         system_adapter: system_adapter,
+                                         io: io)
+          opener.run
+
+          io.rewind
+          expect(io.read).to eq(<<-EOF)
+Looking for lesson...
+Opening readme...
+EOF
+        end
+
+        it "opens chrome if it exists" do
+          FileUtils.mkdir_p("/Applications")
+          FileUtils.touch('/Applications/Google Chrome.app')
+          io = StringIO.new
+          expect(system_adapter)
+            .to receive(:run_command)
+            .with("open -a 'Google Chrome' https://learn.co/lessons/31322")
+
+
+          opener = LearnOpen::Opener.new("readme", "atom", false,
+                                         learn_client_class: learn_client_class,
+                                         git_adapter: git_adapter,
+                                         environment_adapter: {},
+                                         system_adapter: system_adapter,
+                                         io: io)
+          opener.run
+
+          io.rewind
+          expect(io.read).to eq(<<-EOF)
+Looking for lesson...
+Opening readme...
+EOF
+        end
       end
     end
   end
