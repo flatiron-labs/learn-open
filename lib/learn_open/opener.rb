@@ -63,7 +63,6 @@ module LearnOpen
       else
         warn_if_necessary
         if lesson_is_readme?
-          puts "OPENING README!!"
           open_readme
         else
           git_tasks
@@ -416,7 +415,6 @@ module LearnOpen
         launch_browser
       else
         io.puts "It looks like this lesson is a Readme. Please open it in your browser."
-        exit
       end
     end
 

@@ -61,9 +61,9 @@ class FakeLearnClient
       })
     when "readme"
       OpenStruct.new({
-        :clone_repo=>"StevenNunez/lab",
-        :repo_name=>"lab",
-        :repo_slug=>"StevenNunez/lab",
+        :clone_repo=>"StevenNunez/readme",
+        :repo_name=>"readme",
+        :repo_slug=>"StevenNunez/readme",
         :lab=>false,
         :lesson_id=>31322,
         :later_lesson=>false,
@@ -75,22 +75,7 @@ class FakeLearnClient
           :resources=>0}
       })
     else
-      OpenStruct.new({
-        :clone_repo=>"StevenNunez/ttt-2-board-rb-v-000",
-        :repo_name=>"ttt-2-board-rb-v-000",
-        :repo_slug=>"StevenNunez/ttt-2-board-rb-v-000",
-        :lab=>true,
-        :lesson_id=>31322,
-        :later_lesson=>false,
-        :dot_learn=>{
-          :tags=>[
-            "variables",
-            "arrays",
-            "tictactoe"
-          ],
-          :languages=>["ruby"],
-          :resources=>0}
-      })
+      raise "Specify lab type"
     end
   end
 

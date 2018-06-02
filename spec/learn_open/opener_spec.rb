@@ -14,35 +14,29 @@ describe LearnOpen::Opener do
     create_learn_config_file
   end
 
-  context "asking for a specific lesson" do
+  context "Initializer" do
     it "sets the lesson" do
       opener = LearnOpen::Opener.new("ttt-2-board-rb-v-000","", false)
       expect(opener.lesson).to eq("ttt-2-board-rb-v-000")
     end
-  end
-
-  context "setting specific editor" do
     it "sets the editor" do
       opener = LearnOpen::Opener.new("", "atom", false)
       expect(opener.editor).to eq("atom")
     end
-  end
-
-  context "asking for next lesson" do
     it "sets the whether to open the next lesson or not" do
       opener = LearnOpen::Opener.new("", "", true)
       expect(opener.get_next_lesson).to eq(true)
     end
-  end
 
-  it "reads the token from the .netrc file" do
-    opener = LearnOpen::Opener.new("", "", "")
-    expect(opener.token).to eq("some-amazing-password")
-  end
+    it "reads the token from the .netrc file" do
+      opener = LearnOpen::Opener.new("", "", "")
+      expect(opener.token).to eq("some-amazing-password")
+    end
 
-  it "loads lesson directory from learn-config" do
-    opener = LearnOpen::Opener.new("", "", "", learn_client_class: spy)
-    expect(opener.file_path).to eq("#{home_dir}/.learn-open-tmp")
+    it "loads lesson directory from learn-config" do
+      opener = LearnOpen::Opener.new("", "", "", learn_client_class: spy)
+      expect(opener.file_path).to eq("#{home_dir}/.learn-open-tmp")
+    end
   end
 
   context "running the opener" do
@@ -52,9 +46,12 @@ describe LearnOpen::Opener do
         .with("atom", path: ".")
 
       expect(system_adapter)
-        .to receive_messages(
-      open_login_shell: "/usr/local/bin/fish",
-      change_context_directory: "/home/bobby/Development/code/jupyter_lab")
+        .to receive(:open_login_shell)
+        .with("/usr/local/bin/fish")
+
+      expect(system_adapter)
+        .to receive(:change_context_directory)
+        .with("/home/bobby/Development/code/rails-dynamic-request-lab-cb-000")
 
       expect_any_instance_of(learn_client_class)
         .to receive(:fork_repo)
@@ -71,10 +68,10 @@ describe LearnOpen::Opener do
     it "sets values of next lesson from client payload" do
       allow(system_adapter)
         .to receive_messages(
-      open_editor: :noop,
-      open_login_shell: :noop,
-      change_context_directory: :noop
-      )
+          open_editor: :noop,
+          open_login_shell: :noop,
+          change_context_directory: :noop
+        )
       allow_any_instance_of(learn_client_class).to receive(:fork_repo)
 
       opener = LearnOpen::Opener.new(nil, "atom", true,
@@ -200,12 +197,12 @@ describe LearnOpen::Opener do
       allow(git_adapter).to receive(:clone).and_call_original
 
       allow(system_adapter).to receive_messages(
-        open_editor: nil,
-        spawn: nil,
-        watch_dir: nil,
-        open_login_shell: nil,
-        change_context_directory: nil,
-        run_command: nil,
+        open_editor: :noop,
+        spawn: :noop,
+        watch_dir: :noop,
+        open_login_shell: :noop,
+        change_context_directory: :noop,
+        run_command: :noop,
       )
 
       io = StringIO.new
@@ -234,12 +231,12 @@ Done.
       allow(git_adapter).to receive(:clone).and_call_original
 
       allow(system_adapter).to receive_messages(
-        open_editor: nil,
-        spawn: nil,
-        watch_dir: nil,
-        open_login_shell: nil,
-        change_context_directory: nil,
-        run_command: nil,
+        open_editor: :noop,
+        spawn: :noop,
+        watch_dir: :noop,
+        open_login_shell: :noop,
+        change_context_directory: :noop,
+        run_command: :noop,
       )
 
 
@@ -257,7 +254,7 @@ Done.
     context "Jupyter Labs" do
       let(:environment) {{ "SHELL" => "/usr/local/bin/fish", "JUPYTER_CONTAINER" => "true" }}
 
-      it "correctly opens jupter lab" do
+      it "correctly opens jupyter lab" do
         expect_any_instance_of(learn_client_class)
           .to receive(:fork_repo)
           .with(repo_name: "jupyter_lab")
@@ -268,15 +265,23 @@ Done.
           .and_call_original
 
         expect(system_adapter)
-          .to receive_messages(
-        open_editor: ["atom", {:path=>"."}],
-        spawn: ["restore-lab", {:block=>true}],
-        watch_dir: ["/home/bobby/Development/code/jupyter_lab", "backup-lab"],
-        open_login_shell: "/usr/local/bin/fish",
-        change_context_directory: "/home/bobby/Development/code/jupyter_lab",
-        run_command: "/opt/conda/bin/python -m pip install -r requirements.txt",
-
-        )
+          .to receive(:open_editor)
+          .with("atom", path: ".")
+        expect(system_adapter)
+          .to receive(:spawn)
+          .with("restore-lab", {:block=>true})
+        expect(system_adapter)
+          .to receive(:watch_dir)
+          .with("/home/bobby/Development/code/jupyter_lab", "backup-lab")
+        expect(system_adapter)
+          .to receive(:open_login_shell)
+          .with("/usr/local/bin/fish")
+        expect(system_adapter)
+          .to receive(:change_context_directory)
+          .with("/home/bobby/Development/code/jupyter_lab")
+        expect(system_adapter)
+          .to receive(:run_command)
+          .with("/opt/conda/bin/python -m pip install -r requirements.txt")
 
         opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
                                        learn_client_class: learn_client_class,
@@ -287,9 +292,9 @@ Done.
         opener.run
       end
     end
-    context "Labs"
     context "Readme" do
-      let(:environment) {{ "SHELL" => "/usr/local/bin/fish"}}
+      let(:environment)    {{ "SHELL" => "/usr/local/bin/fish"}}
+      let(:system_adapter) { class_double(LearnOpen::SystemAdapter) }
       it "opens them in the browser if possible" do
         expect_any_instance_of(learn_client_class)
           .to receive(:fork_repo)
@@ -301,16 +306,23 @@ Done.
           .and_call_original
 
         expect(system_adapter)
-          .to receive_messages(
-        open_editor: ["atom", {:path=>"."}],
-        spawn: ["restore-lab", {:block=>true}],
-        watch_dir: ["/home/bobby/Development/code/jupyter_lab", "backup-lab"],
-        open_login_shell: "/usr/local/bin/fish",
-        change_context_directory: "/home/bobby/Development/code/jupyter_lab",
-        run_command: "/opt/conda/bin/python -m pip install -r requirements.txt",
-
-        )
-
+          .to receive(:open_editor)
+          .with("atom", path: ".")
+        expect(system_adapter)
+          .to receive(:spawn)
+          .with("restore-lab", {:block=>true})
+        expect(system_adapter)
+          .to receive(:watch_dir)
+          .with("/home/bobby/Development/code/jupyter_lab", "backup-lab")
+        expect(system_adapter)
+          .to receive(:open_login_shell)
+          .with("/usr/local/bin/fish")
+        expect(system_adapter)
+          .to receive(:change_context_directory)
+          .with("/home/bobby/Development/code/jupyter_lab")
+        expect(system_adapter)
+          .to receive(:run_command)
+          .with("/opt/conda/bin/python -m pip install -r requirements.txt")
         opener = LearnOpen::Opener.new("readme", "atom", false,
                                        learn_client_class: learn_client_class,
                                        git_adapter: git_adapter,
