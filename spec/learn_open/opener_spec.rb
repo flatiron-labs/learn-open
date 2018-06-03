@@ -377,6 +377,33 @@ EOF
         end
       end
     end
+    context "iOS labs" do
+      it "fails to open unless on a mac" do
+        io = StringIO.new
+        expect(system_adapter).to receive_messages(
+          change_context_directory: "/home/bobby/Development/code/ios_lab",
+          open_login_shell: "/usr/local/bin/fish")
+
+
+        opener = LearnOpen::Opener.new("ios_lab", "atom", false,
+                                       learn_client_class: learn_client_class,
+                                       git_adapter: git_adapter,
+                                       environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                       system_adapter: system_adapter,
+                                       io: io)
+        opener.run
+
+        io.rewind
+        expect(io.read).to eq(<<-EOF)
+Looking for lesson...
+Forking lesson...
+Cloning lesson...
+Opening lesson...
+You need to be on a Mac to work on iOS lessons.
+Done.
+EOF
+      end
+    end
   end
 end
 

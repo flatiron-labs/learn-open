@@ -317,7 +317,6 @@ module LearnOpen
           io.puts "Sorry, there seems to be a problem with this lesson. Please submit a bug report to bugs@learn.co and try again later."
           io.puts "If you'd like to work on your next lesson now, type: learn next"
           File.write(file_path, 'ERROR: Problem parsing lesson data. Try again.')
-          exit
         end
       rescue NoMethodError, Errno::ENOENT => e
         if xcodeproj_file? || xcworkspace_file?
@@ -328,22 +327,16 @@ module LearnOpen
           io.puts "Sorry, there seems to be a problem with this lesson. Please submit a bug report to bugs@learn.co and try again later."
           io.puts "If you'd like to work on your next lesson now, type: learn next"
           File.write(file_path, 'ERROR: Problem parsing lesson data. Try again.')
-          exit
         end
       end
     end
 
     def open_ios_lesson
-      if can_open_ios_lesson?
+      if on_mac?
         open_xcode
       else
         io.puts "You need to be on a Mac to work on iOS lessons."
-        exit
       end
-    end
-
-    def can_open_ios_lesson?
-      on_mac?
     end
 
     def open_xcode
