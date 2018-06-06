@@ -9,14 +9,15 @@ module LearnOpen
                 :environment_adapter,
                 :git_adapter,
                 :system_adapter,
-                :io
+                :io,
+                :platform
     attr_accessor :lesson, :repo_dir, :lesson_is_lab, :lesson_id, :later_lesson, :dot_learn
 
     def self.run(lesson:, editor_specified:, get_next_lesson:)
       new(lesson, editor_specified, get_next_lesson).run
     end
 
-    def initialize(lesson, editor, get_next_lesson, learn_client_class: LearnWeb::Client, file_system_adapter: FileUtils, environment_adapter: ENV, git_adapter: Git, system_adapter: SystemAdapter, io: Kernel)
+    def initialize(lesson, editor, get_next_lesson, learn_client_class: LearnWeb::Client, file_system_adapter: FileUtils, environment_adapter: ENV, git_adapter: Git, system_adapter: SystemAdapter, io: Kernel, platform: RUBY_PLATFORM)
       @lesson          = lesson
       @editor          = editor
       @get_next_lesson = get_next_lesson
@@ -26,6 +27,7 @@ module LearnOpen
       @git_adapter         = git_adapter
       @system_adapter      = system_adapter
       @io                  = io
+      @platform            = platform
 
 
       home_dir         = File.expand_path("~")
@@ -433,7 +435,7 @@ module LearnOpen
     end
 
     def on_mac?
-      !!RUBY_PLATFORM.match(/darwin/)
+      !!platform.match(/darwin/)
     end
 
     def github_disabled?

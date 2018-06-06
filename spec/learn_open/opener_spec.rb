@@ -125,6 +125,7 @@ describe LearnOpen::Opener do
           "SHELL" => "/usr/local/bin/fish",
           "LAB_NAME" => "rails-dynamic-request-lab-cb-000",
           "CREATED_USER" => "bobby",
+          "IDE_CONTAINER" => "true",
           "IDE_VERSION" => "3"
         }
 
@@ -144,6 +145,7 @@ describe LearnOpen::Opener do
           "SHELL" => "/usr/local/bin/fish",
           "LAB_NAME" => "Something wild",
           "CREATED_USER" => "bobby",
+          "IDE_CONTAINER" => "true",
           "IDE_VERSION" => "3"
         }
 
@@ -164,7 +166,7 @@ describe LearnOpen::Opener do
           "SHELL" => "/usr/local/bin/fish",
           "LAB_NAME" => "Something wild",
           "CREATED_USER" => "bobby",
-          "IDE_VERSION" => "2"
+          "IDE_CONTAINER" => "true",
         }
 
         home_dir = create_linux_home_dir("bobby")
@@ -176,6 +178,67 @@ describe LearnOpen::Opener do
                                        io: spy)
         opener.run
         expect(File.exist?("#{home_dir}/.custom_commands.log")).to eq(false)
+      end
+
+      it "restores files and watches for changes when git wip enabled" do
+        environment = {
+          "SHELL" => "/usr/local/bin/fish",
+          "LAB_NAME" => "ruby_lab",
+          "IDE_GIT_WIP" => "true",
+          "CREATED_USER" => "bobby",
+          "IDE_CONTAINER" => "true",
+          "IDE_VERSION" => "3"
+        }
+
+        create_linux_home_dir("bobby")
+        expect(system_adapter)
+          .to receive(:spawn)
+          .with('restore-lab', block: true)
+        expect(system_adapter)
+          .to receive(:watch_dir)
+          .with("/home/bobby/Development/code/ruby_lab", "backup-lab")
+        expect(system_adapter)
+          .to receive(:run_command)
+          .with("bundle install")
+
+        opener = LearnOpen::Opener.new("ruby_lab", "atom", false,
+                                       learn_client_class: learn_client_class,
+                                       git_adapter: git_adapter,
+                                       environment_adapter: environment,
+                                       system_adapter: system_adapter,
+                                       io: spy)
+        opener.run
+      end
+      it "runs yarn install if lab is a node lab" do
+        environment = {
+          "SHELL" => "/usr/local/bin/fish",
+          "LAB_NAME" => "python_lab",
+          "CREATED_USER" => "bobby",
+          "IDE_CONTAINER" => "true",
+        }
+        expect(system_adapter)
+          .to receive(:open_editor)
+          .with("atom", path: ".")
+
+        expect(system_adapter)
+          .to receive(:open_login_shell)
+          .with("/usr/local/bin/fish")
+
+        expect(system_adapter)
+          .to receive(:change_context_directory)
+          .with("/home/bobby/Development/code/node_lab")
+
+        expect(system_adapter)
+          .to receive(:run_command)
+          .with("yarn install --no-lockfile")
+
+        opener = LearnOpen::Opener.new("node_lab", "atom", false,
+                                       learn_client_class: learn_client_class,
+                                       git_adapter: git_adapter,
+                                       environment_adapter: environment,
+                                       system_adapter: system_adapter,
+                                       io: spy)
+        opener.run
       end
     end
     # on IDE
@@ -265,14 +328,23 @@ Done.
           .and_call_original
 
         expect(system_adapter)
-          .to receive_messages(
-            open_editor: ["atom", {path: "."}],
-            spawn: ["restore-lab", {:block=>true}],
-            watch_dir: ["/home/bobby/Development/code/jupyter_lab", "backup-lab"],
-            open_login_shell: ["/usr/local/bin/fish"],
-            change_context_directory: ["/home/bobby/Development/code/jupyter_lab"],
-            run_command: ["/opt/conda/bin/python -m pip install -r requirements.txt"]
-        )
+          .to receive(:open_editor)
+          .with("atom", path: ".")
+        expect(system_adapter)
+          .to receive(:spawn)
+          .with("restore-lab", block: true)
+        expect(system_adapter)
+          .to receive(:watch_dir)
+          .with("/home/bobby/Development/code/jupyter_lab", "backup-lab")
+        expect(system_adapter)
+          .to receive(:open_login_shell)
+          .with("/usr/local/bin/fish")
+        expect(system_adapter)
+          .to receive(:change_context_directory)
+          .with("/home/bobby/Development/code/jupyter_lab")
+        expect(system_adapter)
+          .to receive(:run_command)
+          .with("/opt/conda/bin/python -m pip install -r requirements.txt")
 
         opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
                                        learn_client_class: learn_client_class,
@@ -291,7 +363,8 @@ Done.
                                        git_adapter: git_adapter,
                                        environment_adapter: {},
                                        system_adapter: system_adapter,
-                                       io: io)
+                                       io: io,
+                                       platform: "linux")
         opener.run
 
         io.rewind
@@ -322,15 +395,6 @@ EOF
         expect(custom_commands_log).to eq("{\"command\": \"browser_open\", \"url\": \"https://learn.co/lessons/31322\"}\n")
       end
       context "on a mac" do
-        before do
-          ORIGINAL_RUBY_PLATFORM = RUBY_PLATFORM
-          RUBY_PLATFORM = "darwin" # Ruby setup constant Gross
-        end
-
-        after do
-          RUBY_PLATFORM = ORIGINAL_RUBY_PLATFORM
-        end
-
         it "opens safari by default" do
           io = StringIO.new
           expect(system_adapter)
@@ -342,7 +406,8 @@ EOF
                                          git_adapter: git_adapter,
                                          environment_adapter: {},
                                          system_adapter: system_adapter,
-                                         io: io)
+                                         io: io,
+                                         platform: "darwin")
           opener.run
 
           io.rewind
@@ -366,7 +431,8 @@ EOF
                                          git_adapter: git_adapter,
                                          environment_adapter: {},
                                          system_adapter: system_adapter,
-                                         io: io)
+                                         io: io,
+                                         platform: "darwin")
           opener.run
 
           io.rewind
@@ -380,17 +446,20 @@ EOF
     context "iOS labs" do
       it "fails to open unless on a mac" do
         io = StringIO.new
-        expect(system_adapter).to receive_messages(
-          change_context_directory: "/home/bobby/Development/code/ios_lab",
-          open_login_shell: "/usr/local/bin/fish")
-
+        expect(system_adapter)
+          .to receive(:change_context_directory)
+          .with("/home/bobby/Development/code/ios_lab")
+        expect(system_adapter)
+          .to receive(:open_login_shell)
+          .with("/usr/local/bin/fish")
 
         opener = LearnOpen::Opener.new("ios_lab", "atom", false,
                                        learn_client_class: learn_client_class,
                                        git_adapter: git_adapter,
                                        environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
                                        system_adapter: system_adapter,
-                                       io: io)
+                                       io: io,
+                                       platform: "linux")
         opener.run
 
         io.rewind
@@ -403,9 +472,210 @@ You need to be on a Mac to work on iOS lessons.
 Done.
 EOF
       end
+
+      it "opens xcodeproj if on a mac and it exists" do
+        io = StringIO.new
+        expect(system_adapter)
+          .to receive(:change_context_directory)
+          .with("/home/bobby/Development/code/ios_lab")
+        expect(system_adapter)
+          .to receive(:open_login_shell)
+          .with("/usr/local/bin/fish")
+        expect(system_adapter)
+          .to receive(:run_command)
+          .with("cd /home/bobby/Development/code/ios_lab && open *.xcodeproj")
+
+
+        opener = LearnOpen::Opener.new("ios_lab", "atom", false,
+                                       learn_client_class: learn_client_class,
+                                       git_adapter: git_adapter,
+                                       environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                       system_adapter: system_adapter,
+                                       io: io,
+                                       platform: "darwin")
+        opener.run
+
+      end
+      it "opens xcworkspace if on a mac and it exists" do
+        io = StringIO.new
+        expect(system_adapter)
+          .to receive(:change_context_directory)
+          .with("/home/bobby/Development/code/ios_with_workspace_lab")
+        expect(system_adapter)
+          .to receive(:open_login_shell)
+          .with("/usr/local/bin/fish")
+        expect(system_adapter)
+          .to receive(:run_command)
+          .with("cd /home/bobby/Development/code/ios_with_workspace_lab && open *.xcworkspace")
+
+
+        opener = LearnOpen::Opener.new("ios_with_workspace_lab", "atom", false,
+                                       learn_client_class: learn_client_class,
+                                       git_adapter: git_adapter,
+                                       environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                       system_adapter: system_adapter,
+                                       io: io,
+                                       platform: "darwin")
+        opener.run
+
+      end
+    end
+    context "Lab" do
+      context "installing dependencies" do
+        it "runs bundle install if lab is a ruby lab" do
+          allow(system_adapter)
+            .to receive_messages(
+              open_editor: ["atom", path: "."],
+              open_login_shell: ["/usr/local/bin/fish"],
+              change_context_directory: ["/home/bobby/Development/code/rails-dynamic-request-lab-cb-000"],
+            )
+
+          expect(system_adapter)
+            .to receive(:run_command)
+            .with("bundle install")
+          opener = LearnOpen::Opener.new("ruby_lab", "atom", false,
+                                         learn_client_class: learn_client_class,
+                                         git_adapter: git_adapter,
+                                         environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                         system_adapter: system_adapter,
+                                         io: spy)
+          opener.run
+        end
+
+        it "outputs correctly for ruby lab" do
+          allow(system_adapter)
+            .to receive_messages(
+              open_editor: :noop,
+              open_login_shell: :noop,
+              change_context_directory: :noop,
+              run_command: :noop,
+            )
+
+          io = StringIO.new
+          opener = LearnOpen::Opener.new("ruby_lab", "atom", false,
+                                         learn_client_class: learn_client_class,
+                                         git_adapter: git_adapter,
+                                         environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                         system_adapter: system_adapter,
+                                         io: io)
+          opener.run
+          io.rewind
+          expect(io.read).to eq(<<-EOF)
+Looking for lesson...
+Forking lesson...
+Cloning lesson...
+Opening lesson...
+Bundling...
+Done.
+EOF
+        end
+
+        it "runs pip install if lab is a python lab" do
+          expect(system_adapter)
+            .to receive(:open_editor)
+            .with("atom", path: ".")
+
+          expect(system_adapter)
+            .to receive(:open_login_shell)
+            .with("/usr/local/bin/fish")
+
+          expect(system_adapter)
+            .to receive(:change_context_directory)
+            .with("/home/bobby/Development/code/python_lab")
+
+          expect(system_adapter)
+            .to receive(:run_command)
+            .with("python -m pip install -r requirements.txt")
+          opener = LearnOpen::Opener.new("python_lab", "atom", false,
+                                         learn_client_class: learn_client_class,
+                                         git_adapter: git_adapter,
+                                         environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                         system_adapter: system_adapter,
+                                         io: spy)
+          opener.run
+        end
+        it "outputs correctly for python lab" do
+          allow(system_adapter)
+            .to receive_messages(
+              open_editor: :noop,
+              open_login_shell: :noop,
+              change_context_directory: :noop,
+              run_command: :noop,
+            )
+
+          io = StringIO.new
+          opener = LearnOpen::Opener.new("python_lab", "atom", false,
+                                         learn_client_class: learn_client_class,
+                                         git_adapter: git_adapter,
+                                         environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                         system_adapter: system_adapter,
+                                         io: io)
+          opener.run
+          io.rewind
+          expect(io.read).to eq(<<-EOF)
+Looking for lesson...
+Forking lesson...
+Cloning lesson...
+Opening lesson...
+Installing pip dependencies...
+Done.
+EOF
+        end
+        it "runs npm install if lab is a node lab" do
+          expect(system_adapter)
+            .to receive(:open_editor)
+            .with("atom", path: ".")
+
+          expect(system_adapter)
+            .to receive(:open_login_shell)
+            .with("/usr/local/bin/fish")
+
+          expect(system_adapter)
+            .to receive(:change_context_directory)
+            .with("/home/bobby/Development/code/node_lab")
+
+          expect(system_adapter)
+            .to receive(:run_command)
+            .with("npm install")
+          opener = LearnOpen::Opener.new("node_lab", "atom", false,
+                                         learn_client_class: learn_client_class,
+                                         git_adapter: git_adapter,
+                                         environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                         system_adapter: system_adapter,
+                                         io: spy)
+          opener.run
+        end
+        it "outputs correctly for node lab" do
+          allow(system_adapter)
+            .to receive_messages(
+              open_editor: :noop,
+              open_login_shell: :noop,
+              change_context_directory: :noop,
+              run_command: :noop,
+            )
+
+          io = StringIO.new
+          opener = LearnOpen::Opener.new("node_lab", "atom", false,
+                                         learn_client_class: learn_client_class,
+                                         git_adapter: git_adapter,
+                                         environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                         system_adapter: system_adapter,
+                                         io: io)
+          opener.run
+          io.rewind
+          expect(io.read).to eq(<<-EOF)
+Looking for lesson...
+Forking lesson...
+Cloning lesson...
+Opening lesson...
+Installing npm dependencies...
+Done.
+EOF
+        end
+      end
+      end
     end
   end
-end
 
 =begin
 Things to test

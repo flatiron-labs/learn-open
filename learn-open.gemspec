@@ -24,6 +24,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec-core","~> 3.7.1"
   spec.add_development_dependency "rspec-mocks","~> 3.7.0"
   spec.add_development_dependency "diff-lcs", "~> 1.3"
+  spec.add_development_dependency "guard-rspec", "~> 4.7.0"
 
   spec.add_runtime_dependency "netrc"
   spec.add_runtime_dependency "git"

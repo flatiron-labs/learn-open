@@ -32,14 +32,29 @@ class FakeLearnClient
     when "ios_lab"
       OpenStruct.new({
         :clone_repo=>"StevenNunez/ios_lab",
-        :repo_name=>"jupyter_lab",
+        :repo_name=>"ios_lab",
         :repo_slug=>"StevenNunez/ios_lab",
         :lab=>true,
         :lesson_id=>31322,
         :later_lesson=>false,
         :dot_learn=>{
           :tags=>[
-            "jupyter_notebook"
+            "UIView"
+          ],
+          :languages=>["swift"],
+          :resources=>0}
+      })
+    when "ios_with_workspace_lab"
+      OpenStruct.new({
+        :clone_repo=>"StevenNunez/ios_with_workspace_lab",
+        :repo_name=>"ios_with_workspace_lab",
+        :repo_slug=>"StevenNunez/ios_with_workspace_lab",
+        :lab=>true,
+        :lesson_id=>31322,
+        :later_lesson=>false,
+        :dot_learn=>{
+          :tags=>[
+            "UIView"
           ],
           :languages=>["swift"],
           :resources=>0}
@@ -56,22 +71,52 @@ class FakeLearnClient
           :tags=>[
             "jupyter_notebook"
           ],
-          :languages=>["ruby"],
+          :languages=>["python"],
           :resources=>0}
       })
-    when "lab"
+    when "ruby_lab"
       OpenStruct.new({
-        :clone_repo=>"StevenNunez/lab",
-        :repo_name=>"lab",
-        :repo_slug=>"StevenNunez/lab",
+        :clone_repo=>"StevenNunez/ruby_lab",
+        :repo_name=>"ruby_lab",
+        :repo_slug=>"StevenNunez/ruby_lab",
         :lab=>true,
         :lesson_id=>31322,
         :later_lesson=>false,
         :dot_learn=>{
           :tags=>[
-            "jupyter_notebook"
+            "arrays"
           ],
           :languages=>["ruby"],
+          :resources=>0}
+      })
+    when "node_lab"
+      OpenStruct.new({
+        :clone_repo=>"StevenNunez/node_lab",
+        :repo_name=>"node_lab",
+        :repo_slug=>"StevenNunez/node_lab",
+        :lab=>true,
+        :lesson_id=>31322,
+        :later_lesson=>false,
+        :dot_learn=>{
+          :tags=>[
+            "arrays"
+          ],
+          :languages=>["javascript"],
+          :resources=>0}
+      })
+    when "python_lab"
+      OpenStruct.new({
+        :clone_repo=>"StevenNunez/python_lab",
+        :repo_name=>"python_lab",
+        :repo_slug=>"StevenNunez/python_lab",
+        :lab=>true,
+        :lesson_id=>31322,
+        :later_lesson=>false,
+        :dot_learn=>{
+          :tags=>[
+            "arrays"
+          ],
+          :languages=>["python"],
           :resources=>0}
       })
     when "readme"
