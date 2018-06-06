@@ -81,10 +81,10 @@ describe LearnOpen::Opener do
                                      system_adapter: system_adapter,
                                      io: spy)
       opener.run
-      expect(opener.repo_path).to eq("StevenNunez/rails-dynamic-request-lab-cb-000")
-      expect(opener.lesson_is_lab).to eq(true)
-      expect(opener.later_lesson).to eq(false)
-      expect(opener.dot_learn).to eq({:tags=>["dynamic routes", "controllers", "rspec", "capybara", "mvc"], :languages=>["ruby"], :type=>["lab"], :resources=>2})
+      expect(opener.lesson.repo_path).to eq("StevenNunez/rails-dynamic-request-lab-cb-000")
+      expect(opener.lesson.lab?).to eq(true)
+      expect(opener.lesson.later_lesson?).to eq(false)
+      expect(opener.lesson.dot_learn).to eq({:tags=>["dynamic routes", "controllers", "rspec", "capybara", "mvc"], :languages=>["ruby"], :type=>["lab"], :resources=>2})
     end
 
     it "opens the current lesson" do
@@ -102,10 +102,10 @@ describe LearnOpen::Opener do
                                      system_adapter: system_adapter,
                                      io: spy)
       opener.run
-      expect(opener.repo_path).to eq("StevenNunez/ttt-2-board-rb-v-000")
-      expect(opener.lesson_is_lab).to eq(true)
-      expect(opener.later_lesson).to eq(false)
-      expect(opener.dot_learn).to eq({:tags=>["variables", "arrays", "tictactoe"], :languages=>["ruby"], :resources=>0})
+      expect(opener.lesson.repo_path).to eq("StevenNunez/ttt-2-board-rb-v-000")
+      expect(opener.lesson.lab?).to eq(true)
+      expect(opener.lesson.later_lesson?).to eq(false)
+      expect(opener.lesson.dot_learn).to eq({:tags=>["variables", "arrays", "tictactoe"], :languages=>["ruby"], :resources=>0})
     end
     # if the directory exists, don't clone
     # github_disabled stuff

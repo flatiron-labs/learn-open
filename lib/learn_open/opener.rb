@@ -1,6 +1,135 @@
 module LearnOpen
+  class Lesson
+    attr_reader :repo_path,
+      :id,
+      :dot_learn,
+      :name,
+      :organization
+
+    def initialize(lesson_data)
+      lesson = lesson_data[:lesson]
+
+      @repo_path           = lesson.clone_repo
+      @organization, @name = repo_path.split('/')
+      @is_lab              = lesson.lab
+      @id                  = lesson.lesson_id
+      @dot_learn           = Hash(lesson.dot_learn)
+      @is_later_lesson     = lesson_data[:later_lesson]
+    end
+
+    def later_lesson?
+      @is_later_lesson
+    end
+
+    def lab?
+      @is_lab
+    end
+
+    def readme?
+      !lab?
+    end
+
+    def github_disabled?
+      dot_learn[:github] == false
+    end
+  end
+
+  class LearningEnvironment
+    class JupyterContainer
+      attr_reader :environment_adapter, :platform, :client, :lessons_dir
+      def initialize(environment_adapter, platform, client, lessons_dir)
+        @environment_adapter = environment_adapter
+        @platform            = platform
+        @client              = client
+        @lessons_dir         = lessons_dir
+      end
+      def open(lesson)
+        git_tasks(lesson)
+        file_tasks
+        restore_files
+        watch_for_changes
+        jupyter_pip_install
+        completion_tasks
+      end
+      def git_tasks(lesson)
+        fork_repo(lesson)
+        clone_repo(lesson)
+      end
+
+      def repo_exists?(lesson)
+        File.exists?("#{lessons_dir}/#{lesson.name}/.git")
+      end
+
+      def fork_repo(lesson, retries=3)
+        if !repo_exists?(lesson)
+          File.write(debug_log, 'Forking repository...')
+          io.puts "Forking lesson..."
+
+          if !lesson.github_disabled?
+            begin
+              Timeout::timeout(15) do
+                client.fork_repo(repo_name: lesson.name)
+              end
+            rescue Timeout::Error
+              if retries > 0
+                io.puts "There was a problem forking this lesson. Retrying..."
+                fork_repo(lesson, retries-1)
+              else
+                io.puts "There is an issue connecting to Learn. Please try again."
+                File.write(debug_log, 'ERROR: Error connecting to Learn')
+                exit
+              end
+            end
+          end
+        end
+      end
+    end
+    class IDEv3
+      attr_reader :environment_adapter, :platform, :client, :lessons_dir
+      def initialize(environment_adapter, platform, client, lessons_dir)
+        @environment_adapter = environment_adapter
+        @platform            = platform
+        @client              = client
+        @lessons_dir         = lessons_dir
+      end
+      def open(lesson)
+        if lesson.name != environment_adapter['LAB_NAME']
+          home_dir = "/home/#{environment_adapter['CREATED_USER']}"
+          File.open("#{home_dir}/.custom_commands.log", "a") do |f|
+            f.puts %Q{{"command": "open_lab", "lab_name": "#{lesson.name}"}}
+          end
+          false
+        else
+          true
+        end
+      end
+    end
+    attr_reader :environment_adapter, :platform, :client, :lessons_dir
+    def initialize(environment_adapter, platform, client, lessons_dir)
+      @environment_adapter = environment_adapter
+      @platform            = platform
+      @client              = client
+      @lessons_dir         = lessons_dir
+    end
+
+    def open(lesson)
+      if ide_version_3?
+        IDEv3.new(environment_adapter, platform, client, lessons_dir).open(lesson)
+      elsif jupyter_notebook_environment?
+        JupyterContainer.new(environment_adapter, platform, client, lessons_dir).open(lesson)
+      end
+    end
+
+    def ide_version_3?
+      environment_adapter['IDE_VERSION'] == "3"
+    end
+
+    def jupyter_notebook_environment?
+      environment_adapter['JUPYTER_CONTAINER'] == "true"
+    end
+  end
   class Opener
-    attr_accessor :repo_path, :repo_dir, :lesson_is_lab, :lesson_id, :later_lesson, :dot_learn
+    attr_accessor :repo_path, :repo_dir
     attr_reader :editor,
                 :client,
                 :lessons_dir,
@@ -12,7 +141,8 @@ module LearnOpen
                 :git_adapter,
                 :system_adapter,
                 :io,
-                :platform
+                :platform,
+                :lesson
 
     def self.run(lesson:, editor_specified:, get_next_lesson:)
       new(lesson, editor_specified, get_next_lesson).run
@@ -40,6 +170,7 @@ module LearnOpen
 
     end
 
+
     def run
       setup_tmp_file
 
@@ -55,23 +186,10 @@ module LearnOpen
         {lesson: correct_lesson, later_lesson: correct_lesson.later_lesson}
       end
 
-      lesson = lesson_data[:lesson]
-      self.repo_path     = lesson.clone_repo
-      self.lesson_is_lab = lesson.lab
-      self.lesson_id     = lesson.lesson_id
-      self.dot_learn     = lesson.dot_learn
-      self.later_lesson  = lesson_data[:later_lesson]
-      self.repo_dir = repo_path.split('/').last
-
-      if ide_version_3?
-        if self.repo_dir != environment_adapter['LAB_NAME']
-          home_dir = "/home/#{environment_adapter['CREATED_USER']}"
-          File.open("#{home_dir}/.custom_commands.log", "a") do |f|
-            f.puts %Q{{"command": "open_lab", "lab_name": "#{self.repo_dir}"}}
-          end
-          return
-        end
-      end
+      @lesson = Lesson.new(lesson_data)
+      @learning_environment = LearningEnvironment.new(environment_adapter, platform, client, lessons_dir)
+      result = @learning_environment.open(lesson)
+      return if result == false #temporary until we get the other environments written
 
       io.puts "Looking for lesson..."
       if jupyter_notebook_environment?
@@ -83,7 +201,7 @@ module LearnOpen
         completion_tasks
       else
         warn_if_necessary
-        if lesson_is_readme?
+        if lesson.readme?
           open_readme
         else
           git_tasks
@@ -93,11 +211,10 @@ module LearnOpen
           completion_tasks
         end
       end
-
     end
 
     def repo_exists?
-      File.exists?("#{lessons_dir}/#{repo_dir}/.git")
+      File.exists?("#{lessons_dir}/#{lesson.name}/.git")
     end
 
     private
@@ -116,8 +233,8 @@ module LearnOpen
           client.submit_event(
             event: 'fork',
             learn_oauth_token: token,
-            repo_name: repo_dir,
-            base_org_name: repo_path.split('/')[0],
+            repo_name: lesson.name,
+            base_org_name: lesson.organization,
             forkee: { full_name: nil }
           )
         end
@@ -136,7 +253,7 @@ module LearnOpen
     def warn_if_necessary
       temp_args = nil
 
-      if self.later_lesson
+      if lesson.later_lesson?
         io.puts 'WARNING: You are attempting to open a lesson that is beyond your current lesson.'
         print 'Are you sure you want to continue? [Yn]: '
 
@@ -232,10 +349,10 @@ module LearnOpen
         File.write(debug_log, 'Forking repository...')
         io.puts "Forking lesson..."
 
-        if !github_disabled?
+        if !lesson.github_disabled?
           begin
             Timeout::timeout(15) do
-              client.fork_repo(repo_name: repo_dir)
+              client.fork_repo(repo_name: lesson.name)
             end
           rescue Timeout::Error
             if retries > 0
@@ -257,7 +374,7 @@ module LearnOpen
         io.puts "Cloning lesson..."
         begin
           Timeout::timeout(15) do
-            git_adapter.clone("git@github.com:#{repo_path}.git", repo_dir, path: lessons_dir)
+            git_adapter.clone("git@github.com:#{lesson.repo_path}.git", lesson.name, path: lessons_dir)
           end
         rescue Git::GitExecuteError
           if retries > 0
@@ -281,7 +398,7 @@ module LearnOpen
         end
       end
 
-      if github_disabled?
+      if lesson.github_disabled?
         ping_fork_completion
       end
     end
@@ -331,48 +448,48 @@ module LearnOpen
 
     def open_xcode
       if xcworkspace_file?
-        system_adapter.run_command("cd #{lessons_dir}/#{repo_dir} && open *.xcworkspace")
+        system_adapter.run_command("cd #{lessons_dir}/#{lesson.name} && open *.xcworkspace")
       elsif xcodeproj_file?
-        system_adapter.run_command("cd #{lessons_dir}/#{repo_dir} && open *.xcodeproj")
+        system_adapter.run_command("cd #{lessons_dir}/#{lesson.name} && open *.xcodeproj")
       end
     end
 
     def xcodeproj_file?
-      Dir.glob("#{lessons_dir}/#{repo_dir}/*.xcodeproj").any?
+      Dir.glob("#{lessons_dir}/#{lesson.name}/*.xcodeproj").any?
     end
 
     def xcworkspace_file?
-      Dir.glob("#{lessons_dir}/#{repo_dir}/*.xcworkspace").any?
+      Dir.glob("#{lessons_dir}/#{lesson.name}/*.xcworkspace").any?
     end
 
     def cd_to_lesson
       io.puts "Opening lesson..."
-      system_adapter.change_context_directory("#{lessons_dir}/#{repo_dir}")
+      system_adapter.change_context_directory("#{lessons_dir}/#{lesson.name}")
     end
 
     def pip_install
-      if !ios_lesson? && File.exists?("#{lessons_dir}/#{repo_dir}/requirements.txt")
+      if !ios_lesson? && File.exists?("#{lessons_dir}/#{lesson.name}/requirements.txt")
         io.puts "Installing pip dependencies..."
         system_adapter.run_command("python -m pip install -r requirements.txt")
       end
     end
 
     def jupyter_pip_install
-      if !ios_lesson? && File.exists?("#{lessons_dir}/#{repo_dir}/requirements.txt")
+      if !ios_lesson? && File.exists?("#{lessons_dir}/#{lesson.name}/requirements.txt")
         io.puts "Installing pip dependencies..."
         system_adapter.run_command("/opt/conda/bin/python -m pip install -r requirements.txt")
       end
     end
 
     def bundle_install
-      if !ios_lesson? && File.exists?("#{lessons_dir}/#{repo_dir}/Gemfile")
+      if !ios_lesson? && File.exists?("#{lessons_dir}/#{lesson.name}/Gemfile")
         io.puts "Bundling..."
         system_adapter.run_command("bundle install")
       end
     end
 
     def npm_install
-      if !ios_lesson? && File.exists?("#{lessons_dir}/#{repo_dir}/package.json")
+      if !ios_lesson? && File.exists?("#{lessons_dir}/#{lesson.name}/package.json")
         io.puts 'Installing npm dependencies...'
 
         if ide_environment?
@@ -383,16 +500,12 @@ module LearnOpen
       end
     end
 
-    def lesson_is_readme?
-      !lesson_is_lab
-    end
-
     def open_readme
       if ide_environment?
         io.puts "Opening readme..."
           home_dir = "/home/#{environment_adapter['CREATED_USER']}"
           File.open("#{home_dir}/.custom_commands.log", "a") do |f|
-          f.puts %Q{{"command": "browser_open", "url": "https://learn.co/lessons/#{lesson_id}"}}
+          f.puts %Q{{"command": "browser_open", "url": "https://learn.co/lessons/#{lesson.id}"}}
         end
       elsif on_mac?
         io.puts "Opening readme..."
@@ -415,19 +528,15 @@ module LearnOpen
     end
 
     def open_chrome
-      system_adapter.run_command("open -a 'Google Chrome' https://learn.co/lessons/#{lesson_id}")
+      system_adapter.run_command("open -a 'Google Chrome' https://learn.co/lessons/#{lesson.id}")
     end
 
     def open_safari
-      system_adapter.run_command("open -a Safari https://learn.co/lessons/#{lesson_id}")
+      system_adapter.run_command("open -a Safari https://learn.co/lessons/#{lesson.id}")
     end
 
     def on_mac?
       !!platform.match(/darwin/)
-    end
-
-    def github_disabled?
-      !dot_learn.nil? && dot_learn[:github] == false
     end
 
     def ide_environment?
@@ -435,7 +544,7 @@ module LearnOpen
     end
 
     def ide_git_wip_enabled?
-      return false if github_disabled?
+      return false if lesson.github_disabled?
 
       environment_adapter['IDE_GIT_WIP'] == "true"
     end
@@ -469,7 +578,7 @@ module LearnOpen
     end
 
     def watch_for_changes
-      system_adapter.watch_dir("#{lessons_dir}/#{repo_dir}", "backup-lab")
+      system_adapter.watch_dir("#{lessons_dir}/#{lesson.name}", "backup-lab")
     end
 
     def completion_tasks
