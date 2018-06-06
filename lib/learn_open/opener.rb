@@ -1,9 +1,11 @@
 module LearnOpen
   class Opener
+    attr_accessor :repo_path, :repo_dir, :lesson_is_lab, :lesson_id, :later_lesson, :dot_learn
     attr_reader :editor,
                 :client,
                 :lessons_dir,
-                :file_path,
+                :target_lesson,
+                :debug_log,
                 :get_next_lesson,
                 :token,
                 :environment_adapter,
@@ -11,14 +13,13 @@ module LearnOpen
                 :system_adapter,
                 :io,
                 :platform
-    attr_accessor :lesson, :repo_dir, :lesson_is_lab, :lesson_id, :later_lesson, :dot_learn
 
     def self.run(lesson:, editor_specified:, get_next_lesson:)
       new(lesson, editor_specified, get_next_lesson).run
     end
 
-    def initialize(lesson, editor, get_next_lesson, learn_client_class: LearnWeb::Client, file_system_adapter: FileUtils, environment_adapter: ENV, git_adapter: Git, system_adapter: SystemAdapter, io: Kernel, platform: RUBY_PLATFORM)
-      @lesson          = lesson
+    def initialize(target_lesson, editor, get_next_lesson, learn_client_class: LearnWeb::Client, file_system_adapter: FileUtils, environment_adapter: ENV, git_adapter: Git, system_adapter: SystemAdapter, io: Kernel, platform: RUBY_PLATFORM)
+      @target_lesson   = target_lesson
       @editor          = editor
       @get_next_lesson = get_next_lesson
 
@@ -35,14 +36,32 @@ module LearnOpen
       _login, @token   = Netrc.read['learn-config']
       @client          = learn_client_class.new(token: @token)
       @lessons_dir     = YAML.load(File.read("#{home_dir}/.learn-config"))[:learn_directory]
-      @file_path       = "#{home_dir}/.learn-open-tmp"
+      @debug_log       = "#{home_dir}/.learn-open-tmp"
 
     end
 
     def run
       setup_tmp_file
 
-      set_lesson
+      File.write(debug_log, 'Getting lesson...')
+
+      lesson_data = if !target_lesson && !get_next_lesson
+        load_current_lesson
+        {lesson: current_lesson, later_lesson: false}
+      elsif !target_lesson && get_next_lesson
+        load_next_lesson
+        {lesson: next_lesson, later_lesson: false}
+      else
+        {lesson: correct_lesson, later_lesson: correct_lesson.later_lesson}
+      end
+
+      lesson = lesson_data[:lesson]
+      self.repo_path     = lesson.clone_repo
+      self.lesson_is_lab = lesson.lab
+      self.lesson_id     = lesson.lesson_id
+      self.dot_learn     = lesson.dot_learn
+      self.later_lesson  = lesson_data[:later_lesson]
+      self.repo_dir = repo_path.split('/').last
 
       if ide_version_3?
         if self.repo_dir != environment_adapter['LAB_NAME']
@@ -98,7 +117,7 @@ module LearnOpen
             event: 'fork',
             learn_oauth_token: token,
             repo_name: repo_dir,
-            base_org_name: lesson.split('/')[0],
+            base_org_name: repo_path.split('/')[0],
             forkee: { full_name: nil }
           )
         end
@@ -108,7 +127,7 @@ module LearnOpen
           ping_fork_completion(retries-1)
         else
           io.puts "There is an issue connecting to Learn. Please try again."
-          File.write(file_path, 'ERROR: Error connecting to Learn')
+          File.write(debug_log, 'ERROR: Error connecting to Learn')
           exit
         end
       end
@@ -141,39 +160,12 @@ module LearnOpen
     end
 
     def setup_tmp_file
-      file_system_adapter.touch(file_path)
-      File.write(file_path, '')
+      file_system_adapter.touch(debug_log)
+      File.write(debug_log, '')
     end
 
     def cleanup_tmp_file
-      File.write(file_path, 'Done.')
-    end
-
-    def set_lesson
-      File.write(file_path, 'Getting lesson...')
-
-      if !lesson && !get_next_lesson
-        self.lesson        = get_current_lesson_forked_repo
-        self.lesson_is_lab = current_lesson.lab
-        self.lesson_id     = current_lesson.id
-        self.later_lesson  = false
-        self.dot_learn     = current_lesson.dot_learn
-      elsif !lesson && get_next_lesson
-        self.lesson        = get_next_lesson_forked_repo
-        self.lesson_is_lab = next_lesson.lab
-        self.lesson_id     = next_lesson.id
-        self.later_lesson  = false
-        self.dot_learn     = next_lesson.dot_learn
-      else
-        # You gave me a specific lesson, verify then fetch
-        self.lesson        = ensure_correct_lesson.clone_repo
-        self.lesson_is_lab = correct_lesson.lab
-        self.lesson_id     = correct_lesson.lesson_id
-        self.later_lesson  = correct_lesson.later_lesson
-        self.dot_learn     = correct_lesson.dot_learn
-      end
-
-      self.repo_dir = lesson.split('/').last
+      File.write(debug_log, 'Done.')
     end
 
     def current_lesson
@@ -184,48 +176,44 @@ module LearnOpen
       @next_lesson ||= client.next_lesson
     end
 
-    def get_current_lesson_forked_repo(retries=3)
+    def load_current_lesson(retries=3)
       begin
         Timeout::timeout(15) do
-          current_lesson.clone_repo
+          current_lesson
         end
       rescue Timeout::Error
         if retries > 0
           io.puts "There was a problem getting your lesson from Learn. Retrying..."
-          get_current_lesson_forked_repo(retries-1)
+          load_current_lesson(retries-1)
         else
           io.puts "There seems to be a problem connecting to Learn. Please try again."
-          File.write(file_path, 'ERROR: Error connecting to Learn')
+          File.write(debug_log, 'ERROR: Error connecting to Learn')
           exit
         end
       end
     end
 
-    def get_next_lesson_forked_repo(retries=3)
+    def load_next_lesson(retries=3)
       begin
         Timeout::timeout(15) do
-          next_lesson.clone_repo
+          next_lesson
         end
       rescue Timeout::Error
         if retries > 0
           io.puts "There was a problem getting your next lesson from Learn. Retrying..."
-          get_next_lesson_forked_repo(retries-1)
+          load_next_lesson(retries-1)
         else
           io.puts "There seems to be a problem connecting to Learn. Please try again."
-          File.write(file_path, 'ERROR: Error connecting to Learn')
+          File.write(debug_log, 'ERROR: Error connecting to Learn')
           exit
         end
       end
-    end
-
-    def ensure_correct_lesson
-      correct_lesson
     end
 
     def correct_lesson(retries=3)
       @correct_lesson ||= begin
         Timeout::timeout(15) do
-          client.validate_repo_slug(repo_slug: lesson)
+          client.validate_repo_slug(repo_slug: target_lesson)
         end
       rescue Timeout::Error
         if retries > 0
@@ -233,7 +221,7 @@ module LearnOpen
           correct_lesson(retries-1)
         else
           io.puts "Cannot connect to Learn right now. Please try again."
-          File.write(file_path, 'ERROR: Error connecting to Learn')
+          File.write(debug_log, 'ERROR: Error connecting to Learn')
           exit
         end
       end
@@ -241,7 +229,7 @@ module LearnOpen
 
     def fork_repo(retries=3)
       if !repo_exists?
-        File.write(file_path, 'Forking repository...')
+        File.write(debug_log, 'Forking repository...')
         io.puts "Forking lesson..."
 
         if !github_disabled?
@@ -255,7 +243,7 @@ module LearnOpen
               fork_repo(retries-1)
             else
               io.puts "There is an issue connecting to Learn. Please try again."
-              File.write(file_path, 'ERROR: Error connecting to Learn')
+              File.write(debug_log, 'ERROR: Error connecting to Learn')
               exit
             end
           end
@@ -265,11 +253,11 @@ module LearnOpen
 
     def clone_repo(retries=3)
       if !repo_exists?
-        File.write(file_path, 'Cloning to your machine...')
+        File.write(debug_log, 'Cloning to your machine...')
         io.puts "Cloning lesson..."
         begin
           Timeout::timeout(15) do
-            git_adapter.clone("git@github.com:#{lesson}.git", repo_dir, path: lessons_dir)
+            git_adapter.clone("git@github.com:#{repo_path}.git", repo_dir, path: lessons_dir)
           end
         rescue Git::GitExecuteError
           if retries > 0
@@ -278,7 +266,7 @@ module LearnOpen
             clone_repo(retries-1)
           else
             io.puts "Cannot clone this lesson right now. Please try again."
-            File.write(file_path, 'ERROR: Error cloning. Try again.')
+            File.write(debug_log, 'ERROR: Error cloning. Try again.')
             exit
           end
         rescue Timeout::Error
@@ -287,7 +275,7 @@ module LearnOpen
             clone_repo(retries-1)
           else
             io.puts "Cannot clone this lesson right now. Please try again."
-            File.write(file_path, 'ERROR: Error cloning. Try again.')
+            File.write(debug_log, 'ERROR: Error cloning. Try again.')
             exit
           end
         end
@@ -318,7 +306,7 @@ module LearnOpen
         else
           io.puts "Sorry, there seems to be a problem with this lesson. Please submit a bug report to bugs@learn.co and try again later."
           io.puts "If you'd like to work on your next lesson now, type: learn next"
-          File.write(file_path, 'ERROR: Problem parsing lesson data. Try again.')
+          File.write(debug_log, 'ERROR: Problem parsing lesson data. Try again.')
         end
       rescue NoMethodError, Errno::ENOENT => e
         if xcodeproj_file? || xcworkspace_file?
@@ -328,7 +316,7 @@ module LearnOpen
         else
           io.puts "Sorry, there seems to be a problem with this lesson. Please submit a bug report to bugs@learn.co and try again later."
           io.puts "If you'd like to work on your next lesson now, type: learn next"
-          File.write(file_path, 'ERROR: Problem parsing lesson data. Try again.')
+          File.write(debug_log, 'ERROR: Problem parsing lesson data. Try again.')
         end
       end
     end

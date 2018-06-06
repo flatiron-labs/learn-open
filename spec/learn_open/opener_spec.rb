@@ -17,7 +17,7 @@ describe LearnOpen::Opener do
   context "Initializer" do
     it "sets the lesson" do
       opener = LearnOpen::Opener.new("ttt-2-board-rb-v-000","", false)
-      expect(opener.lesson).to eq("ttt-2-board-rb-v-000")
+      expect(opener.target_lesson).to eq("ttt-2-board-rb-v-000")
     end
     it "sets the editor" do
       opener = LearnOpen::Opener.new("", "atom", false)
@@ -33,9 +33,9 @@ describe LearnOpen::Opener do
       expect(opener.token).to eq("some-amazing-password")
     end
 
-    it "loads lesson directory from learn-config" do
+    it "writes file in home based on .learn-config" do
       opener = LearnOpen::Opener.new("", "", "", learn_client_class: spy)
-      expect(opener.file_path).to eq("#{home_dir}/.learn-open-tmp")
+      expect(opener.debug_log).to eq("#{home_dir}/.learn-open-tmp")
     end
   end
 
@@ -81,7 +81,7 @@ describe LearnOpen::Opener do
                                      system_adapter: system_adapter,
                                      io: spy)
       opener.run
-      expect(opener.lesson).to eq("StevenNunez/rails-dynamic-request-lab-cb-000")
+      expect(opener.repo_path).to eq("StevenNunez/rails-dynamic-request-lab-cb-000")
       expect(opener.lesson_is_lab).to eq(true)
       expect(opener.later_lesson).to eq(false)
       expect(opener.dot_learn).to eq({:tags=>["dynamic routes", "controllers", "rspec", "capybara", "mvc"], :languages=>["ruby"], :type=>["lab"], :resources=>2})
@@ -102,7 +102,7 @@ describe LearnOpen::Opener do
                                      system_adapter: system_adapter,
                                      io: spy)
       opener.run
-      expect(opener.lesson).to eq("StevenNunez/ttt-2-board-rb-v-000")
+      expect(opener.repo_path).to eq("StevenNunez/ttt-2-board-rb-v-000")
       expect(opener.lesson_is_lab).to eq(true)
       expect(opener.later_lesson).to eq(false)
       expect(opener.dot_learn).to eq({:tags=>["variables", "arrays", "tictactoe"], :languages=>["ruby"], :resources=>0})
