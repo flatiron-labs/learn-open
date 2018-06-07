@@ -72,6 +72,7 @@ class FakeLearnClient
             "jupyter_notebook"
           ],
           :languages=>["python"],
+          :jupyter_notebook => true,
           :resources=>0}
       })
     when "ruby_lab"
