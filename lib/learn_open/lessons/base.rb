@@ -11,6 +11,7 @@ module LearnOpen
         @dot_learn     = lesson.dot_learn
         @later_lesson  = lesson_data[:later_lesson]
         @is_lab        = lesson[:lab]
+        @logger        = LearnOpen.logger
       end
 
       def lab?
