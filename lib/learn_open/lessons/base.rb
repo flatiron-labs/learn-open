@@ -10,7 +10,8 @@ module LearnOpen
         :options,
         :io,
         :system_adapter,
-        :environment_vars
+        :environment_vars,
+        :logger
 
       def initialize(lesson_data, options={})
         lesson = lesson_data[:lesson]
@@ -22,9 +23,9 @@ module LearnOpen
         @later_lesson  = lesson_data[:later_lesson]
         @is_lab        = lesson[:lab]
 
-        @logger         = options.fetch(:logger, LearnOpen.logger)
-        @io             = options.fetch(:io, LearnOpen.default_io)
-        @system_adapter = options.fetch(:system_adapter, LearnOpen.system_adapter)
+        @logger          = options.fetch(:logger, LearnOpen.logger)
+        @io              = options.fetch(:io, LearnOpen.default_io)
+        @system_adapter  = options.fetch(:system_adapter, LearnOpen.system_adapter)
         @environment_vars = options.fetch(:environment_vars, LearnOpen.environment_vars)
         @options        = options
       end

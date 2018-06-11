@@ -9,7 +9,7 @@ module LearnOpen
     def initialize(lesson, location, options={})
       @lesson = lesson
       @location = location
-      @client      = options.fetch(:client, LearnOpen.learn_web_client)
+      @client      = options.fetch(:learn_web_client, LearnOpen.learn_web_client)
       @logger      = options.fetch(:logger, LearnOpen.logger)
       @io          = options.fetch(:io, LearnOpen.default_io)
       @git_adapter = options.fetch(:git_adapter, LearnOpen.git_adapter)

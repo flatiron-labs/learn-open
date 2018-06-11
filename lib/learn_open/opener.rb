@@ -6,7 +6,6 @@ module LearnOpen
                 :lessons_dir,
                 :target_lesson,
                 :get_next_lesson,
-                :token,
                 :environment_vars,
                 :git_adapter,
                 :system_adapter,
@@ -24,20 +23,14 @@ module LearnOpen
       @editor          = editor
       @get_next_lesson = get_next_lesson
 
-      @options             = options
-      @environment_vars    = options.fetch(:environment_vars, LearnOpen.environment_vars)
-      @git_adapter         = options.fetch(:git_adapter, LearnOpen.git_adapter)
-      @system_adapter      = options.fetch(:system_adapter, LearnOpen.system_adapter)
-      @io                  = options.fetch(:io, LearnOpen.default_io)
-      @platform            = options.fetch(:platform, LearnOpen.platform)
-      @logger              = options.fetch(:logger, LearnOpen.logger)
-      learn_client_class   = options.fetch(:learn_client_class, LearnOpen.learn_client)
-
-      # wrapper
-      _login, @token   = Netrc.read['learn-config']
-      @client          = learn_client_class.new(token: @token)
-
-      @options[:client] = @client
+      @options          = options
+      @environment_vars = options.fetch(:environment_vars) { LearnOpen.environment_vars }
+      @git_adapter      = options.fetch(:git_adapter)      { LearnOpen.git_adapter }
+      @system_adapter   = options.fetch(:system_adapter)   { LearnOpen.system_adapter }
+      @io               = options.fetch(:io)               { LearnOpen.default_io }
+      @platform         = options.fetch(:platform)         { LearnOpen.platform }
+      @logger           = options.fetch(:logger)           { LearnOpen.logger }
+      @client           = options.fetch(:learn_web_client) { LearnOpen.learn_web_client }
 
       home_dir         = File.expand_path("~")
       @lessons_dir     = YAML.load(File.read("#{home_dir}/.learn-config"))[:learn_directory]
@@ -70,10 +63,7 @@ module LearnOpen
         self.later_lesson  = lesson.later_lesson
         # Run on Correct Environment
         if jupyter_notebook_environment?
-          @lesson.open(lessons_dir, editor, environment_vars)
-
-          jupyter_pip_install
-          completion_tasks
+          @lesson.open(lessons_dir, editor)
         else
           warn_if_necessary
           if lesson.readme?
@@ -102,13 +92,17 @@ module LearnOpen
       File.exists?("#{lessons_dir}/#{lesson.name}/.git")
     end
 
+    def token
+      client.token
+    end
+
     private
     def ping_fork_completion(retries=3)
       begin
         Timeout::timeout(15) do
           client.submit_event(
             event: 'fork',
-            learn_oauth_token: token,
+            learn_oauth_token: client.token,
             repo_name: lesson.name,
             base_org_name: lesson.organization,
             forkee: { full_name: nil }

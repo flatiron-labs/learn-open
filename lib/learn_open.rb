@@ -11,6 +11,7 @@ require 'learn_open/argument_parser'
 require 'learn_open/adapters/system_adapter'
 require 'learn_open/services/lesson_downloader'
 require 'learn_open/services/file_backup_starter'
+require 'learn_open/services/dependency_installer'
 require 'learn_open/services/logger'
 require 'learn_open/lessons'
 require 'learn_open/lessons/base'
@@ -23,9 +24,8 @@ require 'learn_open/lessons/lab_lesson'
 module LearnOpen
   def self.learn_web_client
     @client ||= begin
-                  netrc_path    = "#{home_dir}/.netrc"
                   _login, token = Netrc.read['learn-config']
-                  client        = LearnWeb::Client.new(token: @token)
+                  client        = LearnWeb::Client.new(token: token)
                 end
   end
 
@@ -54,9 +54,5 @@ module LearnOpen
 
   def self.platform
     RUBY_PLATFORM
-  end
-
-  def self.learn_client
-    LearnWeb::Client
   end
 end
