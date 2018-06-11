@@ -10,6 +10,7 @@ module LearnOpen
         :options,
         :io,
         :system_adapter,
+        :platform,
         :environment_vars,
         :logger
 
@@ -26,6 +27,7 @@ module LearnOpen
         @logger          = options.fetch(:logger, LearnOpen.logger)
         @io              = options.fetch(:io, LearnOpen.default_io)
         @system_adapter  = options.fetch(:system_adapter, LearnOpen.system_adapter)
+        @platform        = options.fetch(:platform, LearnOpen.platform)
         @environment_vars = options.fetch(:environment_vars, LearnOpen.environment_vars)
         @options        = options
       end

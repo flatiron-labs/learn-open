@@ -65,10 +65,10 @@ module LearnOpen
         if jupyter_notebook_environment?
           @lesson.open(lessons_dir, editor)
         else
-          warn_if_necessary
           if lesson.readme?
-            open_readme
+            @lesson.open(lessons_dir, editor)
           else
+            warn_if_necessary
             fork_repo
             clone_repo
             cd_to_lesson
