@@ -6,7 +6,7 @@ module LearnOpen
        if jupyter_container?(environment_vars)
          JuptyerContainerEnvironment.new(options)
        elsif ide_environment?(environment_vars)
-         IDEv3Environment.new(options)
+         IDEEnvironment.new(options)
        elsif on_mac?(platform)
          MacEnvironment.classify(options)
        else

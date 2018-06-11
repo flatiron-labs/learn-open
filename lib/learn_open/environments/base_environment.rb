@@ -10,6 +10,34 @@ module LearnOpen
         @options          = options
       end
       def open_jupyter_lab(location, editor); end
+      def open_lab(lesson, location, editor)
+        case lesson
+        when LearnOpen::Lessons::IosLesson
+          io.puts "You need to be on a Mac to work on iOS lessons."
+          :noop
+        else
+          LessonDownloader.call(lesson, location, options)
+          open_editor(lesson, location, editor)
+          DependencyInstaller.call(self, lesson, location, options)
+          notify_of_completion
+          open_shell
+        end
+      end
+
+      def open_editor(lesson, location, editor)
+        io.puts "Opening lesson..."
+        system_adapter.change_context_directory("#{location}/#{lesson.name}")
+        system_adapter.open_editor(editor, path: ".")
+      end
+
+      def open_shell
+        system_adapter.open_login_shell(environment_vars['SHELL'])
+      end
+
+      def notify_of_completion
+        logger.log("Done.")
+        io.puts "Done."
+      end
     end
   end
 end

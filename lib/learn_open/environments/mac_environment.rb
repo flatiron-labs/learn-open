@@ -8,6 +8,7 @@ module LearnOpen
           self.new(options)
         end
       end
+
       def self.chrome_installed?
         File.exists?('/Applications/Google Chrome.app')
       end
@@ -16,14 +17,44 @@ module LearnOpen
         io.puts "Opening readme..."
         system_adapter.run_command("open -a Safari #{lesson.to_url}")
       end
+
+      def open_lab(lesson, location, editor)
+        case lesson
+        when LearnOpen::Lessons::IosLesson
+          LessonDownloader.call(lesson, location, options)
+          open_xcode(lesson, location)
+          DependencyInstaller.call(self, lesson, location, options)
+          notify_of_completion
+          open_shell
+        else
+          super
+        end
+      end
+
+      def xcodeproj_file?(lesson, location)
+        Dir.glob("#{location}/#{lesson.name}/*.xcodeproj").any?
+      end
+
+      def xcworkspace_file?(lesson, location)
+        Dir.glob("#{location}/#{lesson.name}/*.xcworkspace").any?
+      end
+
+      def open_xcode(lesson, location)
+        io.puts "Opening lesson..."
+        system_adapter.change_context_directory("#{location}/#{lesson.name}")
+        if xcworkspace_file?(lesson, location)
+          system_adapter.run_command("cd #{location}/#{lesson.name} && open *.xcworkspace")
+        elsif xcodeproj_file?(lesson, location)
+          system_adapter.run_command("cd #{location}/#{lesson.name} && open *.xcodeproj")
+        end
+      end
     end
 
-    class MacWithChromeEnvironment < BaseEnvironment
+    class MacWithChromeEnvironment < MacEnvironment
       def open_readme(lesson)
         io.puts "Opening readme..."
         system_adapter.run_command("open -a 'Google Chrome' #{lesson.to_url}")
       end
     end
-
   end
 end

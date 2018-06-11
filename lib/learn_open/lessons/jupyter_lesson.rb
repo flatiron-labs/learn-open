@@ -1,7 +1,8 @@
 module LearnOpen
   module Lessons
     class JupyterLesson < Base
-      def self.detect(dot_learn)
+      def self.detect(lesson)
+        dot_learn = Hash(lesson[:dot_learn])
         !!dot_learn[:jupyter_notebook]
       end
 

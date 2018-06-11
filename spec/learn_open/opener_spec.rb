@@ -27,11 +27,6 @@ describe LearnOpen::Opener do
       opener = LearnOpen::Opener.new("", "", true)
       expect(opener.get_next_lesson).to eq(true)
     end
-
-    it "reads the token from the .netrc file" do
-      opener = LearnOpen::Opener.new("", "", "")
-      expect(opener.token).to eq("some-amazing-password")
-    end
   end
 
   context "running the opener" do
@@ -60,48 +55,6 @@ describe LearnOpen::Opener do
                                      io: spy)
       opener.run
     end
-    it "sets values of next lesson from client payload" do
-      allow(system_adapter)
-        .to receive_messages(
-          open_editor: :noop,
-          open_login_shell: :noop,
-          change_context_directory: :noop
-        )
-      allow(learn_web_client).to receive(:fork_repo)
-
-      opener = LearnOpen::Opener.new(nil, "atom", true,
-                                     learn_web_client: learn_web_client,
-                                     git_adapter: git_adapter,
-                                     environment_vars: {"SHELL" => "/usr/local/bin/fish"},
-                                     system_adapter: system_adapter,
-                                     io: spy)
-      opener.run
-      expect(opener.lesson.repo_path).to eq("StevenNunez/rails-dynamic-request-lab-cb-000")
-      expect(opener.lesson.later_lesson).to eq(false)
-      expect(opener.lesson.dot_learn).to eq({:tags=>["dynamic routes", "controllers", "rspec", "capybara", "mvc"], :languages=>["ruby"], :type=>["lab"], :resources=>2})
-    end
-
-    it "opens the current lesson" do
-      allow(system_adapter).to receive_messages(
-        open_editor: :noop,
-        open_login_shell: :noop,
-        change_context_directory: :noop
-      )
-      allow(learn_web_client).to receive(:fork_repo)
-
-      opener = LearnOpen::Opener.new(nil, "atom", false,
-                                     learn_web_client: learn_web_client,
-                                     git_adapter: git_adapter,
-                                     environment_vars: {"SHELL" => "/usr/local/bin/fish"},
-                                     system_adapter: system_adapter,
-                                     io: spy)
-      opener.run
-      expect(opener.lesson.repo_path).to eq("StevenNunez/ttt-2-board-rb-v-000")
-      expect(opener.lesson.later_lesson).to eq(false)
-      expect(opener.lesson.dot_learn).to eq({:tags=>["variables", "arrays", "tictactoe"], :languages=>["ruby"], :resources=>0})
-    end
-    # if the directory exists, don't clone
-    # github_disabled stuff
   end
   context "Opening on specific environments" do
     before do
@@ -113,71 +66,10 @@ describe LearnOpen::Opener do
       allow(learn_web_client).to receive(:fork_repo)
     end
     context "IDE" do
-      it "does not write to the custom commands log if environment is for intended lab" do
-        environment = {
-          "SHELL" => "/usr/local/bin/fish",
-          "LAB_NAME" => "rails-dynamic-request-lab-cb-000",
-          "CREATED_USER" => "bobby",
-          "IDE_CONTAINER" => "true",
-          "IDE_VERSION" => "3"
-        }
-
-        home_dir = create_linux_home_dir("bobby")
-        opener = LearnOpen::Opener.new(nil, "atom", true,
-                                       learn_web_client: learn_web_client,
-                                       git_adapter: git_adapter,
-                                       environment_vars: environment,
-                                       system_adapter: system_adapter,
-                                       io: spy)
-        opener.run
-        expect(File.exist?("#{home_dir}/.custom_commands.log")).to eq(false)
-      end
-
-      it "writes to custom_commands_log if lab name doesn't match env" do
-        environment = {
-          "SHELL" => "/usr/local/bin/fish",
-          "LAB_NAME" => "Something wild",
-          "CREATED_USER" => "bobby",
-          "IDE_CONTAINER" => "true",
-          "IDE_VERSION" => "3"
-        }
-
-        home_dir = create_linux_home_dir("bobby")
-        opener = LearnOpen::Opener.new(nil, "atom", true,
-                                       learn_web_client: learn_web_client,
-                                       git_adapter: git_adapter,
-                                       environment_vars: environment,
-                                       system_adapter: system_adapter,
-                                       io: spy)
-        opener.run
-        custom_commands_log = File.read("#{home_dir}/.custom_commands.log")
-        expect(custom_commands_log).to eq("{\"command\": \"open_lab\", \"lab_name\": \"rails-dynamic-request-lab-cb-000\"}\n")
-      end
-
-      it "writes to custom_commands_log if only if it's IDE v3" do
-        environment = {
-          "SHELL" => "/usr/local/bin/fish",
-          "LAB_NAME" => "Something wild",
-          "CREATED_USER" => "bobby",
-          "IDE_CONTAINER" => "true",
-        }
-
-        home_dir = create_linux_home_dir("bobby")
-        opener = LearnOpen::Opener.new(nil, "atom", true,
-                                       learn_web_client: learn_web_client,
-                                       git_adapter: git_adapter,
-                                       environment_vars: environment,
-                                       system_adapter: system_adapter,
-                                       io: spy)
-        opener.run
-        expect(File.exist?("#{home_dir}/.custom_commands.log")).to eq(false)
-      end
-
-      it "restores files and watches for changes when git wip enabled" do
+      it "restores files and watches for changes" do
         environment = {
           "SHELL" => "/usr/local/bin/fish",
           "LAB_NAME" => "ruby_lab",
-          "IDE_GIT_WIP" => "true",
           "CREATED_USER" => "bobby",
           "IDE_CONTAINER" => "true",
           "IDE_VERSION" => "3"
@@ -202,13 +94,76 @@ describe LearnOpen::Opener do
                                        io: spy)
         opener.run
       end
+      it "does not write to the custom commands log if environment is for intended lab" do
+        environment = {
+          "SHELL" => "/usr/local/bin/fish",
+          "LAB_NAME" => "rails-dynamic-request-lab-cb-000",
+          "CREATED_USER" => "bobby",
+          "IDE_CONTAINER" => "true",
+          "IDE_VERSION" => "3"
+        }
+        allow(system_adapter).to receive_messages([:spawn, :watch_dir])
+
+        home_dir = create_linux_home_dir("bobby")
+        opener = LearnOpen::Opener.new(nil, "atom", true,
+                                       learn_web_client: learn_web_client,
+                                       git_adapter: git_adapter,
+                                       environment_vars: environment,
+                                       system_adapter: system_adapter,
+                                       io: spy)
+        opener.run
+        expect(File.exist?("#{home_dir}/.custom_commands.log")).to eq(false)
+      end
+
+      it "writes to custom_commands_log if lab name doesn't match env" do
+        environment = {
+          "SHELL" => "/usr/local/bin/fish",
+          "LAB_NAME" => "Something wild",
+          "CREATED_USER" => "bobby",
+          "IDE_CONTAINER" => "true",
+          "IDE_VERSION" => "3"
+        }
+        allow(system_adapter).to receive_messages([:spawn, :watch_dir])
+
+        home_dir = create_linux_home_dir("bobby")
+        opener = LearnOpen::Opener.new(nil, "atom", true,
+                                       learn_web_client: learn_web_client,
+                                       git_adapter: git_adapter,
+                                       environment_vars: environment,
+                                       system_adapter: system_adapter,
+                                       io: spy)
+        opener.run
+        custom_commands_log = File.read("#{home_dir}/.custom_commands.log")
+        expect(custom_commands_log).to eq("{\"command\": \"open_lab\", \"lab_name\": \"rails-dynamic-request-lab-cb-000\"}\n")
+      end
+
+      it "writes to custom_commands_log if only if it's IDE" do
+        environment = {
+          "SHELL" => "/usr/local/bin/fish",
+          "LAB_NAME" => "Something wild",
+          "CREATED_USER" => "bobby"
+        }
+        allow(system_adapter).to receive_messages([:spawn, :watch_dir])
+
+        home_dir = create_linux_home_dir("bobby")
+        opener = LearnOpen::Opener.new(nil, "atom", true,
+                                       learn_web_client: learn_web_client,
+                                       git_adapter: git_adapter,
+                                       environment_vars: environment,
+                                       system_adapter: system_adapter,
+                                       io: spy)
+        opener.run
+        expect(File.exist?("#{home_dir}/.custom_commands.log")).to eq(false)
+      end
+
       it "runs yarn install if lab is a node lab" do
         environment = {
           "SHELL" => "/usr/local/bin/fish",
-          "LAB_NAME" => "python_lab",
+          "LAB_NAME" => "node_lab",
           "CREATED_USER" => "bobby",
           "IDE_CONTAINER" => "true",
         }
+        allow(system_adapter).to receive_messages([:spawn, :watch_dir])
         expect(system_adapter)
           .to receive(:open_editor)
           .with("atom", path: ".")
@@ -368,7 +323,7 @@ EOF
       end
 
       it "writes to custom_commands_log on IDE" do
-        environment = {"CREATED_USER" => "bobby", "IDE_CONTAINER" => "true"}
+        environment = {"CREATED_USER" => "bobby", "IDE_CONTAINER" => "true", "LAB_NAME" => "readme"}
         io = StringIO.new
         home_dir = create_linux_home_dir("bobby")
         opener = LearnOpen::Opener.new("readme", "atom", false,
@@ -439,12 +394,6 @@ EOF
     context "iOS labs" do
       it "fails to open unless on a mac" do
         io = StringIO.new
-        expect(system_adapter)
-          .to receive(:change_context_directory)
-          .with("/home/bobby/Development/code/ios_lab")
-        expect(system_adapter)
-          .to receive(:open_login_shell)
-          .with("/usr/local/bin/fish")
 
         opener = LearnOpen::Opener.new("ios_lab", "atom", false,
                                        learn_web_client: learn_web_client,
@@ -458,11 +407,7 @@ EOF
         io.rewind
         expect(io.read).to eq(<<-EOF)
 Looking for lesson...
-Forking lesson...
-Cloning lesson...
-Opening lesson...
 You need to be on a Mac to work on iOS lessons.
-Done.
 EOF
       end
 

@@ -5,19 +5,15 @@ module LearnOpen
         LessonDownloader.call(lesson, location, options)
         open_editor(lesson, location, editor)
         FileBackupStarter.call(lesson, location, options)
-        DependencyInstaller.call(lesson, location, options)
+        DependencyInstaller.call(self, lesson, location, options)
         notify_of_completion
         open_shell
       end
+
       def open_editor(lesson, location, editor)
         io.puts "Opening lesson..."
         system_adapter.change_context_directory("#{location}/#{lesson.name}")
         system_adapter.open_editor(editor, path: ".")
-      end
-
-      def notify_of_completion
-        logger.log("Done.")
-        io.puts "Done."
       end
 
       def open_shell

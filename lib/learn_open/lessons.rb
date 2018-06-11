@@ -15,10 +15,10 @@ module LearnOpen
       ]
     end
     def self.classify(lesson_data, options={})
-      dot_learn = Hash(lesson_data[:lesson][:dot_learn])
+      lesson = lesson_data[:lesson]
       default = method(:default)
       lesson_types.find(default) do |type|
-        type.detect(dot_learn)
+        type.detect(lesson)
       end.new(lesson_data, options)
     end
   end
