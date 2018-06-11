@@ -33,10 +33,11 @@ module LearnOpen
       @logger              = options.fetch(:logger, LearnOpen.logger)
       learn_client_class   = options.fetch(:learn_client_class, LearnOpen.learn_client)
 
+      # wrapper
       _login, @token   = Netrc.read['learn-config']
       @client          = learn_client_class.new(token: @token)
 
-      options[:client] = @client
+      @options[:client] = @client
 
       home_dir         = File.expand_path("~")
       @lessons_dir     = YAML.load(File.read("#{home_dir}/.learn-config"))[:learn_directory]
@@ -69,10 +70,7 @@ module LearnOpen
         self.later_lesson  = lesson.later_lesson
         # Run on Correct Environment
         if jupyter_notebook_environment?
-          @lesson.open(lessons_dir, editor)
-
-          restore_files
-          watch_for_changes
+          @lesson.open(lessons_dir, editor, environment_vars)
 
           jupyter_pip_install
           completion_tasks
