@@ -32,11 +32,6 @@ describe LearnOpen::Opener do
       opener = LearnOpen::Opener.new("", "", "")
       expect(opener.token).to eq("some-amazing-password")
     end
-
-    it "writes file in home based on .learn-config" do
-      opener = LearnOpen::Opener.new("", "", "", learn_client_class: spy)
-      expect(opener.debug_log).to eq("#{home_dir}/.learn-open-tmp")
-    end
   end
 
   context "running the opener" do
@@ -60,7 +55,7 @@ describe LearnOpen::Opener do
       opener = LearnOpen::Opener.new(nil, "atom", true,
                                      learn_client_class: FakeLearnClient,
                                      git_adapter: git_adapter,
-                                     environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                     environment_vars: {"SHELL" => "/usr/local/bin/fish"},
                                      system_adapter: system_adapter,
                                      io: spy)
       opener.run
@@ -77,7 +72,7 @@ describe LearnOpen::Opener do
       opener = LearnOpen::Opener.new(nil, "atom", true,
                                      learn_client_class: learn_client_class,
                                      git_adapter: git_adapter,
-                                     environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                     environment_vars: {"SHELL" => "/usr/local/bin/fish"},
                                      system_adapter: system_adapter,
                                      io: spy)
       opener.run
@@ -97,7 +92,7 @@ describe LearnOpen::Opener do
       opener = LearnOpen::Opener.new(nil, "atom", false,
                                      learn_client_class: learn_client_class,
                                      git_adapter: git_adapter,
-                                     environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                     environment_vars: {"SHELL" => "/usr/local/bin/fish"},
                                      system_adapter: system_adapter,
                                      io: spy)
       opener.run
@@ -131,7 +126,7 @@ describe LearnOpen::Opener do
         opener = LearnOpen::Opener.new(nil, "atom", true,
                                        learn_client_class: learn_client_class,
                                        git_adapter: git_adapter,
-                                       environment_adapter: environment,
+                                       environment_vars: environment,
                                        system_adapter: system_adapter,
                                        io: spy)
         opener.run
@@ -151,7 +146,7 @@ describe LearnOpen::Opener do
         opener = LearnOpen::Opener.new(nil, "atom", true,
                                        learn_client_class: learn_client_class,
                                        git_adapter: git_adapter,
-                                       environment_adapter: environment,
+                                       environment_vars: environment,
                                        system_adapter: system_adapter,
                                        io: spy)
         opener.run
@@ -171,7 +166,7 @@ describe LearnOpen::Opener do
         opener = LearnOpen::Opener.new(nil, "atom", true,
                                        learn_client_class: learn_client_class,
                                        git_adapter: git_adapter,
-                                       environment_adapter: environment,
+                                       environment_vars: environment,
                                        system_adapter: system_adapter,
                                        io: spy)
         opener.run
@@ -202,7 +197,7 @@ describe LearnOpen::Opener do
         opener = LearnOpen::Opener.new("ruby_lab", "atom", false,
                                        learn_client_class: learn_client_class,
                                        git_adapter: git_adapter,
-                                       environment_adapter: environment,
+                                       environment_vars: environment,
                                        system_adapter: system_adapter,
                                        io: spy)
         opener.run
@@ -233,7 +228,7 @@ describe LearnOpen::Opener do
         opener = LearnOpen::Opener.new("node_lab", "atom", false,
                                        learn_client_class: learn_client_class,
                                        git_adapter: git_adapter,
-                                       environment_adapter: environment,
+                                       environment_vars: environment,
                                        system_adapter: system_adapter,
                                        io: spy)
         opener.run
@@ -271,7 +266,7 @@ describe LearnOpen::Opener do
       opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
                                      learn_client_class: learn_client_class,
                                      git_adapter: git_adapter,
-                                     environment_adapter: environment,
+                                     environment_vars: environment,
                                      system_adapter: system_adapter,
                                      io: io)
       opener.run
@@ -304,7 +299,7 @@ Done.
       opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
                                      learn_client_class: learn_client_class,
                                      git_adapter: git_adapter,
-                                     environment_adapter: environment,
+                                     environment_vars: environment,
                                      system_adapter: system_adapter,
                                      io: spy)
       opener.run
@@ -347,7 +342,7 @@ Done.
         opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
                                        learn_client_class: learn_client_class,
                                        git_adapter: git_adapter,
-                                       environment_adapter: environment,
+                                       environment_vars: environment,
                                        system_adapter: system_adapter,
                                        io: spy)
         opener.run
@@ -359,7 +354,7 @@ Done.
         opener = LearnOpen::Opener.new("readme", "atom", false,
                                        learn_client_class: learn_client_class,
                                        git_adapter: git_adapter,
-                                       environment_adapter: {},
+                                       environment_vars: {},
                                        system_adapter: system_adapter,
                                        io: io,
                                        platform: "linux")
@@ -379,7 +374,7 @@ EOF
         opener = LearnOpen::Opener.new("readme", "atom", false,
                                        learn_client_class: learn_client_class,
                                        git_adapter: git_adapter,
-                                       environment_adapter: environment,
+                                       environment_vars: environment,
                                        system_adapter: system_adapter,
                                        io: io)
         opener.run
@@ -402,7 +397,7 @@ EOF
           opener = LearnOpen::Opener.new("readme", "atom", false,
                                          learn_client_class: learn_client_class,
                                          git_adapter: git_adapter,
-                                         environment_adapter: {},
+                                         environment_vars: {},
                                          system_adapter: system_adapter,
                                          io: io,
                                          platform: "darwin")
@@ -427,7 +422,7 @@ EOF
           opener = LearnOpen::Opener.new("readme", "atom", false,
                                          learn_client_class: learn_client_class,
                                          git_adapter: git_adapter,
-                                         environment_adapter: {},
+                                         environment_vars: {},
                                          system_adapter: system_adapter,
                                          io: io,
                                          platform: "darwin")
@@ -454,7 +449,7 @@ EOF
         opener = LearnOpen::Opener.new("ios_lab", "atom", false,
                                        learn_client_class: learn_client_class,
                                        git_adapter: git_adapter,
-                                       environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                       environment_vars: {"SHELL" => "/usr/local/bin/fish"},
                                        system_adapter: system_adapter,
                                        io: io,
                                        platform: "linux")
@@ -487,7 +482,7 @@ EOF
         opener = LearnOpen::Opener.new("ios_lab", "atom", false,
                                        learn_client_class: learn_client_class,
                                        git_adapter: git_adapter,
-                                       environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                       environment_vars: {"SHELL" => "/usr/local/bin/fish"},
                                        system_adapter: system_adapter,
                                        io: io,
                                        platform: "darwin")
@@ -510,7 +505,7 @@ EOF
         opener = LearnOpen::Opener.new("ios_with_workspace_lab", "atom", false,
                                        learn_client_class: learn_client_class,
                                        git_adapter: git_adapter,
-                                       environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                       environment_vars: {"SHELL" => "/usr/local/bin/fish"},
                                        system_adapter: system_adapter,
                                        io: io,
                                        platform: "darwin")
@@ -534,7 +529,7 @@ EOF
           opener = LearnOpen::Opener.new("ruby_lab", "atom", false,
                                          learn_client_class: learn_client_class,
                                          git_adapter: git_adapter,
-                                         environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                         environment_vars: {"SHELL" => "/usr/local/bin/fish"},
                                          system_adapter: system_adapter,
                                          io: spy)
           opener.run
@@ -553,7 +548,7 @@ EOF
           opener = LearnOpen::Opener.new("ruby_lab", "atom", false,
                                          learn_client_class: learn_client_class,
                                          git_adapter: git_adapter,
-                                         environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                         environment_vars: {"SHELL" => "/usr/local/bin/fish"},
                                          system_adapter: system_adapter,
                                          io: io)
           opener.run
@@ -587,7 +582,7 @@ EOF
           opener = LearnOpen::Opener.new("python_lab", "atom", false,
                                          learn_client_class: learn_client_class,
                                          git_adapter: git_adapter,
-                                         environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                         environment_vars: {"SHELL" => "/usr/local/bin/fish"},
                                          system_adapter: system_adapter,
                                          io: spy)
           opener.run
@@ -605,7 +600,7 @@ EOF
           opener = LearnOpen::Opener.new("python_lab", "atom", false,
                                          learn_client_class: learn_client_class,
                                          git_adapter: git_adapter,
-                                         environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                         environment_vars: {"SHELL" => "/usr/local/bin/fish"},
                                          system_adapter: system_adapter,
                                          io: io)
           opener.run
@@ -638,7 +633,7 @@ EOF
           opener = LearnOpen::Opener.new("node_lab", "atom", false,
                                          learn_client_class: learn_client_class,
                                          git_adapter: git_adapter,
-                                         environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                         environment_vars: {"SHELL" => "/usr/local/bin/fish"},
                                          system_adapter: system_adapter,
                                          io: spy)
           opener.run
@@ -656,7 +651,7 @@ EOF
           opener = LearnOpen::Opener.new("node_lab", "atom", false,
                                          learn_client_class: learn_client_class,
                                          git_adapter: git_adapter,
-                                         environment_adapter: {"SHELL" => "/usr/local/bin/fish"},
+                                         environment_vars: {"SHELL" => "/usr/local/bin/fish"},
                                          system_adapter: system_adapter,
                                          io: io)
           opener.run

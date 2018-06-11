@@ -7,37 +7,39 @@ module LearnOpen
                 :target_lesson,
                 :get_next_lesson,
                 :token,
-                :environment_adapter,
+                :environment_vars,
                 :git_adapter,
                 :system_adapter,
                 :io,
                 :platform,
-                :logger
+                :logger,
+                :options
 
     def self.run(lesson:, editor_specified:, get_next_lesson:)
       new(lesson, editor_specified, get_next_lesson).run
     end
 
-    def initialize(target_lesson, editor, get_next_lesson, learn_client_class: LearnWeb::Client, file_system_adapter: FileUtils, environment_adapter: ENV, git_adapter: Git, system_adapter: SystemAdapter, io: Kernel, platform: RUBY_PLATFORM)
+    def initialize(target_lesson, editor, get_next_lesson, options={})
       @target_lesson   = target_lesson
       @editor          = editor
       @get_next_lesson = get_next_lesson
 
-      @file_system_adapter = file_system_adapter
-      @environment_adapter = environment_adapter
-      @git_adapter         = git_adapter
-      @system_adapter      = system_adapter
-      @io                  = io
-      @platform            = platform
+      @options             = options
+      @environment_vars    = options.fetch(:environment_vars, LearnOpen.environment_vars)
+      @git_adapter         = options.fetch(:git_adapter, LearnOpen.git_adapter)
+      @system_adapter      = options.fetch(:system_adapter, LearnOpen.system_adapter)
+      @io                  = options.fetch(:io, LearnOpen.default_io)
+      @platform            = options.fetch(:platform, LearnOpen.platform)
+      @logger              = options.fetch(:logger, LearnOpen.logger)
+      learn_client_class   = options.fetch(:learn_client_class, LearnOpen.learn_client)
 
-
-      home_dir         = File.expand_path("~")
-      netrc_path     ||= "#{home_dir}/.netrc"
       _login, @token   = Netrc.read['learn-config']
       @client          = learn_client_class.new(token: @token)
-      @lessons_dir     = YAML.load(File.read("#{home_dir}/.learn-config"))[:learn_directory]
-      @logger          = LearnOpen.logger
 
+      options[:client] = @client
+
+      home_dir         = File.expand_path("~")
+      @lessons_dir     = YAML.load(File.read("#{home_dir}/.learn-config"))[:learn_directory]
     end
 
     def run
@@ -54,10 +56,10 @@ module LearnOpen
       else
         {lesson: correct_lesson, later_lesson: correct_lesson.later_lesson}
       end
-      @lesson = Lessons.classify(lesson_data)
+      @lesson = Lessons.classify(lesson_data, options)
 
-      if ide_version_3? && lesson.name != environment_adapter['LAB_NAME']
-        home_dir = "/home/#{environment_adapter['CREATED_USER']}"
+      if ide_version_3? && lesson.name != environment_vars['LAB_NAME']
+        home_dir = "/home/#{environment_vars['CREATED_USER']}"
         File.open("#{home_dir}/.custom_commands.log", "a") do |f|
           f.puts %Q{{"command": "open_lab", "lab_name": "#{lesson.name}"}}
         end
@@ -67,13 +69,11 @@ module LearnOpen
         self.later_lesson  = lesson.later_lesson
         # Run on Correct Environment
         if jupyter_notebook_environment?
-          @lesson.open(lessons_dir)
-          fork_repo
-          clone_repo
-          cd_to_lesson
-          open_with_editor
+          @lesson.open(lessons_dir, editor)
+
           restore_files
           watch_for_changes
+
           jupyter_pip_install
           completion_tasks
         else
@@ -105,8 +105,6 @@ module LearnOpen
     end
 
     private
-    attr_reader :file_system_adapter
-
     def ping_fork_completion(retries=3)
       begin
         Timeout::timeout(15) do
@@ -374,7 +372,7 @@ module LearnOpen
     def open_readme
       if ide_environment?
         io.puts "Opening readme..."
-          home_dir = "/home/#{environment_adapter['CREATED_USER']}"
+          home_dir = "/home/#{environment_vars['CREATED_USER']}"
           File.open("#{home_dir}/.custom_commands.log", "a") do |f|
             f.puts %Q{{"command": "browser_open", "url": "https://learn.co/lessons/#{lesson.id}"}}
         end
@@ -415,21 +413,21 @@ module LearnOpen
     end
 
     def ide_environment?
-      environment_adapter['IDE_CONTAINER'] == "true"
+      environment_vars['IDE_CONTAINER'] == "true"
     end
 
     def ide_git_wip_enabled?
       return false if github_disabled?
 
-      environment_adapter['IDE_GIT_WIP'] == "true"
+      environment_vars['IDE_GIT_WIP'] == "true"
     end
 
     def ide_version_3?
-      environment_adapter['IDE_VERSION'] == "3"
+      environment_vars['IDE_VERSION'] == "3"
     end
 
     def jupyter_notebook_environment?
-      environment_adapter['JUPYTER_CONTAINER'] == "true"
+      environment_vars['JUPYTER_CONTAINER'] == "true"
     end
 
     def git_tasks
@@ -455,7 +453,7 @@ module LearnOpen
     def completion_tasks
       logger.log("Done.")
       io.puts "Done."
-      system_adapter.open_login_shell(environment_adapter['SHELL'])
+      system_adapter.open_login_shell(environment_vars['SHELL'])
     end
   end
 end

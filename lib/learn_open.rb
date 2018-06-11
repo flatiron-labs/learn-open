@@ -22,9 +22,9 @@ require 'learn_open/lessons/lab_lesson'
 module LearnOpen
   def self.learn_web_client
     @client ||= begin
-                  netrc_path     ||= "#{home_dir}/.netrc"
-                  _login, token   = Netrc.read['learn-config']
-                  client          = LearnWeb::Client.new(token: @token)
+                  netrc_path    = "#{home_dir}/.netrc"
+                  _login, token = Netrc.read['learn-config']
+                  client        = LearnWeb::Client.new(token: @token)
                 end
   end
 
@@ -33,5 +33,29 @@ module LearnOpen
                   home_dir = File.expand_path("~")
                   Logger.new("#{home_dir}/.learn-open-tmp")
                 end
+  end
+
+  def self.default_io
+    Kernel
+  end
+
+  def self.git_adapter
+    Git
+  end
+
+  def self.environment_vars
+    ENV
+  end
+
+  def self.system_adapter
+    SystemAdapter
+  end
+
+  def self.platform
+    RUBY_PLATFORM
+  end
+
+  def self.learn_client
+    LearnWeb::Client
   end
 end
