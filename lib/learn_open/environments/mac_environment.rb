@@ -23,7 +23,6 @@ module LearnOpen
         when LearnOpen::Lessons::IosLesson
           LessonDownloader.call(lesson, location, options)
           open_xcode(lesson, location)
-          DependencyInstaller.call(self, lesson, location, options)
           notify_of_completion
           open_shell
         else
