@@ -11,6 +11,7 @@ class FakeLearnClient
      :github_repo=>"ttt-2-board-rb-v-000",
      :forked_repo=>"StevenNunez/ttt-2-board-rb-v-000",
      :clone_repo=>"StevenNunez/ttt-2-board-rb-v-000",
+     :git_server=>"github.com",
      :dot_learn=>{:tags=>["variables", "arrays", "tictactoe"], :languages=>["ruby"], :resources=>0},
      :lab=>true,
      :ios_lab=>false,
@@ -37,6 +38,7 @@ class FakeLearnClient
         :lab=>true,
         :lesson_id=>31322,
         :later_lesson=>false,
+        :git_server=>"github.com",
         :dot_learn=>{
           :tags=>[
             "UIView"
@@ -52,6 +54,7 @@ class FakeLearnClient
         :lab=>true,
         :lesson_id=>31322,
         :later_lesson=>false,
+        :git_server=>"github.com",
         :dot_learn=>{
           :tags=>[
             "UIView"
@@ -67,6 +70,7 @@ class FakeLearnClient
         :lab=>true,
         :lesson_id=>31322,
         :later_lesson=>false,
+        :git_server=>"github.com",
         :dot_learn=>{
           :tags=>[
             "jupyter_notebook"
@@ -83,6 +87,7 @@ class FakeLearnClient
         :lab=>true,
         :lesson_id=>31322,
         :later_lesson=>false,
+        :git_server=>"github.com",
         :dot_learn=>{
           :tags=>[
             "arrays"
@@ -98,6 +103,7 @@ class FakeLearnClient
         :lab=>true,
         :lesson_id=>31322,
         :later_lesson=>false,
+        :git_server=>"github.com",
         :dot_learn=>{
           :tags=>[
             "arrays"
@@ -113,6 +119,7 @@ class FakeLearnClient
         :lab=>true,
         :lesson_id=>31322,
         :later_lesson=>false,
+        :git_server=>"github.com",
         :dot_learn=>{
           :tags=>[
             "arrays"
@@ -128,6 +135,7 @@ class FakeLearnClient
         :lab=>false,
         :lesson_id=>31322,
         :later_lesson=>false,
+        :git_server=>"github.com",
         :dot_learn=>{
           :tags=>[
             "Reading things"
@@ -148,6 +156,7 @@ class FakeLearnClient
       :github_repo=>"rails-dynamic-request-lab-cb-000",
       :forked_repo=>"StevenNunez/rails-dynamic-request-lab-cb-000",
       :clone_repo=>"StevenNunez/rails-dynamic-request-lab-cb-000",
+      :git_server=>"github.com",
       :dot_learn=>
       {
         :tags=>[

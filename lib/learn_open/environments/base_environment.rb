@@ -9,7 +9,7 @@ module LearnOpen
         @logger           = options.fetch(:logger, LearnOpen.logger)
         @options          = options
       end
-      def open_jupyter_lab(location, editor); end
+      def open_jupyter_lab(lesson, location, editor); end
 
       def open_lab(lesson, location, editor)
         case lesson

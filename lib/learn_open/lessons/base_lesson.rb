@@ -6,6 +6,7 @@ module LearnOpen
         :name,
         :id,
         :dot_learn,
+        :git_server,
         :later_lesson,
         :options,
         :io,
@@ -18,12 +19,14 @@ module LearnOpen
       def initialize(lesson_data, options={})
         lesson = lesson_data[:lesson]
 
-        @repo_path     = lesson.clone_repo
+        @repo_path         = lesson.clone_repo
         @organization, @name = repo_path.split('/')
-        @id            = lesson.lesson_id
-        @dot_learn     = lesson.dot_learn
-        @later_lesson  = lesson_data[:later_lesson]
-        @is_lab        = lesson[:lab]
+
+        @git_server        = lesson.git_server
+        @dot_learn         = lesson.dot_learn
+        @is_lab            = lesson.lab
+        @later_lesson      = lesson_data[:later_lesson]
+        @id                = lesson_data[:id]
 
         @logger          = options.fetch(:logger, LearnOpen.logger)
         @io              = options.fetch(:io, LearnOpen.default_io)

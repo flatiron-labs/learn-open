@@ -11,18 +11,22 @@ module LearnOpen
           load_current_lesson
           {
             lesson: current_lesson,
+            id: current_lesson.id,
             later_lesson: false
           }
         elsif opening_next_lesson?(target_lesson, fetch_next_lesson)
           load_next_lesson
           {
-            lesson: next_lesson, 
+            lesson: next_lesson,
+            id: next_lesson.id,
             later_lesson: false
           }
         else
+          lesson = correct_lesson(target_lesson)
           {
-            lesson: correct_lesson(target_lesson), 
-            later_lesson: correct_lesson(target_lesson).later_lesson
+            lesson: lesson,
+            id: lesson.lesson_id,
+            later_lesson: lesson.later_lesson
           }
         end
       end

@@ -2,7 +2,7 @@ module LearnOpen
   module Lessons
     class ReadmeLesson < BaseLesson
       def self.detect(lesson)
-        !lesson[:lab]
+        !lesson.lab
       end
 
       def open(environment, _editor)

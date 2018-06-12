@@ -51,7 +51,7 @@ module LearnOpen
       io.puts "Cloning lesson..."
       begin
         Timeout::timeout(15) do
-          git_adapter.clone("git@github.com:#{lesson.repo_path}.git", lesson.name, path: location)
+          git_adapter.clone("git@#{lesson.git_server}:#{lesson.repo_path}.git", lesson.name, path: location)
         end
       rescue Git::GitExecuteError
         if retries > 0

@@ -10,6 +10,7 @@ require 'learn_open/logger'
 require 'learn_open/argument_parser'
 require 'learn_open/adapters/system_adapter'
 require 'learn_open/adapters/learn_web_adapter'
+require 'learn_open/adapters/io_adapter'
 require 'learn_open/environments'
 require 'learn_open/environments/base_environment'
 require 'learn_open/environments/mac_environment'
@@ -48,7 +49,7 @@ module LearnOpen
   end
 
   def self.default_io
-    Kernel
+    LearnOpen::Adapters::IOAdapter.new(input: STDIN, output: Kernel)
   end
 
   def self.git_adapter
