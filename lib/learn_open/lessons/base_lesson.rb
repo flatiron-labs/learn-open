@@ -1,6 +1,6 @@
 module LearnOpen
   module Lessons
-    class Base
+    class BaseLesson
       attr_reader :repo_path,
         :organization,
         :name,

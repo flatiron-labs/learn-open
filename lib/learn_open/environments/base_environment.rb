@@ -15,7 +15,6 @@ module LearnOpen
         case lesson
         when LearnOpen::Lessons::IosLesson
           io.puts "You need to be on a Mac to work on iOS lessons."
-          :noop
         else
           LessonDownloader.call(lesson, location, options)
           open_editor(lesson, location, editor)

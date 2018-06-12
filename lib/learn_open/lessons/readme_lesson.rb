@@ -1,6 +1,6 @@
 module LearnOpen
   module Lessons
-    class ReadmeLesson < Base
+    class ReadmeLesson < BaseLesson
       def self.detect(lesson)
         !lesson[:lab]
       end
