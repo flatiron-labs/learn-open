@@ -15,7 +15,7 @@ module LearnOpen
 
       def open_editor(lesson, location, editor)
         io.puts "Opening lesson..."
-        system_adapter.change_context_directory("#{location}/#{lesson.name}")
+        system_adapter.change_context_directory(lesson.to_path)
         system_adapter.open_editor(editor, path: ".")
       end
 

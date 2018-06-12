@@ -12,7 +12,8 @@ module LearnOpen
         :system_adapter,
         :platform,
         :environment_vars,
-        :logger
+        :logger,
+        :location
 
       def initialize(lesson_data, options={})
         lesson = lesson_data[:lesson]
@@ -29,6 +30,7 @@ module LearnOpen
         @system_adapter  = options.fetch(:system_adapter, LearnOpen.system_adapter)
         @platform        = options.fetch(:platform, LearnOpen.platform)
         @environment_vars = options.fetch(:environment_vars, LearnOpen.environment_vars)
+        @location         = options.fetch(:lessons_directory) { LearnOpen.lessons_directory }
         @options        = options
       end
 
@@ -48,6 +50,10 @@ module LearnOpen
 
         warn_response = io.gets.chomp.downcase
         exit if !['yes', 'y'].include?(warn_response)
+      end
+
+      def to_path
+        "#{location}/#{name}"
       end
     end
   end

@@ -79,7 +79,7 @@ module LearnOpen
     end
 
     def repo_exists?
-      File.exists?("#{location}/#{lesson.name}/.git")
+      File.exists?("#{lesson.to_path}/.git")
     end
 
     def github_disabled?

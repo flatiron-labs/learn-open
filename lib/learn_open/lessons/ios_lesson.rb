@@ -6,8 +6,8 @@ module LearnOpen
         (languages & ["swift", "objc"]).any?
       end
 
-      def open(location, editor)
-        LearnOpen::Environments.classify(options).open_lab(self, location, editor)
+      def open(environment, editor)
+        environment.open_lab(self, location, editor)
       end
     end
   end

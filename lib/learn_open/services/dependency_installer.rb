@@ -32,7 +32,7 @@ module LearnOpen
 
     class GemInstaller < BaseInstaller
       def self.detect(lesson, location)
-        File.exists?("#{location}/#{lesson.name}/Gemfile")
+        File.exists?("#{lesson.to_path}/Gemfile")
       end
 
       def call
@@ -43,7 +43,7 @@ module LearnOpen
 
     class PipInstaller < BaseInstaller
       def self.detect(lesson, location)
-        File.exists?("#{location}/#{lesson.name}/requirements.txt")
+        File.exists?("#{lesson.to_path}/requirements.txt")
       end
       def call
         io.puts "Installing pip dependencies..."
@@ -53,7 +53,7 @@ module LearnOpen
 
     class NodeInstaller < BaseInstaller
       def self.detect(lesson, location)
-        File.exists?("#{location}/#{lesson.name}/package.json")
+        File.exists?("#{lesson.to_path}/package.json")
       end
 
       def call
@@ -70,7 +70,7 @@ module LearnOpen
 
     class JupyterPipInstall < BaseInstaller
       def self.detect(lesson, location)
-        File.exists?("#{location}/#{lesson.name}/requirements.txt")
+        File.exists?("#{lesson.to_path}/requirements.txt")
       end
 
       def call
@@ -108,7 +108,7 @@ module LearnOpen
 
     private
     def has_requirements_txt?
-      File.exists?("#{location}/#{lesson.name}/requirements.txt")
+      File.exists?("#{lesson.to_path}/requirements.txt")
     end
   end
 end

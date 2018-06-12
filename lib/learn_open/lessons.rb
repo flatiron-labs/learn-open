@@ -8,7 +8,6 @@ module LearnOpen
     def self.lesson_types
       [
         JupyterLesson,
-        GithubDisabledLesson,
         ReadmeLesson,
         IosLesson,
 

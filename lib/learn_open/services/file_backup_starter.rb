@@ -13,7 +13,7 @@ module LearnOpen
 
     def call
       system_adapter.spawn("restore-lab", block: true)
-      system_adapter.watch_dir("#{location}/#{lesson.name}", "backup-lab")
+      system_adapter.watch_dir("#{lesson.to_path}", "backup-lab")
     end
   end
 end

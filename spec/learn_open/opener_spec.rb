@@ -6,7 +6,7 @@ describe LearnOpen::Opener do
   include FakeFS::SpecHelpers
   let(:learn_web_client)       { FakeLearnClient.new(token: "some-amazing-password") }
   let(:git_adapter)            { FakeGit.new }
-  let(:system_adapter)         { class_double(LearnOpen::SystemAdapter) }
+  let(:system_adapter)         { class_double(LearnOpen::Adapters::SystemAdapter) }
 
   before do
     create_home_dir
@@ -622,4 +622,3 @@ Setting the "lesson" we're going to be opening
   name passed in? asked for next? Nothing passed in?
 Most tests for IOS and jupter will be where we explicitly pass in a lesson name that's setup to be IOS/jupyter-y
 =end
-

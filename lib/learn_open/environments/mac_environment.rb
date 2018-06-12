@@ -31,20 +31,20 @@ module LearnOpen
       end
 
       def xcodeproj_file?(lesson, location)
-        Dir.glob("#{location}/#{lesson.name}/*.xcodeproj").any?
+        Dir.glob("#{lesson.to_path}/*.xcodeproj").any?
       end
 
       def xcworkspace_file?(lesson, location)
-        Dir.glob("#{location}/#{lesson.name}/*.xcworkspace").any?
+        Dir.glob("#{lesson.to_path}/*.xcworkspace").any?
       end
 
       def open_xcode(lesson, location)
         io.puts "Opening lesson..."
-        system_adapter.change_context_directory("#{location}/#{lesson.name}")
+        system_adapter.change_context_directory("#{lesson.to_path}")
         if xcworkspace_file?(lesson, location)
-          system_adapter.run_command("cd #{location}/#{lesson.name} && open *.xcworkspace")
+          system_adapter.run_command("cd #{lesson.to_path} && open *.xcworkspace")
         elsif xcodeproj_file?(lesson, location)
-          system_adapter.run_command("cd #{location}/#{lesson.name} && open *.xcodeproj")
+          system_adapter.run_command("cd #{lesson.to_path} && open *.xcodeproj")
         end
       end
     end

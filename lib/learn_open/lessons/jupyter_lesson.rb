@@ -6,8 +6,8 @@ module LearnOpen
         !!dot_learn[:jupyter_notebook]
       end
 
-      def open(location, editor)
-        LearnOpen::Environments.classify(options).open_jupyter_lab(self, location, editor)
+      def open(environment, editor)
+        environment.open_jupyter_lab(self, location, editor)
       end
     end
   end

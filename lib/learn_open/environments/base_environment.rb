@@ -10,6 +10,7 @@ module LearnOpen
         @options          = options
       end
       def open_jupyter_lab(location, editor); end
+
       def open_lab(lesson, location, editor)
         case lesson
         when LearnOpen::Lessons::IosLesson
@@ -26,7 +27,7 @@ module LearnOpen
 
       def open_editor(lesson, location, editor)
         io.puts "Opening lesson..."
-        system_adapter.change_context_directory("#{location}/#{lesson.name}")
+        system_adapter.change_context_directory(lesson.to_path)
         system_adapter.open_editor(editor, path: ".")
       end
 

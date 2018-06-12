@@ -5,9 +5,9 @@ module LearnOpen
         !lesson[:lab]
       end
 
-      def open(location, editor)
+      def open(environment, _editor)
         warn_if_necessary
-        LearnOpen::Environments.classify(options).open_readme(self)
+        environment.open_readme(self)
       end
 
       def to_url
