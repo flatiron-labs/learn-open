@@ -10,7 +10,6 @@ module LearnOpen
         JupyterLesson,
         ReadmeLesson,
         IosLesson,
-
       ]
     end
     def self.classify(lesson_data, options={})

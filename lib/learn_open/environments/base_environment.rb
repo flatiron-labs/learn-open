@@ -18,7 +18,7 @@ module LearnOpen
         else
           LessonDownloader.call(lesson, location, options)
           open_editor(lesson, location, editor)
-          DependencyInstaller.call(self, lesson, location, options)
+          DependencyInstallers.run_installers(lesson, location, self, options)
           notify_of_completion
           open_shell
         end
