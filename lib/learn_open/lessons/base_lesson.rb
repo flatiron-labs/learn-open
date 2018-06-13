@@ -58,6 +58,10 @@ module LearnOpen
       def to_path
         "#{location}/#{name}"
       end
+
+      def to_url
+        "https://learn.co/lessons/#{id}"
+      end
     end
   end
 end

@@ -14,6 +14,8 @@ require 'learn_open/adapters/io_adapter'
 require 'learn_open/environments'
 require 'learn_open/environments/base_environment'
 require 'learn_open/environments/mac_environment'
+require 'learn_open/environments/linux_environment'
+require 'learn_open/environments/windows_environment'
 require 'learn_open/environments/generic_environment'
 require 'learn_open/environments/ide_environment'
 require 'learn_open/environments/jupyter_container_environment'
@@ -37,7 +39,7 @@ module LearnOpen
   def self.learn_web_client
     @client ||= begin
       _login, token = Netrc.read['learn-config']
-      client = LearnWeb::Client.new(token: token)
+      LearnWeb::Client.new(token: token)
     end
   end
 
@@ -65,7 +67,7 @@ module LearnOpen
   end
 
   def self.platform
-    RUBY_PLATFORM
+    RbConfig::CONFIG['host_os']
   end
 
   def self.lessons_directory

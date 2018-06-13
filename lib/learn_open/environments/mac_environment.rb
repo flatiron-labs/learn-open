@@ -21,8 +21,8 @@ module LearnOpen
       def open_lab(lesson, location, editor)
         case lesson
         when LearnOpen::Lessons::IosLesson
-          LessonDownloader.call(lesson, location, options)
-          open_xcode(lesson, location)
+          download_lesson(lesson, location)
+          open_xcode(lesson)
           notify_of_completion
           open_shell
         else
@@ -30,20 +30,25 @@ module LearnOpen
         end
       end
 
-      def xcodeproj_file?(lesson, location)
+      def open_jupyter_lab(lesson, location, editor)
+        io.puts "Opening Jupyter Lesson..."
+        system_adapter.run_command("open -a Safari #{lesson.to_url}")
+      end
+
+      def xcodeproj_file?(lesson)
         Dir.glob("#{lesson.to_path}/*.xcodeproj").any?
       end
 
-      def xcworkspace_file?(lesson, location)
+      def xcworkspace_file?(lesson)
         Dir.glob("#{lesson.to_path}/*.xcworkspace").any?
       end
 
-      def open_xcode(lesson, location)
+      def open_xcode(lesson)
         io.puts "Opening lesson..."
         system_adapter.change_context_directory("#{lesson.to_path}")
-        if xcworkspace_file?(lesson, location)
+        if xcworkspace_file?(lesson)
           system_adapter.run_command("cd #{lesson.to_path} && open *.xcworkspace")
-        elsif xcodeproj_file?(lesson, location)
+        elsif xcodeproj_file?(lesson)
           system_adapter.run_command("cd #{lesson.to_path} && open *.xcodeproj")
         end
       end
@@ -54,6 +59,12 @@ module LearnOpen
         io.puts "Opening readme..."
         system_adapter.run_command("open -a 'Google Chrome' #{lesson.to_url}")
       end
+
+      def open_jupyter_lab(lesson, location, editor)
+        io.puts "Opening Jupyter Lesson..."
+        system_adapter.run_command("open -a 'Google Chrome' #{lesson.to_url}")
+      end
+
     end
   end
 end

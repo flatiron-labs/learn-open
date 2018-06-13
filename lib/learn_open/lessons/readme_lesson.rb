@@ -9,10 +9,6 @@ module LearnOpen
         warn_if_necessary
         environment.open_readme(self)
       end
-
-      def to_url
-        "https://learn.co/lessons/#{id}"
-      end
     end
   end
 end

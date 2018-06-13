@@ -189,16 +189,6 @@ describe LearnOpen::Opener do
         opener.run
       end
     end
-    # on IDE
-    # on mac
-    #   with chrome
-    # jupyter lab
-    #   pip install
-    # jupyter readme
-    # readme
-    # lab
-    #   Maybe bundle, pip, ios
-    # Test messages printed on screen
   end
   context "Logging" do
     let(:environment) {{ "SHELL" => "/usr/local/bin/fish", "JUPYTER_CONTAINER" => "true" }}
@@ -263,9 +253,8 @@ Done.
   end
   context "Lab Types" do
     context "Jupyter Labs" do
-      let(:environment) {{ "SHELL" => "/usr/local/bin/fish", "JUPYTER_CONTAINER" => "true" }}
-
-      it "correctly opens jupyter lab" do
+      it "correctly opens jupyter lab on jupyter container" do
+        environment = { "SHELL" => "/usr/local/bin/fish", "JUPYTER_CONTAINER" => "true" }
         expect(learn_web_client)
           .to receive(:fork_repo)
           .with(repo_name: "jupyter_lab")
@@ -302,6 +291,104 @@ Done.
                                        io: spy)
         opener.run
       end
+
+      it "opens browser in IDE"  do
+        environment = {"CREATED_USER" => "bobby", "IDE_CONTAINER" => "true", "LAB_NAME" => "jupyter_lab"}
+        io = StringIO.new
+        home_dir = create_linux_home_dir("bobby")
+        opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
+                                       learn_web_client: learn_web_client,
+                                       git_adapter: git_adapter,
+                                       environment_vars: environment,
+                                       system_adapter: system_adapter,
+                                       io: io)
+        opener.run
+        io.rewind
+        expect(io.read).to eq(<<-EOF)
+Looking for lesson...
+Opening Jupyter Lesson...
+EOF
+
+        custom_commands_log = File.read("#{home_dir}/.custom_commands.log")
+        expect(custom_commands_log).to eq("{\"command\":\"browser_open\",\"url\":\"https://learn.co/lessons/31322\"}\n")
+      end
+      it "opens the lab in the safari on mac"  do
+        expect(system_adapter)
+          .to receive(:run_command)
+          .with("open -a Safari https://learn.co/lessons/31322")
+        io = StringIO.new
+        opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
+                                       learn_web_client: learn_web_client,
+                                       git_adapter: git_adapter,
+                                       system_adapter: system_adapter,
+                                       io: io,
+                                       platform: "darwin")
+        opener.run
+        io.rewind
+        expect(io.read).to eq(<<-EOF)
+Looking for lesson...
+Opening Jupyter Lesson...
+EOF
+      end
+      it "opens the lab in the chrome on mac if present" do
+        FileUtils.mkdir_p("/Applications")
+        FileUtils.touch('/Applications/Google Chrome.app')
+        expect(system_adapter)
+          .to receive(:run_command)
+          .with("open -a 'Google Chrome' https://learn.co/lessons/31322")
+
+        io = StringIO.new
+        opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
+                                       learn_web_client: learn_web_client,
+                                       git_adapter: git_adapter,
+                                       system_adapter: system_adapter,
+                                       io: io,
+                                       platform: "darwin")
+        opener.run
+        io.rewind
+        expect(io.read).to eq(<<-EOF)
+Looking for lesson...
+Opening Jupyter Lesson...
+EOF
+      end
+
+      it "opens the lab in the browser on linux" do
+        expect(system_adapter)
+          .to receive(:run_command)
+          .with("xdg-open https://learn.co/lessons/31322")
+        io = StringIO.new
+        opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
+                                       learn_web_client: learn_web_client,
+                                       git_adapter: git_adapter,
+                                       system_adapter: system_adapter,
+                                       io: io,
+                                       platform: "linux")
+        opener.run
+        io.rewind
+        expect(io.read).to eq(<<-EOF)
+Looking for lesson...
+Opening Jupyter Lesson...
+EOF
+      end
+      it "opens the lab in the browser on windows" do
+        expect(system_adapter)
+          .to receive(:run_command)
+          .with("start https://learn.co/lessons/31322")
+        io = StringIO.new
+        opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
+                                       learn_web_client: learn_web_client,
+                                       git_adapter: git_adapter,
+                                       system_adapter: system_adapter,
+                                       io: io,
+                                       platform: "mswin")
+        opener.run
+
+        io.rewind
+        expect(io.read).to eq(<<-EOF)
+Looking for lesson...
+Opening Jupyter Lesson...
+EOF
+      end
     end
     context "Readme" do
       it "does not open readme if on unsupported environment" do
@@ -312,7 +399,7 @@ Done.
                                        environment_vars: {},
                                        system_adapter: system_adapter,
                                        io: io,
-                                       platform: "linux")
+                                       platform: "chromeos")
         opener.run
 
         io.rewind
@@ -381,6 +468,55 @@ EOF
                                          system_adapter: system_adapter,
                                          io: io,
                                          platform: "darwin")
+          opener.run
+
+          io.rewind
+          expect(io.read).to eq(<<-EOF)
+Looking for lesson...
+Opening readme...
+EOF
+        end
+      end
+
+      context "on linux" do
+        it "opens in default brower" do
+          io = StringIO.new
+          expect(system_adapter)
+            .to receive(:run_command)
+            .with("xdg-open https://learn.co/lessons/31322")
+
+
+          opener = LearnOpen::Opener.new("readme", "atom", false,
+                                         learn_web_client: learn_web_client,
+                                         git_adapter: git_adapter,
+                                         environment_vars: {},
+                                         system_adapter: system_adapter,
+                                         io: io,
+                                         platform: "linux")
+          opener.run
+
+          io.rewind
+          expect(io.read).to eq(<<-EOF)
+Looking for lesson...
+Opening readme...
+EOF
+        end
+      end
+      context "on windows" do
+        it "opens in default brower" do
+          io = StringIO.new
+          expect(system_adapter)
+            .to receive(:run_command)
+            .with("start https://learn.co/lessons/31322")
+
+
+          opener = LearnOpen::Opener.new("readme", "atom", false,
+                                         learn_web_client: learn_web_client,
+                                         git_adapter: git_adapter,
+                                         environment_vars: {},
+                                         system_adapter: system_adapter,
+                                         io: io,
+                                         platform: "mswin")
           opener.run
 
           io.rewind
