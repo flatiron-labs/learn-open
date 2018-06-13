@@ -1,8 +1,8 @@
 module LearnOpen
   module Environments
-    class JuptyerContainerEnvironment < BaseEnvironment
+    class JupyterContainerEnvironment < BaseEnvironment
       def open_jupyter_lab(lesson, location, editor)
-        LessonDownloader.call(lesson, location, options)
+        download_lesson(lesson, location)
         open_editor(lesson, location, editor)
         FileBackupStarter.call(lesson, location, options)
         LearnOpen::DependencyInstallers::JupyterPipInstall.call(lesson, location, self, options)

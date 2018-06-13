@@ -2,9 +2,9 @@ module LearnOpen
   module DependencyInstallers
     def self.installer_types
       [
-        PipInstaller,
-        GemInstaller,
-        NodeInstaller
+          PipInstaller,
+          GemInstaller,
+          NodeInstaller
       ]
     end
 

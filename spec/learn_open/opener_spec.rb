@@ -134,7 +134,7 @@ describe LearnOpen::Opener do
                                        io: spy)
         opener.run
         custom_commands_log = File.read("#{home_dir}/.custom_commands.log")
-        expect(custom_commands_log).to eq("{\"command\": \"open_lab\", \"lab_name\": \"rails-dynamic-request-lab-cb-000\"}\n")
+        expect(custom_commands_log).to eq("{\"command\":\"open_lab\",\"lab_name\":\"rails-dynamic-request-lab-cb-000\"}\n")
       end
 
       it "writes to custom_commands_log if only if it's IDE" do
@@ -340,7 +340,7 @@ Looking for lesson...
 Opening readme...
 EOF
         custom_commands_log = File.read("#{home_dir}/.custom_commands.log")
-        expect(custom_commands_log).to eq("{\"command\": \"browser_open\", \"url\": \"https://learn.co/lessons/31322\"}\n")
+        expect(custom_commands_log).to eq("{\"command\":\"browser_open\",\"url\":\"https://learn.co/lessons/31322\"}\n")
       end
       context "on a mac" do
         it "opens safari by default" do
@@ -614,11 +614,3 @@ EOF
       end
     end
   end
-
-=begin
-Things to test
-Current Lesson
-Setting the "lesson" we're going to be opening
-  name passed in? asked for next? Nothing passed in?
-Most tests for IOS and jupter will be where we explicitly pass in a lesson name that's setup to be IOS/jupyter-y
-=end

@@ -1,6 +1,7 @@
 module LearnOpen
   class FileBackupStarter
     attr_reader :lesson, :location, :system_adapter
+
     def self.call(lesson, location, options)
       self.new(lesson, location, options).call
     end

@@ -7,12 +7,13 @@ module LearnOpen
 
     def self.lesson_types
       [
-        JupyterLesson,
-        ReadmeLesson,
-        IosLesson,
+          JupyterLesson,
+          ReadmeLesson,
+          IosLesson,
       ]
     end
-    def self.classify(lesson_data, options={})
+
+    def self.classify(lesson_data, options = {})
       lesson = lesson_data[:lesson]
       default = method(:default)
       lesson_types.find(default) do |type|

@@ -4,36 +4,35 @@ module LearnOpen
       def open_readme(lesson)
         if valid?(lesson)
           io.puts "Opening readme..."
-          home_dir = "/home/#{environment_vars['CREATED_USER']}"
-          File.open("#{home_dir}/.custom_commands.log", "a") do |f|
-            f.puts %Q{{"command": "browser_open", "url": "#{lesson.to_url}"}}
-          end
+          run_custom_command(:browser_open, {url: lesson.to_url})
         else
-          home_dir = "/home/#{environment_vars['CREATED_USER']}"
-          File.open("#{home_dir}/.custom_commands.log", "a") do |f|
-            f.puts %Q{{"command": "open_lab", "lab_name": "#{lesson.name}"}}
-          end
+          run_custom_command(:open_lab, {lab_name: lesson.name})
         end
       end
 
       def open_lab(lesson, location, editor)
         if valid?(lesson)
-          LessonDownloader.call(lesson, location, options)
+          download_lesson(lesson, location)
           open_editor(lesson, location, editor)
-          FileBackupStarter.call(lesson, location, options)
-          DependencyInstallers.run_installers(lesson, location, self, options)
+          start_file_backup(lesson, location)
+          install_dependencies(lesson, location)
           notify_of_completion
           open_shell
         else
-          home_dir = "/home/#{environment_vars['CREATED_USER']}"
-          File.open("#{home_dir}/.custom_commands.log", "a") do |f|
-            f.puts %Q{{"command": "open_lab", "lab_name": "#{lesson.name}"}}
-          end
+          run_custom_command(:open_lab, {lab_name: lesson.name})
         end
       end
 
       def valid?(lesson)
         lesson.name == environment_vars['LAB_NAME']
+      end
+
+      def run_custom_command(command, message)
+        home_dir = "/home/#{environment_vars['CREATED_USER']}"
+        custom_commands_log = "#{home_dir}/.custom_commands.log"
+        File.open(custom_commands_log, "a") do |f|
+          f.puts({:command => command}.merge(message).to_json)
+        end
       end
     end
   end

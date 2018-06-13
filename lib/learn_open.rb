@@ -3,10 +3,10 @@ require 'netrc'
 require 'git'
 require 'learn_web'
 require 'timeout'
+require 'json'
 
 require 'learn_open/version'
 require 'learn_open/opener'
-require 'learn_open/logger'
 require 'learn_open/argument_parser'
 require 'learn_open/adapters/system_adapter'
 require 'learn_open/adapters/learn_web_adapter'
@@ -36,16 +36,16 @@ require 'learn_open/lessons/lab_lesson'
 module LearnOpen
   def self.learn_web_client
     @client ||= begin
-                  _login, token = Netrc.read['learn-config']
-                  client        = LearnWeb::Client.new(token: token)
-                end
+      _login, token = Netrc.read['learn-config']
+      client = LearnWeb::Client.new(token: token)
+    end
   end
 
   def self.logger
     @logger ||= begin
-                  home_dir = File.expand_path("~")
-                  Logger.new("#{home_dir}/.learn-open-tmp")
-                end
+      home_dir = File.expand_path("~")
+      Logger.new("#{home_dir}/.learn-open-tmp")
+    end
   end
 
   def self.default_io
@@ -70,8 +70,8 @@ module LearnOpen
 
   def self.lessons_directory
     @lesson_directory ||= begin
-                            home_dir = File.expand_path("~")
-                            YAML.load(File.read("#{home_dir}/.learn-config"))[:learn_directory]
-                          end
+      home_dir = File.expand_path("~")
+      YAML.load(File.read("#{home_dir}/.learn-config"))[:learn_directory]
+    end
   end
 end
