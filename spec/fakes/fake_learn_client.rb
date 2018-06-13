@@ -22,10 +22,6 @@ class FakeLearnClient
      {:type=>"pull_request", :passing=>false, :failing=>false, :started=>false, :message=>"Submit a pull request on Github when you're done."}]})
   end
 
-  #client.submit_event
-  #client.current_lesson
-  #client.next_lesson
-  #client.validate_repo_slug(repo_slug: lesson)
   def fork_repo(repo_name: ); :noop; end
 
   def validate_repo_slug(repo_slug:)
