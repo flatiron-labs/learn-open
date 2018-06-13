@@ -10,7 +10,7 @@ module LearnOpen
       end
 
       def self.watch_dir(dir, action)
-        spawn("while inotifywait -e close_write,create,moved_to -r #{dir}; do #{action}; done")
+        spawn("while inotifywait -qre create,delete,move,close_write #{dir}; do #{action}; done")
       end
 
       def self.spawn(command, block: false)
