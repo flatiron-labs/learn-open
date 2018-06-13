@@ -10,6 +10,24 @@ module LearnOpen
         end
       end
 
+      def open_jupyter_lab(lesson, location, editor)
+        if valid?(lesson)
+          io.puts "Opening Jupyter Lesson..."
+          run_custom_command(:browser_open, {url: lesson.to_url})
+        else
+          run_custom_command(:open_lab, {lab_name: lesson.name})
+        end
+      end
+
+      def open_readme(lesson)
+        if valid?(lesson)
+          io.puts "Opening readme..."
+          run_custom_command(:browser_open, {url: lesson.to_url})
+        else
+          run_custom_command(:open_lab, {lab_name: lesson.name})
+        end
+      end
+
       def open_lab(lesson, location, editor)
         if valid?(lesson)
           download_lesson(lesson, location)
