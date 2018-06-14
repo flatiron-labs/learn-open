@@ -11,8 +11,6 @@ module LearnOpen
         MacEnvironment.classify(options)
       elsif on_linux?(platform)
         LinuxEnvironment.new(options)
-      elsif on_windows?(platform)
-        WindowsEnvironment.new(options)
       else
         GenericEnvironment.new(options)
       end
@@ -28,10 +26,6 @@ module LearnOpen
 
     def self.on_mac?(platform)
       !!platform.match(/darwin/)
-    end
-
-    def self.on_windows?(platform)
-      !!platform.match(/mswin|mingw|cygwin/)
     end
 
     def self.on_linux?(platform)

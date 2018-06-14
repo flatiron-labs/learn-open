@@ -370,25 +370,6 @@ Looking for lesson...
 Opening Jupyter Lesson...
 EOF
       end
-      it "opens the lab in the browser on windows" do
-        expect(system_adapter)
-          .to receive(:run_command)
-          .with("start https://learn.co/lessons/31322")
-        io = StringIO.new
-        opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
-                                       learn_web_client: learn_web_client,
-                                       git_adapter: git_adapter,
-                                       system_adapter: system_adapter,
-                                       io: io,
-                                       platform: "mswin")
-        opener.run
-
-        io.rewind
-        expect(io.read).to eq(<<-EOF)
-Looking for lesson...
-Opening Jupyter Lesson...
-EOF
-      end
     end
     context "Readme" do
       it "does not open readme if on unsupported environment" do
@@ -493,30 +474,6 @@ EOF
                                          system_adapter: system_adapter,
                                          io: io,
                                          platform: "linux")
-          opener.run
-
-          io.rewind
-          expect(io.read).to eq(<<-EOF)
-Looking for lesson...
-Opening readme...
-EOF
-        end
-      end
-      context "on windows" do
-        it "opens in default brower" do
-          io = StringIO.new
-          expect(system_adapter)
-            .to receive(:run_command)
-            .with("start https://learn.co/lessons/31322")
-
-
-          opener = LearnOpen::Opener.new("readme", "atom", false,
-                                         learn_web_client: learn_web_client,
-                                         git_adapter: git_adapter,
-                                         environment_vars: {},
-                                         system_adapter: system_adapter,
-                                         io: io,
-                                         platform: "mswin")
           opener.run
 
           io.rewind
