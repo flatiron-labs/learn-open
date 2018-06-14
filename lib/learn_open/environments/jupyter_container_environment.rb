@@ -4,8 +4,8 @@ module LearnOpen
       def open_jupyter_lab(lesson, location, editor)
         download_lesson(lesson, location)
         open_editor(lesson, location, editor)
-        FileBackupStarter.call(lesson, location, options)
-        LearnOpen::DependencyInstallers::JupyterPipInstall.call(lesson, location, self, options)
+        start_file_backup(lesson, location)
+        install_jupyter_dependencies(lesson, location)
         notify_of_completion
         open_shell
       end
@@ -14,6 +14,10 @@ module LearnOpen
         io.puts "Opening lesson..."
         system_adapter.change_context_directory(lesson.to_path)
         system_adapter.open_editor(editor, path: ".")
+      end
+
+      def install_jupyter_dependencies(lesson, location)
+        LearnOpen::DependencyInstallers::JupyterPipInstall.call(lesson, location, self, options)
       end
 
       def open_shell
