@@ -485,13 +485,40 @@ EOF
       end
     end
     context "iOS labs" do
-      it "fails to open unless on a mac" do
+      it "fails to open on Linux" do
         io = StringIO.new
 
         opener = LearnOpen::Opener.new("ios_lab", "atom", false,
                                        learn_web_client: learn_web_client,
                                        git_adapter: git_adapter,
                                        environment_vars: {"SHELL" => "/usr/local/bin/fish"},
+                                       system_adapter: system_adapter,
+                                       io: io,
+                                       platform: "linux")
+        opener.run
+
+        io.rewind
+        expect(io.read).to eq(<<-EOF)
+Looking for lesson...
+You need to be on a Mac to work on iOS lessons.
+EOF
+      end
+
+      it "fails to open on the IDE" do
+        environment = {
+          "SHELL" => "/usr/local/bin/fish",
+          "LAB_NAME" => "ios_lab",
+          "CREATED_USER" => "bobby",
+          "IDE_CONTAINER" => "true",
+          "IDE_VERSION" => "3"
+        }
+        create_linux_home_dir("bobby")
+        io = StringIO.new
+
+        opener = LearnOpen::Opener.new("ios_lab", "atom", false,
+                                       learn_web_client: learn_web_client,
+                                       git_adapter: git_adapter,
+                                       environment_vars: environment,
                                        system_adapter: system_adapter,
                                        io: io,
                                        platform: "linux")

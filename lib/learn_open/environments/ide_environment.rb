@@ -20,7 +20,10 @@ module LearnOpen
       end
 
       def open_lab(lesson, location, editor)
-        if valid?(lesson)
+        case lesson
+        when LearnOpen::Lessons::IosLesson
+          super
+        when method(:valid?)
           download_lesson(lesson, location)
           open_editor(lesson, location, editor)
           start_file_backup(lesson, location)
