@@ -23,7 +23,7 @@ module LearnOpen
         case lesson
         when LearnOpen::Lessons::IosLesson
           super
-        when method(:valid?)
+        when -> (lesson) { valid?(lesson) }
           download_lesson(lesson, location)
           open_editor(lesson, location, editor)
           start_file_backup(lesson, location)
