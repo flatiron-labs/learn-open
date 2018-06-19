@@ -45,16 +45,6 @@ module LearnOpen
         !lab?
       end
 
-      def warn_if_necessary
-        return unless self.later_lesson
-
-        io.puts 'WARNING: You are attempting to open a lesson that is beyond your current lesson.'
-        io.print 'Are you sure you want to continue? [Yn]: '
-
-        warn_response = io.gets.chomp.downcase
-        exit if !['yes', 'y'].include?(warn_response)
-      end
-
       def to_path
         "#{location}/#{name}"
       end

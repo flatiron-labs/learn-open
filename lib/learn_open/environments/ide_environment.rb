@@ -1,29 +1,26 @@
 module LearnOpen
   module Environments
     class IDEEnvironment < BaseEnvironment
+      prepend ValidityChecker
+
       def open_readme(lesson)
-        if valid?(lesson)
-          io.puts "Opening readme..."
-          run_custom_command(:browser_open, {url: lesson.to_url})
-        else
-          run_custom_command(:open_lab, {lab_name: lesson.name})
-        end
+        warn_if_necessary(lesson)
+        io.puts "Opening readme..."
+        run_custom_command(:browser_open, {url: lesson.to_url})
       end
 
       def open_jupyter_lab(lesson, location, editor)
-        if valid?(lesson)
-          io.puts "Opening Jupyter Lesson..."
-          run_custom_command(:browser_open, {url: lesson.to_url})
-        else
-          run_custom_command(:open_lab, {lab_name: lesson.name})
-        end
+        warn_if_necessary(lesson)
+        io.puts "Opening Jupyter Lesson..."
+        run_custom_command(:browser_open, {url: lesson.to_url})
       end
 
       def open_lab(lesson, location, editor)
+        warn_if_necessary(lesson)
         case lesson
         when LearnOpen::Lessons::IosLesson
           super
-        when -> (lesson) { valid?(lesson) }
+        when -> (l) { valid?(l) }
           download_lesson(lesson, location)
           open_editor(lesson, location, editor)
           start_file_backup(lesson, location)
@@ -37,6 +34,11 @@ module LearnOpen
 
       def valid?(lesson)
         lesson.name == environment_vars['LAB_NAME']
+      end
+
+      def on_invalid(lesson)
+        io.puts "Opening new window"
+        run_custom_command(:open_lab, {lab_name: lesson.name})
       end
 
       def run_custom_command(command, message)

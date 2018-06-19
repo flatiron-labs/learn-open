@@ -14,11 +14,13 @@ module LearnOpen
       end
 
       def open_readme(lesson)
+        warn_if_necessary(lesson)
         io.puts "Opening readme..."
         system_adapter.run_command("open -a Safari #{lesson.to_url}")
       end
 
       def open_lab(lesson, location, editor)
+        warn_if_necessary(lesson)
         case lesson
         when LearnOpen::Lessons::IosLesson
           download_lesson(lesson, location)
@@ -31,6 +33,7 @@ module LearnOpen
       end
 
       def open_jupyter_lab(lesson, location, editor)
+        warn_if_necessary(lesson)
         io.puts "Opening Jupyter Lesson..."
         system_adapter.run_command("open -a Safari #{lesson.to_url}")
       end
@@ -56,11 +59,13 @@ module LearnOpen
 
     class MacWithChromeEnvironment < MacEnvironment
       def open_readme(lesson)
+        warn_if_necessary(lesson)
         io.puts "Opening readme..."
         system_adapter.run_command("open -a 'Google Chrome' #{lesson.to_url}")
       end
 
       def open_jupyter_lab(lesson, location, editor)
+        warn_if_necessary(lesson)
         io.puts "Opening Jupyter Lesson..."
         system_adapter.run_command("open -a 'Google Chrome' #{lesson.to_url}")
       end

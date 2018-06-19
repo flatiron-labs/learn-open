@@ -6,7 +6,6 @@ module LearnOpen
       end
 
       def open(environment, _editor)
-        warn_if_necessary
         environment.open_readme(self)
       end
     end

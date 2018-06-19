@@ -55,6 +55,16 @@ module LearnOpen
         logger.log("Done.")
         io.puts "Done."
       end
+
+      def warn_if_necessary(lesson)
+        return unless lesson.later_lesson
+
+        io.puts 'WARNING: You are attempting to open a lesson that is beyond your current lesson.'
+        io.print 'Are you sure you want to continue? [Yn]: '
+
+        warn_response = io.gets.chomp.downcase
+        exit if !['yes', 'y'].include?(warn_response)
+      end
     end
   end
 end
