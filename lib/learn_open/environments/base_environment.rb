@@ -4,11 +4,11 @@ module LearnOpen
 
       attr_reader :io, :environment_vars, :system_adapter, :options, :logger
 
-      def initialize(options)
-        @io = options.fetch(:io, LearnOpen.default_io)
-        @environment_vars = options.fetch(:environment_vars, LearnOpen.environment_vars)
-        @system_adapter = options.fetch(:system_adapter, LearnOpen.system_adapter)
-        @logger = options.fetch(:logger, LearnOpen.logger)
+      def initialize(options={})
+        @io = options.fetch(:io) { LearnOpen.default_io }
+        @environment_vars = options.fetch(:environment_vars) { LearnOpen.environment_vars }
+        @system_adapter = options.fetch(:system_adapter) { LearnOpen.system_adapter }
+        @logger = options.fetch(:logger) { LearnOpen.logger }
         @options = options
       end
 
@@ -54,6 +54,16 @@ module LearnOpen
       def notify_of_completion
         logger.log("Done.")
         io.puts "Done."
+      end
+
+      def warn_if_necessary(lesson)
+        return unless lesson.later_lesson
+
+        io.puts 'WARNING: You are attempting to open a lesson that is beyond your current lesson.'
+        io.print 'Are you sure you want to continue? [Yn]: '
+
+        warn_response = io.gets.chomp.downcase
+        exit if !['yes', 'y'].include?(warn_response)
       end
     end
   end

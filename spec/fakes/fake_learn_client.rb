@@ -139,6 +139,22 @@ class FakeLearnClient
           :languages=>["ruby"],
           :resources=>0}
       })
+    when "later_lesson"
+      OpenStruct.new({
+        :clone_repo=>"StevenNunez/later_lesson",
+        :repo_name=>"later_lesson",
+        :repo_slug=>"StevenNunez/later_lesson",
+        :lab=>false,
+        :lesson_id=>31322,
+        :later_lesson=>true,
+        :git_server=>"github.com",
+        :dot_learn=>{
+          :tags=>[
+            "Readable things"
+          ],
+          :languages=>["english"],
+          :resources=>0}
+      })
     else
       raise "Specify lab type"
     end
