@@ -60,7 +60,7 @@ module LearnOpen
         return unless lesson.later_lesson
 
         io.puts 'WARNING: You are attempting to open a lesson that is beyond your current lesson.'
-        io.print 'Are you sure you want to continue? [Yn]: '
+        io.print 'Are you sure you want to continue? [Y/n]: '
 
         warn_response = io.gets.chomp.downcase
         exit if !['yes', 'y'].include?(warn_response)

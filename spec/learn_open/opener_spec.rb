@@ -160,7 +160,7 @@ describe LearnOpen::Opener do
 
         expect(io)
           .to receive(:print)
-          .with("Are you sure you want to continue? [Yn]: ")
+          .with("Are you sure you want to continue? [Y/n]: ")
 
         expect(io)
           .to receive(:gets)
