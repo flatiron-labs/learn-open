@@ -4,7 +4,7 @@ module LearnOpen
       attr_reader :lesson, :location, :system_adapter, :io, :environment
 
       def self.call(lesson, location, environment, options)
-        if self.detect(lesson, location)
+        if self.detect(lesson)
           self.new(lesson, location, environment, options).run
         end
       end

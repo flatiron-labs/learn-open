@@ -1,7 +1,7 @@
 module LearnOpen
   module DependencyInstallers
     class GemInstaller < BaseInstaller
-      def self.detect(lesson, location)
+      def self.detect(lesson)
         File.exists?("#{lesson.to_path}/Gemfile")
       end
 

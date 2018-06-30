@@ -1,7 +1,7 @@
 module LearnOpen
   module DependencyInstallers
     class JupyterPipInstall < BaseInstaller
-      def self.detect(lesson, location)
+      def self.detect(lesson)
         File.exists?("#{lesson.to_path}/requirements.txt")
       end
 

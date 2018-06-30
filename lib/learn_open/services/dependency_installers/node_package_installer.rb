@@ -1,7 +1,7 @@
 module LearnOpen
   module DependencyInstallers
     class NodeInstaller < BaseInstaller
-      def self.detect(lesson, location)
+      def self.detect(lesson)
         File.exists?("#{lesson.to_path}/package.json")
       end
 

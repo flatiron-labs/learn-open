@@ -10,7 +10,7 @@ module LearnOpen
 
     def self.run_installers(lesson, location, environment, options)
       installer_types.each do |type|
-        if type.detect(lesson, location)
+        if type.detect(lesson)
           type.call(lesson, location, environment, options)
         end
       end
