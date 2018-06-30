@@ -44,9 +44,29 @@ describe LearnOpen::Environments::IDEEnvironment do
       @home_dir = create_linux_home_dir("bobby")
     end
 
-    let(:lesson) { double(name: "valid_lab", later_lesson: false, to_url: "valid-lesson-url") }
-    let(:env_vars) {{ "LAB_NAME" => "valid_lab", "CREATED_USER" => "bobby" }}
-    let(:environment) { subject.new({ io: io, environment_vars: env_vars, logger: spy }) }
+    let(:lesson) do
+      double(
+        name: "valid_lab",
+        later_lesson: false,
+        to_url: "valid-lesson-url",
+        to_path: @home_dir,
+        git_server: "github.com",
+        repo_path: "/org/lesson"
+      )
+    end
+
+    let(:env_vars) {{ "LAB_NAME" => "valid_lab", "CREATED_USER" => "bobby", "SHELL" => "/usr/local/fish"}}
+    let(:git_adapter) { double }
+    let(:system_adapter) { double }
+    let(:environment) do
+      subject.new({
+          io: io,
+          environment_vars: env_vars,
+          logger: spy,
+          git_adapter: git_adapter,
+          system_adapter: system_adapter
+        })
+    end
 
     it "opens the readme in the browser" do
       expect(io).to receive(:puts).with("Opening readme...")
@@ -55,8 +75,33 @@ describe LearnOpen::Environments::IDEEnvironment do
       expect(custom_commands_log).to eq(%Q{{"command":"browser_open","url":"valid-lesson-url"}\n})
     end
     it "opens the lab" do
-      expect(io).to receive(:puts).with("Opening readme...")
-      environment.open_lab(lesson, double, double)
+      location = double
+      editor = "vim"
+
+      expect(io).to receive(:puts).with("Forking lesson...")
+      expect(io).to receive(:puts).with("Cloning lesson...")
+      expect(io).to receive(:puts).with("Opening lesson...")
+      expect(io).to receive(:puts).with("Done.")
+      expect(git_adapter)
+        .to receive(:clone)
+        .with("git@github.com:/org/lesson.git", "valid_lab", {:path=> location})
+      expect(system_adapter)
+        .to receive(:change_context_directory)
+        .with("/home/bobby")
+      expect(system_adapter)
+        .to receive(:open_editor)
+        .with("vim", {:path=>"."})
+      expect(system_adapter)
+        .to receive(:spawn)
+        .with("restore-lab", {:block=>true})
+      expect(system_adapter)
+        .to receive(:watch_dir)
+        .with("/home/bobby", "backup-lab")
+      expect(system_adapter)
+        .to receive(:open_login_shell)
+        .with("/usr/local/fish")
+
+      environment.open_lab(lesson, location, editor)
     end
   end
 end
