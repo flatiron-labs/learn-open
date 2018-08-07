@@ -1,3 +1,5 @@
+require 'open3'
+
 module LearnOpen
   module Adapters
     class SystemAdapter
@@ -20,6 +22,10 @@ module LearnOpen
 
       def self.run_command(command)
         system(command)
+      end
+
+      def self.run_command_with_capture(command)
+        Open3.capture3(command)
       end
 
       def self.change_context_directory(dir)

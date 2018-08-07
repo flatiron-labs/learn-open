@@ -12,6 +12,11 @@ describe LearnOpen::Opener do
     create_home_dir
     create_netrc_file
     create_learn_config_file
+
+    allow(LearnOpen::GitSSHConnector)
+      .to receive(:call)
+      .with(git_server: instance_of(String), environment: anything)
+      .and_return(true)
   end
 
   context "Initializer" do
@@ -46,6 +51,10 @@ describe LearnOpen::Opener do
       expect(learn_web_client)
         .to receive(:fork_repo)
         .with(repo_name: "rails-dynamic-request-lab-cb-000")
+
+      expect(LearnOpen::GitSSHConnector)
+        .to receive(:call)
+        .with(git_server: instance_of(String), environment: instance_of(LearnOpen::Environments::MacEnvironment))
 
       opener = LearnOpen::Opener.new(nil, "atom", true,
                                      learn_web_client: learn_web_client,
@@ -256,6 +265,35 @@ describe LearnOpen::Opener do
   end
   context "Logging" do
     let(:environment) {{ "SHELL" => "/usr/local/bin/fish", "JUPYTER_CONTAINER" => "true" }}
+
+    it "logs if an SSH connection cannot be made" do
+      allow(LearnOpen::LessonDownloader).to receive(:call).and_return(:ssh_unauthenticated)
+
+      allow(system_adapter).to receive_messages(
+        open_editor: :noop,
+        spawn: :noop,
+        watch_dir: :noop,
+        open_login_shell: :noop,
+        change_context_directory: :noop,
+        run_command: :noop,
+      )
+
+      io = StringIO.new
+
+      opener = LearnOpen::Opener.new("ruby_lab", "atom", false,
+                                     learn_web_client: learn_web_client,
+                                     git_adapter: git_adapter,
+                                     environment_vars: environment,
+                                     system_adapter: system_adapter,
+                                     io: io)
+      opener.run
+      io.rewind
+      expect(io.read).to eq(<<-EOF)
+Looking for lesson...
+Failed to obtain an SSH connection!
+      EOF
+    end
+
     it "prints the right things" do
       allow(learn_web_client).to receive(:fork_repo)
 
@@ -743,6 +781,7 @@ Installing pip dependencies...
 Done.
 EOF
         end
+
         it "runs npm install if lab is a node lab" do
           expect(system_adapter)
             .to receive(:open_editor)

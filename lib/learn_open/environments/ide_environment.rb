@@ -1,6 +1,10 @@
 module LearnOpen
   module Environments
     class IDEEnvironment < BaseEnvironment
+      def managed?
+        true
+      end
+
       def open_readme(lesson)
         when_valid(lesson) do
           warn_if_necessary(lesson)

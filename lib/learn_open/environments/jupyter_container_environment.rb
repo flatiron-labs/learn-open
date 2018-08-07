@@ -1,6 +1,10 @@
 module LearnOpen
   module Environments
     class JupyterContainerEnvironment < BaseEnvironment
+      def managed?
+        true
+      end
+
       def open_jupyter_lab(lesson, location, editor)
         download_lesson(lesson, location)
         open_editor(lesson, location, editor)
