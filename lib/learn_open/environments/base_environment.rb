@@ -26,15 +26,13 @@ module LearnOpen
           io.puts "You need to be on a Mac to work on iOS lessons."
         else
           case download_lesson(lesson, location)
-          when :ok
+          when :ok, :noop
             open_editor(lesson, location, editor)
             install_dependencies(lesson, location)
             notify_of_completion
             open_shell
           when :ssh_unauthenticated
             io.puts 'Failed to obtain an SSH connection!'
-          when :noop
-            :noop
           else
             raise LearnOpen::Environments::UnknownLessonDownloadError
           end
