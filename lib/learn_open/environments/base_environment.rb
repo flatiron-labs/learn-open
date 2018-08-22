@@ -33,6 +33,8 @@ module LearnOpen
             open_shell
           when :ssh_unauthenticated
             io.puts 'Failed to obtain an SSH connection!'
+          when :noop
+            :noop
           else
             raise LearnOpen::Environments::UnknownLessonDownloadError
           end

@@ -6,6 +6,24 @@ describe LearnOpen::LessonDownloader do
   let(:environment) { double }
   let(:downloader) { LearnOpen::LessonDownloader.new(lesson, location, environment) }
 
+  context 'downloaded lesson' do
+    before do
+      allow(downloader).to receive(:repo_exists?).and_return(true)
+    end
+
+    context 'able to make an SSH connection' do
+      before do
+        allow(downloader).to receive(:ensure_git_ssh!).and_return(true)
+        allow(downloader).to receive(:fork_repo)
+        allow(downloader).to receive(:clone_repo)
+      end
+
+      it 'returns status :noop' do
+        expect(downloader.call).to eq :noop
+      end
+    end
+  end
+
   context 'undownloaded lesson' do
     before do
       allow(downloader).to receive(:repo_exists?).and_return(false)
@@ -34,7 +52,7 @@ describe LearnOpen::LessonDownloader do
         allow(downloader).to receive(:ensure_git_ssh!).and_return(false)
       end
 
-      it 'return false' do
+      it 'returns status :ssh_unauthenticated' do
         expect(downloader.call).to eq :ssh_unauthenticated
       end
     end
