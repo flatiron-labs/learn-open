@@ -28,5 +28,5 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency "netrc"
   spec.add_runtime_dependency "git"
-  spec.add_runtime_dependency "learn-web", ">= 1.5.0"
+  spec.add_runtime_dependency "learn-web", ">= 1.5.2"
 end

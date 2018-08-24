@@ -12,6 +12,10 @@ module LearnOpen
         @options = options
       end
 
+      def managed?
+        false
+      end
+
       def open_jupyter_lab(lesson, location, editor)
         :noop
       end
@@ -21,11 +25,17 @@ module LearnOpen
         when LearnOpen::Lessons::IosLesson
           io.puts "You need to be on a Mac to work on iOS lessons."
         else
-          download_lesson(lesson, location)
-          open_editor(lesson, location, editor)
-          install_dependencies(lesson, location)
-          notify_of_completion
-          open_shell
+          case download_lesson(lesson, location)
+          when :ok, :noop
+            open_editor(lesson, location, editor)
+            install_dependencies(lesson, location)
+            notify_of_completion
+            open_shell
+          when :ssh_unauthenticated
+            io.puts 'Failed to obtain an SSH connection!'
+          else
+            raise LearnOpen::Environments::UnknownLessonDownloadError
+          end
         end
       end
 
@@ -34,7 +44,7 @@ module LearnOpen
       end
 
       def download_lesson(lesson, location)
-        LessonDownloader.call(lesson, location, options)
+        LessonDownloader.call(lesson, location, self, options)
       end
 
       def open_editor(lesson, location, editor)

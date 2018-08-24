@@ -31,5 +31,8 @@ module LearnOpen
     def self.on_linux?(platform)
       !!platform.match(/linux/)
     end
+
+    class UnknownLessonDownloadError < StandardError
+    end
   end
 end

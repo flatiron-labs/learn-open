@@ -11,6 +11,7 @@ require 'learn_open/argument_parser'
 require 'learn_open/adapters/system_adapter'
 require 'learn_open/adapters/learn_web_adapter'
 require 'learn_open/adapters/io_adapter'
+require 'learn_open/adapters/ssh_adapter'
 require 'learn_open/environments'
 require 'learn_open/environments/base_environment'
 require 'learn_open/environments/mac_environment'
@@ -27,6 +28,7 @@ require 'learn_open/services/dependency_installers/pip_installer'
 require 'learn_open/services/lesson_downloader'
 require 'learn_open/services/file_backup_starter'
 require 'learn_open/services/logger'
+require 'learn_open/services/git_ssh_connector'
 require 'learn_open/lessons'
 require 'learn_open/lessons/base_lesson'
 require 'learn_open/lessons/jupyter_lesson'
@@ -59,6 +61,10 @@ module LearnOpen
 
   def self.environment_vars
     ENV
+  end
+
+  def self.ssh_adapter
+    LearnOpen::Adapters::SshAdapter
   end
 
   def self.system_adapter
