@@ -25,7 +25,12 @@ describe LearnOpen::Environments::IDEEnvironment do
 
     let(:lesson) { double(name: "a-different-lesson") }
     let(:env_vars) {{ "LAB_NAME" => "correct_lab", "CREATED_USER" => "bobby" }}
-    let(:environment) { subject.new({ io: io, environment_vars: env_vars, logger: spy }) }
+    let(:environment) do subject.new({
+      io: io,
+      environment_vars: env_vars,
+      logger: spy,
+    })
+    end
 
     it "opens correct readme" do
       environment.open_readme(lesson)
@@ -65,13 +70,15 @@ describe LearnOpen::Environments::IDEEnvironment do
     let(:env_vars) {{ "LAB_NAME" => "valid_lab", "CREATED_USER" => "bobby", "SHELL" => "/usr/local/fish"}}
     let(:git_adapter) { double }
     let(:system_adapter) { double }
+    let(:client_double) { instance_double(LearnWeb::Client) }
     let(:environment) do
       subject.new({
           io: io,
           environment_vars: env_vars,
           logger: spy,
           git_adapter: git_adapter,
-          system_adapter: system_adapter
+          system_adapter: system_adapter,
+          learn_web_client: client_double,
         })
     end
 
@@ -107,6 +114,8 @@ describe LearnOpen::Environments::IDEEnvironment do
       expect(system_adapter)
         .to receive(:open_login_shell)
         .with("/usr/local/fish")
+      expect(client_double)
+        .to receive(:fork_repo)
 
       environment.open_lab(lesson, location, editor)
     end
