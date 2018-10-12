@@ -4,7 +4,8 @@ module LearnOpen
       [
           PipInstaller,
           GemInstaller,
-          NodeInstaller
+          NodeInstaller,
+          CondaInstaller
       ]
     end
 
