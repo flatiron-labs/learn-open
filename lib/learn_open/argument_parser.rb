@@ -1,3 +1,5 @@
+require 'optparse'
+
 module LearnOpen
   class ArgumentParser
     attr_reader :args
@@ -7,30 +9,27 @@ module LearnOpen
     end
 
     def execute
+      options = {}
+      rest = OptionParser.new do |opts|
+        opts.on("--next", "open next lab") do |n|
+          options[:next] = n
+        end
+        opts.on("--editor=EDITOR", "specify editor") do |e|
+          options[:editor] = e
+        end
+      end.parse(args)
       config_path = File.expand_path('~/.learn-config')
-      editor_data = YAML.load(File.read(config_path))[:editor]
-      if editor_data.match(/ /)
-        editor_data = editor_data.split(' ').first
+      learn_config_editor = YAML.load(File.read(config_path))[:editor]
+
+      if learn_config_editor =~ / /
+        learn_config_editor = learn_config_editor.split(' ').first
       end
 
-      lesson = nil
-      next_lesson = false
+      editor = options[:editor].empty? ? learn_config_editor : options[:editor]
 
-      configured_editor = !(editor_data.empty? || editor_data.nil?) ? editor_data : nil
-      editor_specified = ARGV.detect {|arg| arg.start_with?('--editor=')}.match(/\-\-editor=(.+)/) || configured_editor
-      open_after = !!editor_specified
-
-      if !ARGV[0].start_with?('--editor=') && !ARGV[0].start_with?('--next')
-        lesson = ARGV[0].sub(/\/$/, '')
-      elsif ARGV[0].start_with?('--next')
-        next_lesson = true
-      end
-
-      if open_after
-        editor_specified = editor_specified.is_a?(String) ? editor_specified : editor_specified[1]
-      end
-
-      [lesson, editor_specified, next_lesson]
+      lesson = rest.first
+      next_lesson = options[:next]
+      [lesson, editor, options[:next]]
     end
   end
 end
