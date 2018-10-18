@@ -73,4 +73,17 @@ EOF
     expect(lesson).to eq('hashketball')
     expect(editor).to eq('vim')
   end
+
+  it 'accepts a --clone-only argument' do
+    File.open("#{home_dir}/.learn-config", "w+") do |f|
+      f.puts <<-EOF
+---
+:learn_directory: "#{home_dir}/Development/code"
+:editor: emacs
+EOF
+    end
+    args = ['hashketball', '--editor=vim', '--clone-only']
+    _lesson, _editor, _load_next, clone_only = LearnOpen::ArgumentParser.new(args).execute
+    expect(clone_only).to eq(true)
+  end
 end
