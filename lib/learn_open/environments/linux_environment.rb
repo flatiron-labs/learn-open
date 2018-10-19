@@ -7,7 +7,7 @@ module LearnOpen
         system_adapter.run_command("xdg-open #{lesson.to_url}")
       end
 
-      def open_jupyter_lab(lesson, location, editor)
+      def open_jupyter_lab(lesson, location, _editor, _clone_only)
         warn_if_necessary(lesson)
         io.puts "Opening Jupyter Lesson..."
         system_adapter.run_command("xdg-open #{lesson.to_url}")

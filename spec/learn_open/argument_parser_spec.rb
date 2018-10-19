@@ -4,9 +4,12 @@ require 'fakefs/spec_helpers'
 describe LearnOpen::ArgumentParser do
   include FakeFS::SpecHelpers
   let(:home_dir) { File.expand_path('~') }
+
   before do
     FileUtils.mkdir_p home_dir
   end
+
+  context "" do
   it 'reads the .learn-config for the editor' do
     File.open("#{home_dir}/.learn-config", "w+") do |f|
       f.puts <<-EOF
@@ -20,7 +23,7 @@ EOF
     expect(editor).to eq('vim')
   end
 
-  it 'only uses the first argument from the editor field' do
+  it 'ignores switches in the editor field' do
     File.open("#{home_dir}/.learn-config", "w+") do |f|
       f.puts <<-EOF
 ---
@@ -85,5 +88,6 @@ EOF
     args = ['hashketball', '--editor=vim', '--clone-only']
     _lesson, _editor, _load_next, clone_only = LearnOpen::ArgumentParser.new(args).execute
     expect(clone_only).to eq(true)
+  end
   end
 end

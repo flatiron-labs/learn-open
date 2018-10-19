@@ -49,11 +49,14 @@ module LearnOpen
       cli_args = parse
 
       editor = cli_args[:editor].empty? ? learn_config_editor : cli_args[:editor]
-      cli_args.merge(editor: editor)
+      cli_args.merge!(editor: editor)
 
-      lm = LessonManifest.new(open_next: cli_args[:next], lesson_name: cli_args[:lesson_name] , editor: cli_args[:editor], clone_only: cli_args[:clone_only])
-
-      lm.to_a
+      [
+        cli_args[:lesson_name],
+        cli_args[:editor],
+        cli_args[:next],
+        cli_args[:clone_only]
+      ]
     end
   end
 end

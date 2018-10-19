@@ -13,7 +13,7 @@ module LearnOpen
         end
       end
 
-      def open_jupyter_lab(lesson, location, editor)
+      def open_jupyter_lab(lesson, location, editor, _clone_only)
         when_valid(lesson) do
           warn_if_necessary(lesson)
           io.puts "Opening Jupyter Lesson..."
@@ -21,7 +21,7 @@ module LearnOpen
         end
       end
 
-      def open_lab(lesson, location, editor)
+      def open_lab(lesson, location, editor, clone_only)
         when_valid(lesson) do
           warn_if_necessary(lesson)
           case lesson
@@ -33,7 +33,7 @@ module LearnOpen
             start_file_backup(lesson, location)
             install_dependencies(lesson, location)
             notify_of_completion
-            open_shell
+            open_shell unless clone_only
           end
         end
       end
