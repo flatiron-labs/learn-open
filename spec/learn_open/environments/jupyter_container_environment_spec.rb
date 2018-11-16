@@ -7,13 +7,6 @@ describe LearnOpen::Environments::JupyterContainerEnvironment do
 
   let(:io) { instance_double(LearnOpen::Adapters::IOAdapter) }
 
-  before do
-    allow(LearnOpen::GitSSHConnector)
-      .to receive(:call)
-      .with(git_server: instance_of(String), environment: instance_of(LearnOpen::Environments::IDEEnvironment))
-      .and_return(true)
-  end
-
   context "valid environments" do
     before do
       @home_dir = create_linux_home_dir("bobby")
