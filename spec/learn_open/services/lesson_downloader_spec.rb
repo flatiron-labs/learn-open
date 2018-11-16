@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe LearnOpen::LessonDownloader do
-  let(:lesson)   { double }
+  let(:lesson)   { double(use_student_fork: true) }
   let(:location) { double }
   let(:environment) { double }
   let(:downloader) { LearnOpen::LessonDownloader.new(lesson, location, environment) }

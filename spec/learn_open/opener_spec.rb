@@ -7,13 +7,14 @@ describe LearnOpen::Opener do
   let(:learn_web_client)       { FakeLearnClient.new(token: "some-amazing-password") }
   let(:git_adapter)            { FakeGit.new }
   let(:system_adapter)         { class_double(LearnOpen::Adapters::SystemAdapter) }
+  let(:git_ssh_connector)      { class_double(LearnOpen::GitSSHConnector) }
 
   before do
     create_home_dir
     create_netrc_file
     create_learn_config_file
 
-    allow(LearnOpen::GitSSHConnector)
+    allow(git_ssh_connector)
       .to receive(:call)
       .with(git_server: instance_of(String), environment: anything)
       .and_return(true)
@@ -52,7 +53,7 @@ describe LearnOpen::Opener do
         .to receive(:fork_repo)
         .with(repo_name: "rails-dynamic-request-lab-cb-000")
 
-      expect(LearnOpen::GitSSHConnector)
+      expect(git_ssh_connector)
         .to receive(:call)
         .with(git_server: instance_of(String), environment: instance_of(LearnOpen::Environments::MacEnvironment))
 
@@ -61,6 +62,7 @@ describe LearnOpen::Opener do
                                      git_adapter: git_adapter,
                                      environment_vars: {"SHELL" => "/usr/local/bin/fish"},
                                      system_adapter: system_adapter,
+                                     git_ssh_connector: git_ssh_connector,
                                      io: spy)
       opener.run
     end
@@ -100,6 +102,7 @@ describe LearnOpen::Opener do
                                        git_adapter: git_adapter,
                                        environment_vars: environment,
                                        system_adapter: system_adapter,
+                                       git_ssh_connector: git_ssh_connector,
                                        io: spy)
         opener.run
       end
@@ -119,6 +122,7 @@ describe LearnOpen::Opener do
                                        git_adapter: git_adapter,
                                        environment_vars: environment,
                                        system_adapter: system_adapter,
+                                       git_ssh_connector: git_ssh_connector,
                                        io: spy)
         opener.run
         expect(File.exist?("#{home_dir}/.custom_commands.log")).to eq(false)
@@ -147,6 +151,7 @@ describe LearnOpen::Opener do
                                        git_adapter: git_adapter,
                                        environment_vars: environment,
                                        system_adapter: system_adapter,
+                                       git_ssh_connector: git_ssh_connector,
                                        io: io)
         opener.run
       end
@@ -185,6 +190,7 @@ describe LearnOpen::Opener do
                                        git_adapter: git_adapter,
                                        environment_vars: environment,
                                        system_adapter: system_adapter,
+                                       git_ssh_connector: git_ssh_connector,
                                        io: io)
         opener.run
       end
@@ -204,6 +210,7 @@ describe LearnOpen::Opener do
                                        git_adapter: git_adapter,
                                        environment_vars: environment,
                                        system_adapter: system_adapter,
+                                       git_ssh_connector: git_ssh_connector,
                                        io: spy)
         opener.run
         custom_commands_log = File.read("#{home_dir}/.custom_commands.log")
@@ -224,6 +231,7 @@ describe LearnOpen::Opener do
                                        git_adapter: git_adapter,
                                        environment_vars: environment,
                                        system_adapter: system_adapter,
+                                       git_ssh_connector: git_ssh_connector,
                                        io: spy)
         opener.run
         expect(File.exist?("#{home_dir}/.custom_commands.log")).to eq(false)
@@ -258,6 +266,7 @@ describe LearnOpen::Opener do
                                        git_adapter: git_adapter,
                                        environment_vars: environment,
                                        system_adapter: system_adapter,
+                                       git_ssh_connector: git_ssh_connector,
                                        io: spy)
         opener.run
       end
@@ -315,6 +324,7 @@ Failed to obtain an SSH connection!
                                      git_adapter: git_adapter,
                                      environment_vars: environment,
                                      system_adapter: system_adapter,
+                                     git_ssh_connector: git_ssh_connector,
                                      io: io)
       opener.run
       io.rewind
@@ -348,6 +358,7 @@ Done.
                                      git_adapter: git_adapter,
                                      environment_vars: environment,
                                      system_adapter: system_adapter,
+                                     git_ssh_connector: git_ssh_connector,
                                      io: spy)
       opener.run
       expect(File.read("#{home_dir}/.learn-open-tmp")).to eq("Done.")
@@ -390,6 +401,7 @@ Done.
                                        git_adapter: git_adapter,
                                        environment_vars: environment,
                                        system_adapter: system_adapter,
+                                       git_ssh_connector: git_ssh_connector,
                                        io: spy)
         opener.run
       end
@@ -403,6 +415,7 @@ Done.
                                        git_adapter: git_adapter,
                                        environment_vars: environment,
                                        system_adapter: system_adapter,
+                                       git_ssh_connector: git_ssh_connector,
                                        io: io)
         opener.run
         io.rewind
@@ -424,6 +437,7 @@ EOF
                                        git_adapter: git_adapter,
                                        system_adapter: system_adapter,
                                        io: io,
+                                       git_ssh_connector: git_ssh_connector,
                                        platform: "darwin")
         opener.run
         io.rewind
@@ -445,6 +459,7 @@ EOF
                                        git_adapter: git_adapter,
                                        system_adapter: system_adapter,
                                        io: io,
+                                       git_ssh_connector: git_ssh_connector,
                                        platform: "darwin")
         opener.run
         io.rewind
@@ -464,6 +479,7 @@ EOF
                                        git_adapter: git_adapter,
                                        system_adapter: system_adapter,
                                        io: io,
+                                       git_ssh_connector: git_ssh_connector,
                                        platform: "linux")
         opener.run
         io.rewind
@@ -501,6 +517,7 @@ EOF
                                        git_adapter: git_adapter,
                                        environment_vars: environment,
                                        system_adapter: system_adapter,
+                                       git_ssh_connector: git_ssh_connector,
                                        io: io)
         opener.run
 
@@ -525,6 +542,7 @@ EOF
                                          environment_vars: {},
                                          system_adapter: system_adapter,
                                          io: io,
+                                         git_ssh_connector: git_ssh_connector,
                                          platform: "darwin")
           opener.run
 
@@ -550,6 +568,7 @@ EOF
                                          environment_vars: {},
                                          system_adapter: system_adapter,
                                          io: io,
+                                         git_ssh_connector: git_ssh_connector,
                                          platform: "darwin")
           opener.run
 
@@ -574,6 +593,7 @@ EOF
                                          git_adapter: git_adapter,
                                          environment_vars: {},
                                          system_adapter: system_adapter,
+                                         git_ssh_connector: git_ssh_connector,
                                          io: io,
                                          platform: "linux")
           opener.run
@@ -595,6 +615,7 @@ EOF
                                        git_adapter: git_adapter,
                                        environment_vars: {"SHELL" => "/usr/local/bin/fish"},
                                        system_adapter: system_adapter,
+                                       git_ssh_connector: git_ssh_connector,
                                        io: io,
                                        platform: "linux")
         opener.run
@@ -622,6 +643,7 @@ EOF
                                        git_adapter: git_adapter,
                                        environment_vars: environment,
                                        system_adapter: system_adapter,
+                                       git_ssh_connector: git_ssh_connector,
                                        io: io,
                                        platform: "linux")
         opener.run
@@ -652,6 +674,7 @@ EOF
                                        environment_vars: {"SHELL" => "/usr/local/bin/fish"},
                                        system_adapter: system_adapter,
                                        io: io,
+                                       git_ssh_connector: git_ssh_connector,
                                        platform: "darwin")
         opener.run
 
@@ -675,6 +698,7 @@ EOF
                                        environment_vars: {"SHELL" => "/usr/local/bin/fish"},
                                        system_adapter: system_adapter,
                                        io: io,
+                                       git_ssh_connector: git_ssh_connector,
                                        platform: "darwin")
         opener.run
 
@@ -698,6 +722,7 @@ EOF
                                          git_adapter: git_adapter,
                                          environment_vars: {"SHELL" => "/usr/local/bin/fish"},
                                          system_adapter: system_adapter,
+                                         git_ssh_connector: git_ssh_connector,
                                          io: spy)
           opener.run
         end
@@ -717,6 +742,7 @@ EOF
                                          git_adapter: git_adapter,
                                          environment_vars: {"SHELL" => "/usr/local/bin/fish"},
                                          system_adapter: system_adapter,
+                                         git_ssh_connector: git_ssh_connector,
                                          io: io)
           opener.run
           io.rewind
@@ -751,6 +777,7 @@ EOF
                                          git_adapter: git_adapter,
                                          environment_vars: {"SHELL" => "/usr/local/bin/fish"},
                                          system_adapter: system_adapter,
+                                         git_ssh_connector: git_ssh_connector,
                                          io: spy)
           opener.run
         end
@@ -769,6 +796,7 @@ EOF
                                          git_adapter: git_adapter,
                                          environment_vars: {"SHELL" => "/usr/local/bin/fish"},
                                          system_adapter: system_adapter,
+                                         git_ssh_connector: git_ssh_connector,
                                          io: io)
           opener.run
           io.rewind
@@ -803,6 +831,7 @@ EOF
                                          git_adapter: git_adapter,
                                          environment_vars: {"SHELL" => "/usr/local/bin/fish"},
                                          system_adapter: system_adapter,
+                                         git_ssh_connector: git_ssh_connector,
                                          io: spy)
           opener.run
         end
@@ -821,6 +850,7 @@ EOF
                                          git_adapter: git_adapter,
                                          environment_vars: {"SHELL" => "/usr/local/bin/fish"},
                                          system_adapter: system_adapter,
+                                         git_ssh_connector: git_ssh_connector,
                                          io: io)
           opener.run
           io.rewind

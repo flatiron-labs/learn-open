@@ -8,7 +8,7 @@ module LearnOpen
       def open_jupyter_lab(lesson, location, editor)
         download_lesson(lesson, location)
         open_editor(lesson, location, editor)
-        start_file_backup(lesson, location)
+        start_file_backup(lesson, location) if lesson.use_student_fork
         install_jupyter_dependencies(lesson, location)
         notify_of_completion
         open_shell

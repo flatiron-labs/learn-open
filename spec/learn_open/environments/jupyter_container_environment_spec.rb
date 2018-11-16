@@ -1,9 +1,9 @@
 require 'spec_helper'
 require 'fakefs/spec_helpers'
 
-describe LearnOpen::Environments::IDEEnvironment do
+describe LearnOpen::Environments::JupyterContainerEnvironment do
   include FakeFS::SpecHelpers
-  subject { LearnOpen::Environments::IDEEnvironment }
+  subject { LearnOpen::Environments::JupyterContainerEnvironment }
 
   let(:io) { instance_double(LearnOpen::Adapters::IOAdapter) }
 
@@ -12,38 +12,6 @@ describe LearnOpen::Environments::IDEEnvironment do
       .to receive(:call)
       .with(git_server: instance_of(String), environment: instance_of(LearnOpen::Environments::IDEEnvironment))
       .and_return(true)
-  end
-
-  context "Invalid environment" do
-    before do
-      @home_dir = create_linux_home_dir("bobby")
-
-      expect(io)
-        .to receive(:puts)
-        .with("Opening new window")
-    end
-
-    let(:lesson) { double(name: "a-different-lesson") }
-    let(:env_vars) {{ "LAB_NAME" => "correct_lab", "CREATED_USER" => "bobby" }}
-    let(:environment) { subject.new({ io: io, environment_vars: env_vars, logger: spy }) }
-
-    it "opens correct readme" do
-      environment.open_readme(lesson)
-      custom_commands_log = File.read("#{@home_dir}/.custom_commands.log")
-      expect(custom_commands_log).to eq(%Q{{"command":"open_lab","lab_name":"a-different-lesson"}\n})
-    end
-
-    it "opens correct lab" do
-      environment.open_lab(lesson, double, double)
-      custom_commands_log = File.read("#{@home_dir}/.custom_commands.log")
-      expect(custom_commands_log).to eq(%Q{{"command":"open_lab","lab_name":"a-different-lesson"}\n})
-    end
-
-    it "opens correct jupyter lab" do
-      environment.open_jupyter_lab(lesson, double, double)
-      custom_commands_log = File.read("#{@home_dir}/.custom_commands.log")
-      expect(custom_commands_log).to eq(%Q{{"command":"open_lab","lab_name":"a-different-lesson"}\n})
-    end
   end
 
   context "valid environments" do
@@ -90,11 +58,27 @@ describe LearnOpen::Environments::IDEEnvironment do
         })
     end
 
-    it "opens the readme in the browser" do
-      expect(io).to receive(:puts).with("Opening readme...")
-      environment.open_readme(lesson)
-      custom_commands_log = File.read("#{@home_dir}/.custom_commands.log")
-      expect(custom_commands_log).to eq(%Q{{"command":"browser_open","url":"valid-lesson-url"}\n})
+    it "does note lab using deployed repo as source" do
+      location = double
+      editor = "vim"
+
+      expect(io).to receive(:puts).with("Cloning lesson...")
+      expect(io).to receive(:puts).with("Opening lesson...")
+      expect(io).to receive(:puts).with("Done.")
+      expect(git_adapter)
+        .to receive(:clone)
+        .with("git@github.com:/org/lesson.git", "valid_lab", {:path=> location})
+      expect(system_adapter)
+        .to receive(:change_context_directory)
+        .with("/home/bobby")
+      expect(system_adapter)
+        .to receive(:open_editor)
+        .with("vim", {:path=>"."})
+      expect(system_adapter)
+        .to receive(:open_login_shell)
+        .with("/usr/local/fish")
+
+      environment.open_jupyter_lab(deployed_source_lesson, location, editor)
     end
     it "opens the lab" do
       location = double
@@ -123,7 +107,7 @@ describe LearnOpen::Environments::IDEEnvironment do
         .to receive(:open_login_shell)
         .with("/usr/local/fish")
 
-      environment.open_lab(lesson, location, editor)
+      environment.open_jupyter_lab(lesson, location, editor)
     end
   end
 end
