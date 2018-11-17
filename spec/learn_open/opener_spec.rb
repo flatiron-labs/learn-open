@@ -55,7 +55,6 @@ describe LearnOpen::Opener do
 
       expect(git_ssh_connector)
         .to receive(:call)
-        .with(git_server: instance_of(String), environment: instance_of(LearnOpen::Environments::MacEnvironment))
 
       opener = LearnOpen::Opener.new(nil, "atom", true,
                                      learn_web_client: learn_web_client,
