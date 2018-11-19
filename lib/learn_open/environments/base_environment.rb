@@ -16,21 +16,21 @@ module LearnOpen
         false
       end
 
-      def open_jupyter_lab(lesson, location, editor)
+      def open_jupyter_lab(_lesson, _location, _editor, _clone_only)
         :noop
       end
 
-      def open_lab(lesson, location, editor)
+      def open_lab(lesson, location, editor, clone_only)
         case lesson
         when LearnOpen::Lessons::IosLesson
           io.puts "You need to be on a Mac to work on iOS lessons."
         else
           case download_lesson(lesson, location)
           when :ok, :noop
-            open_editor(lesson, location, editor)
+            open_editor(lesson, location, editor) unless clone_only
             install_dependencies(lesson, location)
             notify_of_completion
-            open_shell
+            open_shell unless clone_only
           when :ssh_unauthenticated
             io.puts 'Failed to obtain an SSH connection!'
           else

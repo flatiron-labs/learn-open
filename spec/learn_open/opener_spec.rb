@@ -22,21 +22,27 @@ describe LearnOpen::Opener do
 
   context "Initializer" do
     it "sets the lesson" do
-      opener = LearnOpen::Opener.new("ttt-2-board-rb-v-000","", false)
+      opener = LearnOpen::Opener.new("ttt-2-board-rb-v-000","", false, false)
       expect(opener.target_lesson).to eq("ttt-2-board-rb-v-000")
     end
     it "sets the editor" do
-      opener = LearnOpen::Opener.new("", "atom", false)
+      opener = LearnOpen::Opener.new("", "atom", false, false)
       expect(opener.editor).to eq("atom")
     end
     it "sets the whether to open the next lesson or not" do
-      opener = LearnOpen::Opener.new("", "", true)
+      opener = LearnOpen::Opener.new("", "", true, false)
       expect(opener.get_next_lesson).to eq(true)
+    end
+
+    it "sets the clone only options" do
+      opener = LearnOpen::Opener.new("", "", true, true)
+      expect(opener.clone_only).to eq(true)
     end
   end
 
   context "running the opener" do
     it "calls its collaborators" do
+      clone_only = false
       expect(system_adapter)
         .to receive(:open_editor)
         .with("atom", path: ".")
@@ -56,7 +62,7 @@ describe LearnOpen::Opener do
       expect(git_ssh_connector)
         .to receive(:call)
 
-      opener = LearnOpen::Opener.new(nil, "atom", true,
+      opener = LearnOpen::Opener.new(nil, "atom", true, clone_only,
                                      learn_web_client: learn_web_client,
                                      git_adapter: git_adapter,
                                      environment_vars: {"SHELL" => "/usr/local/bin/fish"},
@@ -66,6 +72,29 @@ describe LearnOpen::Opener do
       opener.run
     end
   end
+
+  context "clone_only" do
+    it "It only calls clone/fork code, but doesn't open shell" do
+      clone_only = true
+
+      expect(learn_web_client)
+        .to receive(:fork_repo)
+        .with(repo_name: "rails-dynamic-request-lab-cb-000")
+
+      expect(git_ssh_connector)
+        .to receive(:call)
+
+      opener = LearnOpen::Opener.new(nil, "atom", true, clone_only,
+                                     learn_web_client: learn_web_client,
+                                     git_adapter: git_adapter,
+                                     environment_vars: {"SHELL" => "/usr/local/bin/fish"},
+                                     system_adapter: system_adapter,
+                                     git_ssh_connector: git_ssh_connector,
+                                     io: spy)
+      opener.run
+    end
+  end
+
   context "Opening on specific environments" do
     before do
       allow(system_adapter).to receive_messages(
@@ -96,7 +125,7 @@ describe LearnOpen::Opener do
           .to receive(:run_command)
           .with("bundle install")
 
-        opener = LearnOpen::Opener.new("ruby_lab", "atom", false,
+        opener = LearnOpen::Opener.new("ruby_lab", "atom", false, false,
                                        learn_web_client: learn_web_client,
                                        git_adapter: git_adapter,
                                        environment_vars: environment,
@@ -116,7 +145,7 @@ describe LearnOpen::Opener do
         allow(system_adapter).to receive_messages([:spawn, :watch_dir])
 
         home_dir = create_linux_home_dir("bobby")
-        opener = LearnOpen::Opener.new(nil, "atom", true,
+        opener = LearnOpen::Opener.new(nil, "atom", true, false,
                                        learn_web_client: learn_web_client,
                                        git_adapter: git_adapter,
                                        environment_vars: environment,
@@ -145,7 +174,7 @@ describe LearnOpen::Opener do
           .with("Opening new window")
 
         create_linux_home_dir("bobby")
-        opener = LearnOpen::Opener.new("later_lesson", "atom", true,
+        opener = LearnOpen::Opener.new("later_lesson", "atom", true, false,
                                        learn_web_client: learn_web_client,
                                        git_adapter: git_adapter,
                                        environment_vars: environment,
@@ -184,7 +213,7 @@ describe LearnOpen::Opener do
           .with("Opening readme...")
 
         create_linux_home_dir("bobby")
-        opener = LearnOpen::Opener.new("later_lesson", "atom", true,
+        opener = LearnOpen::Opener.new("later_lesson", "atom", true, false,
                                        learn_web_client: learn_web_client,
                                        git_adapter: git_adapter,
                                        environment_vars: environment,
@@ -204,7 +233,7 @@ describe LearnOpen::Opener do
         allow(system_adapter).to receive_messages([:spawn, :watch_dir])
 
         home_dir = create_linux_home_dir("bobby")
-        opener = LearnOpen::Opener.new(nil, "atom", true,
+        opener = LearnOpen::Opener.new(nil, "atom", true, false,
                                        learn_web_client: learn_web_client,
                                        git_adapter: git_adapter,
                                        environment_vars: environment,
@@ -225,7 +254,7 @@ describe LearnOpen::Opener do
         allow(system_adapter).to receive_messages([:spawn, :watch_dir])
 
         home_dir = create_linux_home_dir("bobby")
-        opener = LearnOpen::Opener.new(nil, "atom", true,
+        opener = LearnOpen::Opener.new(nil, "atom", true, false,
                                        learn_web_client: learn_web_client,
                                        git_adapter: git_adapter,
                                        environment_vars: environment,
@@ -260,7 +289,7 @@ describe LearnOpen::Opener do
           .to receive(:run_command)
           .with("yarn install --no-lockfile")
 
-        opener = LearnOpen::Opener.new("node_lab", "atom", false,
+        opener = LearnOpen::Opener.new("node_lab", "atom", false, false,
                                        learn_web_client: learn_web_client,
                                        git_adapter: git_adapter,
                                        environment_vars: environment,
@@ -288,7 +317,7 @@ describe LearnOpen::Opener do
 
       io = StringIO.new
 
-      opener = LearnOpen::Opener.new("ruby_lab", "atom", false,
+      opener = LearnOpen::Opener.new("ruby_lab", "atom", false, false,
                                      learn_web_client: learn_web_client,
                                      git_adapter: git_adapter,
                                      environment_vars: environment,
@@ -318,7 +347,7 @@ Failed to obtain an SSH connection!
 
       io = StringIO.new
 
-      opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
+      opener = LearnOpen::Opener.new("jupyter_lab", "atom", false, false,
                                      learn_web_client: learn_web_client,
                                      git_adapter: git_adapter,
                                      environment_vars: environment,
@@ -352,7 +381,7 @@ Done.
       )
 
 
-      opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
+      opener = LearnOpen::Opener.new("jupyter_lab", "atom", false, false,
                                      learn_web_client: learn_web_client,
                                      git_adapter: git_adapter,
                                      environment_vars: environment,
@@ -395,7 +424,7 @@ Done.
           .to receive(:run_command)
           .with("/opt/conda/bin/python -m pip install -r requirements.txt")
 
-        opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
+        opener = LearnOpen::Opener.new("jupyter_lab", "atom", false, false,
                                        learn_web_client: learn_web_client,
                                        git_adapter: git_adapter,
                                        environment_vars: environment,
@@ -409,7 +438,7 @@ Done.
         environment = {"CREATED_USER" => "bobby", "IDE_CONTAINER" => "true", "LAB_NAME" => "jupyter_lab"}
         io = StringIO.new
         home_dir = create_linux_home_dir("bobby")
-        opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
+        opener = LearnOpen::Opener.new("jupyter_lab", "atom", false, false,
                                        learn_web_client: learn_web_client,
                                        git_adapter: git_adapter,
                                        environment_vars: environment,
@@ -431,7 +460,7 @@ EOF
           .to receive(:run_command)
           .with("open -a Safari https://learn.co/lessons/31322")
         io = StringIO.new
-        opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
+        opener = LearnOpen::Opener.new("jupyter_lab", "atom", false, false,
                                        learn_web_client: learn_web_client,
                                        git_adapter: git_adapter,
                                        system_adapter: system_adapter,
@@ -453,7 +482,7 @@ EOF
           .with("open -a 'Google Chrome' https://learn.co/lessons/31322")
 
         io = StringIO.new
-        opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
+        opener = LearnOpen::Opener.new("jupyter_lab", "atom", false, false,
                                        learn_web_client: learn_web_client,
                                        git_adapter: git_adapter,
                                        system_adapter: system_adapter,
@@ -473,7 +502,7 @@ EOF
           .to receive(:run_command)
           .with("xdg-open https://learn.co/lessons/31322")
         io = StringIO.new
-        opener = LearnOpen::Opener.new("jupyter_lab", "atom", false,
+        opener = LearnOpen::Opener.new("jupyter_lab", "atom", false, false,
                                        learn_web_client: learn_web_client,
                                        git_adapter: git_adapter,
                                        system_adapter: system_adapter,
@@ -491,7 +520,7 @@ EOF
     context "Readme" do
       it "does not open readme if on unsupported environment" do
         io = StringIO.new
-        opener = LearnOpen::Opener.new("readme", "atom", false,
+        opener = LearnOpen::Opener.new("readme", "atom", false, false,
                                        learn_web_client: learn_web_client,
                                        git_adapter: git_adapter,
                                        environment_vars: {},
@@ -511,7 +540,7 @@ EOF
         environment = {"CREATED_USER" => "bobby", "IDE_CONTAINER" => "true", "LAB_NAME" => "readme"}
         io = StringIO.new
         home_dir = create_linux_home_dir("bobby")
-        opener = LearnOpen::Opener.new("readme", "atom", false,
+        opener = LearnOpen::Opener.new("readme", "atom", false, false,
                                        learn_web_client: learn_web_client,
                                        git_adapter: git_adapter,
                                        environment_vars: environment,
@@ -535,7 +564,7 @@ EOF
             .to receive(:run_command)
             .with("open -a Safari https://learn.co/lessons/31322")
 
-          opener = LearnOpen::Opener.new("readme", "atom", false,
+          opener = LearnOpen::Opener.new("readme", "atom", false, false,
                                          learn_web_client: learn_web_client,
                                          git_adapter: git_adapter,
                                          environment_vars: {},
@@ -561,7 +590,7 @@ EOF
             .with("open -a 'Google Chrome' https://learn.co/lessons/31322")
 
 
-          opener = LearnOpen::Opener.new("readme", "atom", false,
+          opener = LearnOpen::Opener.new("readme", "atom", false, false,
                                          learn_web_client: learn_web_client,
                                          git_adapter: git_adapter,
                                          environment_vars: {},
@@ -587,7 +616,7 @@ EOF
             .with("xdg-open https://learn.co/lessons/31322")
 
 
-          opener = LearnOpen::Opener.new("readme", "atom", false,
+          opener = LearnOpen::Opener.new("readme", "atom", false, false,
                                          learn_web_client: learn_web_client,
                                          git_adapter: git_adapter,
                                          environment_vars: {},
@@ -609,7 +638,7 @@ EOF
       it "fails to open on Linux" do
         io = StringIO.new
 
-        opener = LearnOpen::Opener.new("ios_lab", "atom", false,
+        opener = LearnOpen::Opener.new("ios_lab", "atom", false, false,
                                        learn_web_client: learn_web_client,
                                        git_adapter: git_adapter,
                                        environment_vars: {"SHELL" => "/usr/local/bin/fish"},
@@ -637,7 +666,7 @@ EOF
         create_linux_home_dir("bobby")
         io = StringIO.new
 
-        opener = LearnOpen::Opener.new("ios_lab", "atom", false,
+        opener = LearnOpen::Opener.new("ios_lab", "atom", false, false,
                                        learn_web_client: learn_web_client,
                                        git_adapter: git_adapter,
                                        environment_vars: environment,
@@ -667,7 +696,7 @@ EOF
           .with("cd /home/bobby/Development/code/ios_lab && open *.xcodeproj")
 
 
-        opener = LearnOpen::Opener.new("ios_lab", "atom", false,
+        opener = LearnOpen::Opener.new("ios_lab", "atom", false, false,
                                        learn_web_client: learn_web_client,
                                        git_adapter: git_adapter,
                                        environment_vars: {"SHELL" => "/usr/local/bin/fish"},
@@ -691,7 +720,7 @@ EOF
           .with("cd /home/bobby/Development/code/ios_with_workspace_lab && open *.xcworkspace")
 
 
-        opener = LearnOpen::Opener.new("ios_with_workspace_lab", "atom", false,
+        opener = LearnOpen::Opener.new("ios_with_workspace_lab", "atom", false, false,
                                        learn_web_client: learn_web_client,
                                        git_adapter: git_adapter,
                                        environment_vars: {"SHELL" => "/usr/local/bin/fish"},
@@ -716,7 +745,7 @@ EOF
           expect(system_adapter)
             .to receive(:run_command)
             .with("bundle install")
-          opener = LearnOpen::Opener.new("ruby_lab", "atom", false,
+          opener = LearnOpen::Opener.new("ruby_lab", "atom", false, false,
                                          learn_web_client: learn_web_client,
                                          git_adapter: git_adapter,
                                          environment_vars: {"SHELL" => "/usr/local/bin/fish"},
@@ -736,7 +765,7 @@ EOF
             )
 
           io = StringIO.new
-          opener = LearnOpen::Opener.new("ruby_lab", "atom", false,
+          opener = LearnOpen::Opener.new("ruby_lab", "atom", false, false,
                                          learn_web_client: learn_web_client,
                                          git_adapter: git_adapter,
                                          environment_vars: {"SHELL" => "/usr/local/bin/fish"},
@@ -771,7 +800,7 @@ EOF
           expect(system_adapter)
             .to receive(:run_command)
             .with("python -m pip install -r requirements.txt")
-          opener = LearnOpen::Opener.new("python_lab", "atom", false,
+          opener = LearnOpen::Opener.new("python_lab", "atom", false, false,
                                          learn_web_client: learn_web_client,
                                          git_adapter: git_adapter,
                                          environment_vars: {"SHELL" => "/usr/local/bin/fish"},
@@ -790,7 +819,7 @@ EOF
             )
 
           io = StringIO.new
-          opener = LearnOpen::Opener.new("python_lab", "atom", false,
+          opener = LearnOpen::Opener.new("python_lab", "atom", false, false,
                                          learn_web_client: learn_web_client,
                                          git_adapter: git_adapter,
                                          environment_vars: {"SHELL" => "/usr/local/bin/fish"},
@@ -825,7 +854,7 @@ EOF
           expect(system_adapter)
             .to receive(:run_command)
             .with("npm install")
-          opener = LearnOpen::Opener.new("node_lab", "atom", false,
+          opener = LearnOpen::Opener.new("node_lab", "atom", false, false,
                                          learn_web_client: learn_web_client,
                                          git_adapter: git_adapter,
                                          environment_vars: {"SHELL" => "/usr/local/bin/fish"},
@@ -844,7 +873,7 @@ EOF
             )
 
           io = StringIO.new
-          opener = LearnOpen::Opener.new("node_lab", "atom", false,
+          opener = LearnOpen::Opener.new("node_lab", "atom", false, false,
                                          learn_web_client: learn_web_client,
                                          git_adapter: git_adapter,
                                          environment_vars: {"SHELL" => "/usr/local/bin/fish"},

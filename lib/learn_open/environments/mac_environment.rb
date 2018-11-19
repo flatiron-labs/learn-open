@@ -19,20 +19,20 @@ module LearnOpen
         system_adapter.run_command("open -a Safari #{lesson.to_url}")
       end
 
-      def open_lab(lesson, location, editor)
+      def open_lab(lesson, location, editor, clone_only)
         warn_if_necessary(lesson)
         case lesson
         when LearnOpen::Lessons::IosLesson
           download_lesson(lesson, location)
           open_xcode(lesson)
           notify_of_completion
-          open_shell
+          open_shell unless clone_only
         else
           super
         end
       end
 
-      def open_jupyter_lab(lesson, location, editor)
+      def open_jupyter_lab(lesson, location, editor, _clone_only)
         warn_if_necessary(lesson)
         io.puts "Opening Jupyter Lesson..."
         system_adapter.run_command("open -a Safari #{lesson.to_url}")
@@ -64,7 +64,7 @@ module LearnOpen
         system_adapter.run_command("open -a 'Google Chrome' #{lesson.to_url}")
       end
 
-      def open_jupyter_lab(lesson, location, editor)
+      def open_jupyter_lab(lesson, location, _editor, _clone_only)
         warn_if_necessary(lesson)
         io.puts "Opening Jupyter Lesson..."
         system_adapter.run_command("open -a 'Google Chrome' #{lesson.to_url}")

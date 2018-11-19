@@ -54,6 +54,7 @@ describe LearnOpen::Environments::JupyterContainerEnvironment do
     it "does note lab using deployed repo as source" do
       location = double
       editor = "vim"
+      clone_only = false
 
       expect(io).to receive(:puts).with("Cloning lesson...")
       expect(io).to receive(:puts).with("Opening lesson...")
@@ -71,11 +72,12 @@ describe LearnOpen::Environments::JupyterContainerEnvironment do
         .to receive(:open_login_shell)
         .with("/usr/local/fish")
 
-      environment.open_jupyter_lab(deployed_source_lesson, location, editor)
+      environment.open_jupyter_lab(deployed_source_lesson, location, editor, clone_only)
     end
     it "opens the lab" do
       location = double
       editor = "vim"
+      clone_only = false
 
       expect(io).to receive(:puts).with("Forking lesson...")
       expect(io).to receive(:puts).with("Cloning lesson...")
@@ -100,7 +102,7 @@ describe LearnOpen::Environments::JupyterContainerEnvironment do
         .to receive(:open_login_shell)
         .with("/usr/local/fish")
 
-      environment.open_jupyter_lab(lesson, location, editor)
+      environment.open_jupyter_lab(lesson, location, editor, clone_only)
     end
   end
 end

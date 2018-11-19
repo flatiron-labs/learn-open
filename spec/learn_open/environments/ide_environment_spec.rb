@@ -34,13 +34,13 @@ describe LearnOpen::Environments::IDEEnvironment do
     end
 
     it "opens correct lab" do
-      environment.open_lab(lesson, double, double)
+      environment.open_lab(lesson, double, double, false)
       custom_commands_log = File.read("#{@home_dir}/.custom_commands.log")
       expect(custom_commands_log).to eq(%Q{{"command":"open_lab","lab_name":"a-different-lesson"}\n})
     end
 
     it "opens correct jupyter lab" do
-      environment.open_jupyter_lab(lesson, double, double)
+      environment.open_jupyter_lab(lesson, double, double, false)
       custom_commands_log = File.read("#{@home_dir}/.custom_commands.log")
       expect(custom_commands_log).to eq(%Q{{"command":"open_lab","lab_name":"a-different-lesson"}\n})
     end
@@ -99,6 +99,7 @@ describe LearnOpen::Environments::IDEEnvironment do
     it "opens the lab" do
       location = double
       editor = "vim"
+      clone_only = false
 
       expect(io).to receive(:puts).with("Forking lesson...")
       expect(io).to receive(:puts).with("Cloning lesson...")
@@ -123,7 +124,7 @@ describe LearnOpen::Environments::IDEEnvironment do
         .to receive(:open_login_shell)
         .with("/usr/local/fish")
 
-      environment.open_lab(lesson, location, editor)
+      environment.open_lab(lesson, location, editor, clone_only)
     end
   end
 end

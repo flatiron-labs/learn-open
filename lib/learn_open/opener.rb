@@ -3,18 +3,20 @@ module LearnOpen
     attr_reader :editor,
                 :target_lesson,
                 :get_next_lesson,
+                :clone_only,
                 :io,
                 :logger,
                 :options
 
-    def self.run(lesson:, editor_specified:, get_next_lesson:)
-      new(lesson, editor_specified, get_next_lesson).run
+    def self.run(lesson:, editor_specified:, get_next_lesson:, clone_only:)
+      new(lesson, editor_specified, get_next_lesson, clone_only).run
     end
 
-    def initialize(target_lesson, editor, get_next_lesson, options = {})
+    def initialize(target_lesson, editor, get_next_lesson, clone_only, options = {})
       @target_lesson = target_lesson
       @editor = editor
       @get_next_lesson = get_next_lesson
+      @clone_only = clone_only
 
       @io = options.fetch(:io, LearnOpen.default_io)
       @logger = options.fetch(:logger, LearnOpen.logger)
@@ -35,7 +37,7 @@ module LearnOpen
 
       lesson = Lessons.classify(lesson_data, options)
       environment = LearnOpen::Environments.classify(options)
-      lesson.open(environment, editor)
+      lesson.open(environment, editor, clone_only)
     end
   end
 end

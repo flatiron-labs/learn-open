@@ -5,7 +5,7 @@ module LearnOpen
         !lesson.lab
       end
 
-      def open(environment, _editor)
+      def open(environment, _editor, _clone_only)
         environment.open_readme(self)
       end
     end
