@@ -8,6 +8,7 @@ module LearnOpen
                   :dot_learn,
                   :git_server,
                   :later_lesson,
+                  :use_student_fork,
                   :options,
                   :io,
                   :system_adapter,
@@ -25,6 +26,7 @@ module LearnOpen
         @git_server = lesson.git_server
         @dot_learn = lesson.dot_learn
         @is_lab = lesson.lab
+        @use_student_fork = lesson.use_student_fork
         @later_lesson = lesson_data[:later_lesson]
         @id = lesson_data[:id]
 

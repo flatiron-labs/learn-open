@@ -1,10 +1,11 @@
 module LearnOpen
   module Adapters
     class LearnWebAdapter
-      attr_reader :client
+      attr_reader :client, :io
 
       def initialize(options = {})
         @client = options.fetch(:learn_web_client) {LearnOpen.learn_web_client}
+        @io = options.fetch(:io) {LearnOpen.default_io}
       end
 
       def fetch_lesson_data(target_lesson: false, fetch_next_lesson: false)

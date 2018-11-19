@@ -1,6 +1,6 @@
 module LearnOpen
   class LessonDownloader
-    attr_reader :lesson, :location, :environment, :io, :logger, :client, :git_adapter
+    attr_reader :lesson, :location, :environment, :io, :logger, :client, :git_adapter, :git_ssh_connector
 
     def self.call(lesson, location, environment, options = {})
       self.new(lesson, location, environment, options).call
@@ -14,12 +14,13 @@ module LearnOpen
       @logger = options.fetch(:logger) { LearnOpen.logger }
       @io = options.fetch(:io) { LearnOpen.default_io }
       @git_adapter = options.fetch(:git_adapter) { LearnOpen.git_adapter }
+      @git_ssh_connector = options.fetch(:git_ssh_connector) { LearnOpen.git_adapter }
     end
 
     def call
       if !repo_exists?
         if ensure_git_ssh!
-          fork_repo
+          fork_repo if lesson.use_student_fork
           clone_repo
           :ok
         else
@@ -31,7 +32,7 @@ module LearnOpen
     end
 
     def ensure_git_ssh!
-      LearnOpen::GitSSHConnector.call(git_server: lesson.git_server, environment: environment)
+      git_ssh_connector.call(git_server: lesson.git_server, environment: environment)
     end
 
     def fork_repo(retries = 3)
