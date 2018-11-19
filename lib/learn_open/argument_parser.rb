@@ -1,19 +1,6 @@
 require 'optparse'
 
 module LearnOpen
-  class LessonManifest
-    attr_reader :open_next, :lesson_name, :editor, :clone_only
-    def initialize(open_next:, lesson_name:, editor:, clone_only:)
-      @open_next = open_next
-      @lesson_name = lesson_name
-      @editor = editor
-      @clone_only = clone_only
-    end
-
-    def to_a
-      [lesson_name, editor, open_next, clone_only]
-    end
-  end
   class ArgumentParser
     attr_reader :args
 
