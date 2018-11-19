@@ -51,29 +51,23 @@ describe LearnOpen::Environments::JupyterContainerEnvironment do
         })
     end
 
-    it "does note lab using deployed repo as source" do
+    it "only clones repo when not using student fork" do
       location = double
       editor = "vim"
       clone_only = false
 
       expect(io).to receive(:puts).with("Cloning lesson...")
-      expect(io).to receive(:puts).with("Opening lesson...")
       expect(io).to receive(:puts).with("Done.")
       expect(git_adapter)
         .to receive(:clone)
         .with("git@github.com:/org/lesson.git", "valid_lab", {:path=> location})
-      expect(system_adapter)
-        .to receive(:change_context_directory)
-        .with("/home/bobby")
-      expect(system_adapter)
-        .to receive(:open_editor)
-        .with("vim", {:path=>"."})
       expect(system_adapter)
         .to receive(:open_login_shell)
         .with("/usr/local/fish")
 
       environment.open_jupyter_lab(deployed_source_lesson, location, editor, clone_only)
     end
+
     it "opens the lab" do
       location = double
       editor = "vim"
@@ -81,17 +75,10 @@ describe LearnOpen::Environments::JupyterContainerEnvironment do
 
       expect(io).to receive(:puts).with("Forking lesson...")
       expect(io).to receive(:puts).with("Cloning lesson...")
-      expect(io).to receive(:puts).with("Opening lesson...")
       expect(io).to receive(:puts).with("Done.")
       expect(git_adapter)
         .to receive(:clone)
         .with("git@github.com:/org/lesson.git", "valid_lab", {:path=> location})
-      expect(system_adapter)
-        .to receive(:change_context_directory)
-        .with("/home/bobby")
-      expect(system_adapter)
-        .to receive(:open_editor)
-        .with("vim", {:path=>"."})
       expect(system_adapter)
         .to receive(:spawn)
         .with("restore-lab", {:block=>true})

@@ -360,7 +360,6 @@ Failed to obtain an SSH connection!
 Looking for lesson...
 Forking lesson...
 Cloning lesson...
-Opening lesson...
 Installing pip dependencies...
 Done.
       EOF
@@ -406,9 +405,6 @@ Done.
           .and_call_original
 
         expect(system_adapter)
-          .to receive(:open_editor)
-          .with("atom", path: ".")
-        expect(system_adapter)
           .to receive(:spawn)
           .with("restore-lab", block: true)
         expect(system_adapter)
@@ -417,9 +413,6 @@ Done.
         expect(system_adapter)
           .to receive(:open_login_shell)
           .with("/usr/local/bin/fish")
-        expect(system_adapter)
-          .to receive(:change_context_directory)
-          .with("/home/bobby/Development/code/jupyter_lab")
         expect(system_adapter)
           .to receive(:run_command)
           .with("/opt/conda/bin/python -m pip install -r requirements.txt")
