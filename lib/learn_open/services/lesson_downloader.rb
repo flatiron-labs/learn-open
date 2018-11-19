@@ -14,7 +14,7 @@ module LearnOpen
       @logger = options.fetch(:logger) { LearnOpen.logger }
       @io = options.fetch(:io) { LearnOpen.default_io }
       @git_adapter = options.fetch(:git_adapter) { LearnOpen.git_adapter }
-      @git_ssh_connector = options.fetch(:git_ssh_connector) { LearnOpen.git_adapter }
+      @git_ssh_connector = options.fetch(:git_ssh_connector) { LearnOpen.git_ssh_connector }
     end
 
     def call
