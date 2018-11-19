@@ -75,6 +75,10 @@ module LearnOpen
     RbConfig::CONFIG['host_os']
   end
 
+  def self.git_ssh_connector
+    LearnOpen::GitSSHConnector
+  end
+
   def self.lessons_directory
     @lesson_directory ||= begin
       home_dir = File.expand_path("~")

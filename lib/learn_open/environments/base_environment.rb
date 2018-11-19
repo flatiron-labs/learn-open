@@ -27,7 +27,7 @@ module LearnOpen
         else
           case download_lesson(lesson, location)
           when :ok, :noop
-            open_editor(lesson, location, editor)
+            open_editor(lesson, location, editor) unless clone_only
             install_dependencies(lesson, location)
             notify_of_completion
             open_shell unless clone_only

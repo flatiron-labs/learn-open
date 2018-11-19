@@ -16,6 +16,7 @@ class FakeLearnClient
      :lab=>true,
      :ios_lab=>false,
      :ruby_lab=>true,
+     :use_student_fork=>true,
      :assessments=>
     [{:type=>"fork", :passing=>true, :failing=>false, :started=>true, :message=>"You forked this lab."},
      {:type=>"local_build", :passing=>false, :failing=>true, :started=>true, :message=>"Build failures."},
@@ -35,6 +36,7 @@ class FakeLearnClient
         :lesson_id=>31322,
         :later_lesson=>false,
         :git_server=>"github.com",
+        :use_student_fork=>true,
         :dot_learn=>{
           :tags=>[
             "UIView"
@@ -50,6 +52,7 @@ class FakeLearnClient
         :lab=>true,
         :lesson_id=>31322,
         :later_lesson=>false,
+        :use_student_fork=>true,
         :git_server=>"github.com",
         :dot_learn=>{
           :tags=>[
@@ -65,6 +68,7 @@ class FakeLearnClient
         :repo_slug=>"StevenNunez/jupyter_lab",
         :lab=>true,
         :lesson_id=>31322,
+        :use_student_fork=>true,
         :later_lesson=>false,
         :git_server=>"github.com",
         :dot_learn=>{
@@ -83,6 +87,7 @@ class FakeLearnClient
         :lab=>true,
         :lesson_id=>31322,
         :later_lesson=>false,
+        :use_student_fork=>true,
         :git_server=>"github.com",
         :dot_learn=>{
           :tags=>[
@@ -99,6 +104,7 @@ class FakeLearnClient
         :lab=>true,
         :lesson_id=>31322,
         :later_lesson=>false,
+        :use_student_fork=>true,
         :git_server=>"github.com",
         :dot_learn=>{
           :tags=>[
@@ -115,6 +121,7 @@ class FakeLearnClient
         :lab=>true,
         :lesson_id=>31322,
         :later_lesson=>false,
+        :use_student_fork=>true,
         :git_server=>"github.com",
         :dot_learn=>{
           :tags=>[
@@ -131,6 +138,7 @@ class FakeLearnClient
         :lab=>false,
         :lesson_id=>31322,
         :later_lesson=>false,
+        :use_student_fork=>true,
         :git_server=>"github.com",
         :dot_learn=>{
           :tags=>[
@@ -148,6 +156,7 @@ class FakeLearnClient
         :lesson_id=>31322,
         :later_lesson=>true,
         :git_server=>"github.com",
+        :use_student_fork=>true,
         :dot_learn=>{
           :tags=>[
             "Readable things"
@@ -169,6 +178,7 @@ class FakeLearnClient
       :forked_repo=>"StevenNunez/rails-dynamic-request-lab-cb-000",
       :clone_repo=>"StevenNunez/rails-dynamic-request-lab-cb-000",
       :git_server=>"github.com",
+      :use_student_fork=>true,
       :dot_learn=>
       {
         :tags=>[
