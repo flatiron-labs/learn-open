@@ -183,6 +183,41 @@ describe LearnOpen::Opener do
                                        io: io)
         opener.run
       end
+      it "re-prompts for a valid input if the input is invalid, raising after multiple failures" do
+        environment = {
+          "SHELL" => "/usr/local/bin/fish",
+          "LAB_NAME" => "later_lesson",
+          "CREATED_USER" => "bobby",
+          "IDE_CONTAINER" => "true",
+          "IDE_VERSION" => "3"
+        }
+        io = instance_double(LearnOpen::Adapters::IOAdapter)
+        expect(io)
+          .to receive(:puts)
+          .with("Looking for lesson...")
+
+        expect(io)
+          .to receive(:puts)
+          .with("WARNING: You are attempting to open a lesson that is beyond your current lesson.")
+
+        expect(io)
+          .to receive(:print)
+          .with("Are you sure you want to continue? [Y/n]: ")
+
+        expect(io)
+          .to receive(:gets).exactly(3).times
+          .and_return("z")
+
+        create_linux_home_dir("bobby")
+        opener = LearnOpen::Opener.new("later_lesson", "atom", true, false,
+                                       learn_web_client: learn_web_client,
+                                       git_adapter: git_adapter,
+                                       environment_vars: environment,
+                                       system_adapter: system_adapter,
+                                       git_ssh_connector: git_ssh_connector,
+                                       io: io)
+        expect { opener.run }.to raise_error(IOError)
+      end
       it "prompts if they want to skip lesson" do
         environment = {
           "SHELL" => "/usr/local/bin/fish",
