@@ -69,11 +69,31 @@ module LearnOpen
       def warn_if_necessary(lesson)
         return unless lesson.later_lesson
 
+        warn_response = nil
+        prompt_count = 0
+        # implementation uses chomp, thus a valid \n becomes ''
+        post_chomped_enter_key = ""
+        valid_responses = ['yes', 'y', 'no', 'n', post_chomped_enter_key]
+        visible = -> (token){ token.match(/\w+/) }
+        valid_resp_insert = [
+          *valid_responses.select{ |c| visible.call(c) },
+          "<ENTER>"
+        ].join(', ')
+
         io.puts 'WARNING: You are attempting to open a lesson that is beyond your current lesson.'
         io.print 'Are you sure you want to continue? [Y/n]: '
 
-        warn_response = io.gets.chomp.downcase
-        exit if !['yes', 'y'].include?(warn_response)
+        until valid_responses.include?(warn_response) or
+              prompt_count > 2
+          warn_response = io.gets.chomp.downcase
+          prompt_count += 1
+        end
+
+        if prompt_count > 2
+          raise IOError, "Valid inputs are: #{valid_resp_insert}"
+        end
+
+        warn_response
       end
     end
   end
