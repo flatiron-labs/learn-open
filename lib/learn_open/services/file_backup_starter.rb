@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module LearnOpen
   class FileBackupStarter
-    BACKUP_LAB_PROCESS = "tail -f ~/inotify.log | while read change do; backup-lab; done"
+    BACKUP_LAB_PROCESS = "tail -f ~/inotify.log | while read change; do backup-lab; done"
 
     attr_reader :lesson, :location, :system_adapter
 
