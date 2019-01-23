@@ -7,7 +7,6 @@ module LearnOpen
 
       def open_readme(lesson)
         when_valid(lesson) do
-          warn_if_necessary(lesson)
           io.puts "Opening readme..."
           run_custom_command(:browser_open, {url: lesson.to_url})
         end
@@ -15,7 +14,6 @@ module LearnOpen
 
       def open_jupyter_lab(lesson, location, editor, _clone_only)
         when_valid(lesson) do
-          warn_if_necessary(lesson)
           io.puts "Opening Jupyter Lesson..."
           run_custom_command(:browser_open, {url: lesson.to_url})
         end
@@ -23,7 +21,6 @@ module LearnOpen
 
       def open_lab(lesson, location, editor, clone_only)
         when_valid(lesson) do
-          warn_if_necessary(lesson)
           case lesson
           when LearnOpen::Lessons::IosLesson
             super

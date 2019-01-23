@@ -11,10 +11,6 @@ module LearnOpen
         exec("#{shell} -l")
       end
 
-      def self.watch_dir(dir, action)
-        spawn("while inotifywait -qre create,delete,move,close_write --exclude \"#{excluded_dirs}\" #{dir}; do #{action}; done")
-      end
-
       def self.spawn(command, block: false)
         pid = Process.spawn(command, [:out, :err] => File::NULL)
         Process.waitpid(pid) if block

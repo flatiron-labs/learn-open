@@ -1,5 +1,8 @@
+# frozen_string_literal: true
 module LearnOpen
   class FileBackupStarter
+    BACKUP_LAB_PROCESS = "tail -f ~/inotify.log | while read change do; backup-lab; done"
+
     attr_reader :lesson, :location, :system_adapter
 
     def self.call(lesson, location, options)
@@ -14,7 +17,7 @@ module LearnOpen
 
     def call
       system_adapter.spawn("restore-lab", block: true)
-      system_adapter.watch_dir("#{lesson.to_path}", "backup-lab")
+      system_adapter.spawn(BACKUP_LAB_PROCESS)
     end
   end
 end

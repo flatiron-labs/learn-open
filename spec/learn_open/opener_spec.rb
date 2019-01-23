@@ -119,8 +119,8 @@ describe LearnOpen::Opener do
           .to receive(:spawn)
           .with('restore-lab', block: true)
         expect(system_adapter)
-          .to receive(:watch_dir)
-          .with("/home/bobby/Development/code/ruby_lab", "backup-lab")
+          .to receive(:spawn)
+          .with(LearnOpen::FileBackupStarter::BACKUP_LAB_PROCESS)
         expect(system_adapter)
           .to receive(:run_command)
           .with("bundle install")
@@ -142,7 +142,7 @@ describe LearnOpen::Opener do
           "IDE_CONTAINER" => "true",
           "IDE_VERSION" => "3"
         }
-        allow(system_adapter).to receive_messages([:spawn, :watch_dir])
+        allow(system_adapter).to receive_messages([:spawn, :spawn])
 
         home_dir = create_linux_home_dir("bobby")
         opener = LearnOpen::Opener.new(nil, "atom", true, false,
@@ -156,72 +156,6 @@ describe LearnOpen::Opener do
         expect(File.exist?("#{home_dir}/.custom_commands.log")).to eq(false)
       end
 
-      it "does not prompt if they want to skip lesson if the container is for a different lab" do
-        environment = {
-          "SHELL" => "/usr/local/bin/fish",
-          "LAB_NAME" => "Something wild",
-          "CREATED_USER" => "bobby",
-          "IDE_CONTAINER" => "true",
-          "IDE_VERSION" => "3"
-        }
-        io = instance_double(LearnOpen::Adapters::IOAdapter)
-        expect(io)
-          .to receive(:puts)
-          .with("Looking for lesson...")
-
-        expect(io)
-          .to receive(:puts)
-          .with("Opening new window")
-
-        create_linux_home_dir("bobby")
-        opener = LearnOpen::Opener.new("later_lesson", "atom", true, false,
-                                       learn_web_client: learn_web_client,
-                                       git_adapter: git_adapter,
-                                       environment_vars: environment,
-                                       system_adapter: system_adapter,
-                                       git_ssh_connector: git_ssh_connector,
-                                       io: io)
-        opener.run
-      end
-      it "prompts if they want to skip lesson" do
-        environment = {
-          "SHELL" => "/usr/local/bin/fish",
-          "LAB_NAME" => "later_lesson",
-          "CREATED_USER" => "bobby",
-          "IDE_CONTAINER" => "true",
-          "IDE_VERSION" => "3"
-        }
-        io = instance_double(LearnOpen::Adapters::IOAdapter)
-        expect(io)
-          .to receive(:puts)
-          .with("Looking for lesson...")
-
-        expect(io)
-          .to receive(:puts)
-          .with("WARNING: You are attempting to open a lesson that is beyond your current lesson.")
-
-        expect(io)
-          .to receive(:print)
-          .with("Are you sure you want to continue? [Y/n]: ")
-
-        expect(io)
-          .to receive(:gets)
-          .and_return("yes")
-
-        expect(io)
-          .to receive(:puts)
-          .with("Opening readme...")
-
-        create_linux_home_dir("bobby")
-        opener = LearnOpen::Opener.new("later_lesson", "atom", true, false,
-                                       learn_web_client: learn_web_client,
-                                       git_adapter: git_adapter,
-                                       environment_vars: environment,
-                                       system_adapter: system_adapter,
-                                       git_ssh_connector: git_ssh_connector,
-                                       io: io)
-        opener.run
-      end
       it "writes to custom_commands_log if lab name doesn't match env" do
         environment = {
           "SHELL" => "/usr/local/bin/fish",
@@ -230,7 +164,7 @@ describe LearnOpen::Opener do
           "IDE_CONTAINER" => "true",
           "IDE_VERSION" => "3"
         }
-        allow(system_adapter).to receive_messages([:spawn, :watch_dir])
+        allow(system_adapter).to receive_messages([:spawn, :spawn])
 
         home_dir = create_linux_home_dir("bobby")
         opener = LearnOpen::Opener.new(nil, "atom", true, false,
@@ -251,7 +185,7 @@ describe LearnOpen::Opener do
           "LAB_NAME" => "Something wild",
           "CREATED_USER" => "bobby"
         }
-        allow(system_adapter).to receive_messages([:spawn, :watch_dir])
+        allow(system_adapter).to receive_messages([:spawn, :spawn])
 
         home_dir = create_linux_home_dir("bobby")
         opener = LearnOpen::Opener.new(nil, "atom", true, false,
@@ -272,7 +206,7 @@ describe LearnOpen::Opener do
           "CREATED_USER" => "bobby",
           "IDE_CONTAINER" => "true",
         }
-        allow(system_adapter).to receive_messages([:spawn, :watch_dir])
+        allow(system_adapter).to receive_messages([:spawn, :spawn])
         expect(system_adapter)
           .to receive(:open_editor)
           .with("atom", path: ".")
@@ -309,7 +243,7 @@ describe LearnOpen::Opener do
       allow(system_adapter).to receive_messages(
         open_editor: :noop,
         spawn: :noop,
-        watch_dir: :noop,
+        spawn: :noop,
         open_login_shell: :noop,
         change_context_directory: :noop,
         run_command: :noop,
@@ -339,7 +273,7 @@ Failed to obtain an SSH connection!
       allow(system_adapter).to receive_messages(
         open_editor: :noop,
         spawn: :noop,
-        watch_dir: :noop,
+        spawn: :noop,
         open_login_shell: :noop,
         change_context_directory: :noop,
         run_command: :noop,
@@ -373,7 +307,7 @@ Done.
       allow(system_adapter).to receive_messages(
         open_editor: :noop,
         spawn: :noop,
-        watch_dir: :noop,
+        spawn: :noop,
         open_login_shell: :noop,
         change_context_directory: :noop,
         run_command: :noop,
@@ -408,8 +342,8 @@ Done.
           .to receive(:spawn)
           .with("restore-lab", block: true)
         expect(system_adapter)
-          .to receive(:watch_dir)
-          .with("/home/bobby/Development/code/jupyter_lab", "backup-lab")
+          .to receive(:spawn)
+          .with(LearnOpen::FileBackupStarter::BACKUP_LAB_PROCESS)
         expect(system_adapter)
           .to receive(:open_login_shell)
           .with("/usr/local/bin/fish")
