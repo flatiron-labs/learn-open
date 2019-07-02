@@ -2,8 +2,8 @@ module LearnOpen
   module Lessons
     class IosLesson < BaseLesson
       def self.detect(lesson)
-        languages = Hash(lesson.dot_learn)[:languages]
-        !!languages && (languages & ["swift", "objc"]).any?
+        languages = Hash(lesson.dot_learn).fetch(:languages, [])
+        (languages & ["swift", "objc"]).any?
       end
 
       def open(environment, editor, clone_only)

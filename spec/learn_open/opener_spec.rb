@@ -243,7 +243,6 @@ describe LearnOpen::Opener do
       allow(system_adapter).to receive_messages(
         open_editor: :noop,
         spawn: :noop,
-        spawn: :noop,
         open_login_shell: :noop,
         change_context_directory: :noop,
         run_command: :noop,
@@ -272,7 +271,6 @@ Failed to obtain an SSH connection!
 
       allow(system_adapter).to receive_messages(
         open_editor: :noop,
-        spawn: :noop,
         spawn: :noop,
         open_login_shell: :noop,
         change_context_directory: :noop,
@@ -306,7 +304,6 @@ Done.
 
       allow(system_adapter).to receive_messages(
         open_editor: :noop,
-        spawn: :noop,
         spawn: :noop,
         open_login_shell: :noop,
         change_context_directory: :noop,
