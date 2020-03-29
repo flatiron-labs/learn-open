@@ -22,6 +22,9 @@ module LearnOpen
 
         @repo_path = lesson.clone_repo
         @organization, @name = repo_path.split('/')
+        if @organization.empty? and not @name.empty?
+          raise "The repo path had an empty organization. Most likely, you need to link your Github account to your Learn account through the Learn website."
+        end
 
         @git_server = lesson.git_server
         @dot_learn = lesson.dot_learn

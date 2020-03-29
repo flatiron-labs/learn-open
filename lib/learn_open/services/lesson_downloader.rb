@@ -43,9 +43,11 @@ module LearnOpen
         Timeout::timeout(15) do
           client.fork_repo(repo_name: lesson.name)
         end
-      rescue Timeout::Error
+      rescue Timeout::Error => e
         if retries > 0
           io.puts "There was a problem forking this lesson. Retrying..."
+          io.puts "Git had the following error:"
+          io.puts e
           fork_repo(retries - 1)
         else
           io.puts "There is an issue connecting to Learn. Please try again."
@@ -63,9 +65,11 @@ module LearnOpen
         Timeout::timeout(15) do
           git_adapter.clone("git@#{lesson.git_server}:#{lesson.repo_path}.git", lesson.name, path: location)
         end
-      rescue Git::GitExecuteError
+      rescue Git::GitExecuteError => e
         if retries > 0
           io.puts "There was a problem cloning this lesson. Retrying..." if retries > 1
+          io.puts "Git had the following error:"
+          io.puts e
           sleep(1)
           clone_repo(retries - 1)
         else
@@ -75,7 +79,7 @@ module LearnOpen
         end
       rescue Timeout::Error
         if retries > 0
-          io.puts "There was a problem cloning this lesson. Retrying..."
+          io.puts "There was a problem cloning this lesson (timed out). Retrying..."
           clone_repo(retries - 1)
         else
           io.puts "Cannot clone this lesson right now. Please try again."
