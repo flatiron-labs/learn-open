@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 module LearnOpen
   class GitSSHConnector
     attr_reader :ssh_connection, :environment
 
-    GIT_SSH_USER = 'git'.freeze
+    GIT_SSH_USER = 'git'
 
     def self.call(git_server:, environment:)
       new(git_server: git_server, environment: environment).call

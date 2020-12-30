@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'optparse'
 
 module LearnOpen
@@ -28,7 +30,7 @@ module LearnOpen
 
     def learn_config_editor
       config_path = File.expand_path('~/.learn-config')
-      editor = YAML.load(File.read(config_path))[:editor]
+      editor = YAML.safe_load(File.read(config_path))[:editor]
       editor.split.first
     end
 

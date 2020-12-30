@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'yaml'
 require 'netrc'
 require 'git'
@@ -51,7 +53,7 @@ module LearnOpen
   end
 
   def self.default_io
-    LearnOpen::Adapters::IOAdapter.new(input: STDIN, output: Kernel)
+    LearnOpen::Adapters::IOAdapter.new(input: $stdin, output: Kernel)
   end
 
   def self.git_adapter
@@ -81,7 +83,7 @@ module LearnOpen
   def self.lessons_directory
     @lesson_directory ||= begin
       home_dir = File.expand_path('~')
-      YAML.load(File.read("#{home_dir}/.learn-config"))[:learn_directory]
+      YAML.safe_load(File.read("#{home_dir}/.learn-config"))[:learn_directory]
     end
   end
 end

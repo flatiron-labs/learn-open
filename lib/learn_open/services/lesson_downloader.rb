@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module LearnOpen
   class LessonDownloader
     attr_reader :lesson, :location, :environment, :io, :logger, :client, :git_adapter, :git_ssh_connector
@@ -44,7 +46,7 @@ module LearnOpen
           client.fork_repo(repo_name: lesson.name)
         end
       rescue Timeout::Error
-        if retries > 0
+        if retries.positive?
           io.puts 'There was a problem forking this lesson. Retrying...'
           fork_repo(retries - 1)
         else
@@ -63,7 +65,7 @@ module LearnOpen
           git_adapter.clone("git@#{lesson.git_server}:#{lesson.repo_path}.git", lesson.name, path: location)
         end
       rescue Git::GitExecuteError
-        if retries > 0
+        if retries.positive?
           io.puts 'There was a problem cloning this lesson. Retrying...' if retries > 1
           sleep(1)
           clone_repo(retries - 1)
@@ -73,7 +75,7 @@ module LearnOpen
           exit
         end
       rescue Timeout::Error
-        if retries > 0
+        if retries.positive?
           io.puts 'There was a problem cloning this lesson. Retrying...'
           clone_repo(retries - 1)
         else

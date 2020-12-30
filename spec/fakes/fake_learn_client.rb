@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'ostruct'
 class FakeLearnClient
   attr_reader :token

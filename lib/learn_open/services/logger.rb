@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module LearnOpen
   class Logger
     attr_reader :log_path

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'diff/lcs'
 require_relative '../lib/learn_open'
 require_relative 'fakes/fake_git'

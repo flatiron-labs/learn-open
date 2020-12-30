@@ -22,6 +22,5 @@ Metrics/MethodLength:
 Metrics/PerceivedComplexity:
   Enabled: false
 
-# TODO: Add top-level module documentation
 Style/Documentation:
   Enabled: false

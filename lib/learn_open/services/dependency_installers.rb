@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module LearnOpen
   module DependencyInstallers
     def self.installer_types

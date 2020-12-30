@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class FakeGit
   def clone(_source, name, path:)
     FileUtils.mkdir_p("#{path}/#{name}")

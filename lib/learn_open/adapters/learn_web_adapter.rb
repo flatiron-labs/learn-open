@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module LearnOpen
   module Adapters
     class LearnWebAdapter
@@ -54,7 +56,7 @@ module LearnOpen
           current_lesson
         end
       rescue Timeout::Error
-        if retries > 0
+        if retries.positive?
           io.puts 'There was a problem getting your lesson from Learn. Retrying...'
           load_current_lesson(retries - 1)
         else
@@ -69,7 +71,7 @@ module LearnOpen
           next_lesson
         end
       rescue Timeout::Error
-        if retries > 0
+        if retries.positive?
           io.puts 'There was a problem getting your next lesson from Learn. Retrying...'
           load_next_lesson(retries - 1)
         else
@@ -85,7 +87,7 @@ module LearnOpen
             client.validate_repo_slug(repo_slug: target_lesson)
           end
         rescue Timeout::Error
-          if retries > 0
+          if retries.positive?
             io.puts 'There was a problem connecting to Learn. Retrying...'
             get_lesson(target_lesson, retries - 1)
           else
