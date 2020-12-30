@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'ostruct'
-class FakeLearnClient
+class FakeLearnClient # rubocop:disable Metrics/ClassLength
   attr_reader :token
 
   def initialize(token:)
@@ -16,19 +16,41 @@ class FakeLearnClient
                      forked_repo: 'StevenNunez/ttt-2-board-rb-v-000',
                      clone_repo: 'StevenNunez/ttt-2-board-rb-v-000',
                      git_server: 'github.com',
-                     dot_learn: { tags: %w[variables arrays tictactoe], languages: ['ruby'], resources: 0 },
+                     dot_learn: {
+                       tags: %w[variables arrays tictactoe],
+                       languages: ['ruby'],
+                       resources: 0
+                     },
                      lab: true,
                      ios_lab: false,
                      ruby_lab: true,
                      use_student_fork: true,
-                     assessments: [{ type: 'fork', passing: true, failing: false, started: true, message: 'You forked this lab.' },
-                                   { type: 'local_build', passing: false, failing: true, started: true,
-                                     message: 'Build failures.' },
-                                   { type: 'pull_request', passing: false, failing: false, started: false,
-                                     message: "Submit a pull request on Github when you're done." }] })
+                     assessments: [
+                       {
+                         type: 'fork',
+                         passing: true,
+                         failing: false,
+                         started: true,
+                         message: 'You forked this lab.'
+                       },
+                       {
+                         type: 'local_build',
+                         passing: false,
+                         failing: true,
+                         started: true,
+                         message: 'Build failures.'
+                       },
+                       {
+                         type: 'pull_request',
+                         passing: false,
+                         failing: false,
+                         started: false,
+                         message: "Submit a pull request on Github when you're done."
+                       }
+                     ] })
   end
 
-  def fork_repo(repo_name:)
+  def fork_repo(*)
     :noop
   end
 

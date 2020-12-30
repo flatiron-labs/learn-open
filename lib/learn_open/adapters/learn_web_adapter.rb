@@ -82,7 +82,7 @@ module LearnOpen
       end
 
       def get_lesson(target_lesson, retries = 3)
-        @correct_lesson ||= begin
+        @get_lesson ||= begin
           Timeout.timeout(15) do
             client.validate_repo_slug(repo_slug: target_lesson)
           end

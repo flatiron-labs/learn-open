@@ -15,8 +15,6 @@ module LearnOpen
 
     private
 
-    attr_reader :log_path
-
     def setup
       FileUtils.touch(log_path)
       File.write(log_path, '')

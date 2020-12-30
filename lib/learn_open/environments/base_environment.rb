@@ -46,7 +46,7 @@ module LearnOpen
       def open_editor(lesson, _location, editor)
         io.puts 'Opening lesson...'
         system_adapter.change_context_directory(lesson.to_path)
-        system_adapter.open_editor(editor, path: '.')
+        system_adapter.open_editor(editor)
       end
 
       def start_file_backup(lesson, location)

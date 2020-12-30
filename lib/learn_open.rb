@@ -39,7 +39,7 @@ require 'learn_open/lessons/lab_lesson'
 
 module LearnOpen
   def self.learn_web_client
-    @client ||= begin
+    @learn_web_client ||= begin
       _login, token = Netrc.read['learn-config']
       LearnWeb::Client.new(token: token)
     end
@@ -81,9 +81,12 @@ module LearnOpen
   end
 
   def self.lessons_directory
-    @lesson_directory ||= begin
-      home_dir = File.expand_path('~')
-      YAML.safe_load(File.read("#{home_dir}/.learn-config"))[:learn_directory]
+    @lessons_directory ||= begin
+      config_path = File.expand_path('~/.learn-config')
+      YAML.safe_load(
+        File.read(config_path),
+        [Symbol]
+      )[:learn_directory]
     end
   end
 end

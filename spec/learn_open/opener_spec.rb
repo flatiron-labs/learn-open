@@ -47,7 +47,7 @@ describe LearnOpen::Opener do
       clone_only = false
       expect(system_adapter)
         .to receive(:open_editor)
-        .with('atom', path: '.')
+        .with('atom')
 
       expect(system_adapter)
         .to receive(:open_login_shell)
@@ -177,8 +177,11 @@ describe LearnOpen::Opener do
                                        git_ssh_connector: git_ssh_connector,
                                        io: spy)
         opener.run
+
         custom_commands_log = File.read("#{home_dir}/.custom_commands.log")
-        expect(custom_commands_log).to eq("{\"command\":\"open_lab\",\"lab_name\":\"rails-dynamic-request-lab-cb-000\"}\n")
+
+        expect(custom_commands_log)
+          .to eq("{\"command\":\"open_lab\",\"lab_name\":\"rails-dynamic-request-lab-cb-000\"}\n")
       end
 
       it "writes to custom_commands_log if only if it's IDE" do
@@ -211,7 +214,7 @@ describe LearnOpen::Opener do
         allow(system_adapter).to receive_messages(%i[spawn spawn])
         expect(system_adapter)
           .to receive(:open_editor)
-          .with('atom', path: '.')
+          .with('atom')
 
         expect(system_adapter)
           .to receive(:open_login_shell)
@@ -613,7 +616,7 @@ describe LearnOpen::Opener do
         it 'runs pip install if lab is a python lab' do
           expect(system_adapter)
             .to receive(:open_editor)
-            .with('atom', path: '.')
+            .with('atom')
 
           expect(system_adapter)
             .to receive(:open_login_shell)
@@ -667,7 +670,7 @@ describe LearnOpen::Opener do
         it 'runs npm install if lab is a node lab' do
           expect(system_adapter)
             .to receive(:open_editor)
-            .with('atom', path: '.')
+            .with('atom')
 
           expect(system_adapter)
             .to receive(:open_login_shell)

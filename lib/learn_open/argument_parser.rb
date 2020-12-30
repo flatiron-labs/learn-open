@@ -28,12 +28,6 @@ module LearnOpen
       options
     end
 
-    def learn_config_editor
-      config_path = File.expand_path('~/.learn-config')
-      editor = YAML.safe_load(File.read(config_path))[:editor]
-      editor.split.first
-    end
-
     def execute
       cli_args = parse
 
@@ -46,6 +40,16 @@ module LearnOpen
         cli_args[:next],
         cli_args[:clone_only]
       ]
+    end
+
+    private
+
+    def learn_config_editor
+      config_path = File.expand_path('~/.learn-config')
+      YAML.safe_load(
+        File.read(config_path),
+        [Symbol]
+      )[:editor].split.first
     end
   end
 end

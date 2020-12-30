@@ -115,7 +115,7 @@ describe LearnOpen::Environments::IDEEnvironment do
         .with('/home/bobby')
       expect(system_adapter)
         .to receive(:open_editor)
-        .with('vim', { path: '.' })
+        .with('vim')
       expect(system_adapter)
         .to receive(:spawn)
         .with('restore-lab', { block: true })

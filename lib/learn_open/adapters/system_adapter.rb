@@ -5,7 +5,7 @@ require 'open3'
 module LearnOpen
   module Adapters
     class SystemAdapter
-      def self.open_editor(editor, path:)
+      def self.open_editor(editor)
         system("#{editor} .")
       end
 
