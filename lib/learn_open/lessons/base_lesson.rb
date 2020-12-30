@@ -35,7 +35,7 @@ module LearnOpen
         @system_adapter = options.fetch(:system_adapter, LearnOpen.system_adapter)
         @platform = options.fetch(:platform, LearnOpen.platform)
         @environment_vars = options.fetch(:environment_vars, LearnOpen.environment_vars)
-        @location = options.fetch(:lessons_directory) {LearnOpen.lessons_directory}
+        @location = options.fetch(:lessons_directory) { LearnOpen.lessons_directory }
         @options = options
       end
 

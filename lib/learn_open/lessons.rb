@@ -1,14 +1,13 @@
 module LearnOpen
   module Lessons
-
     def self.default
       LabLesson
     end
 
     def self.lesson_types
       [
-          JupyterLesson,
-          ReadmeLesson
+        JupyterLesson,
+        ReadmeLesson
       ]
     end
 

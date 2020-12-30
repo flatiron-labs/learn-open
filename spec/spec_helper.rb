@@ -1,9 +1,9 @@
 require 'diff/lcs'
 require_relative '../lib/learn_open'
-require_relative 'fakes/fake_git.rb'
-require_relative 'fakes/fake_learn_client.rb'
+require_relative 'fakes/fake_git'
+require_relative 'fakes/fake_learn_client'
 
-ENV["GEM_ENV"] = "test"
+ENV['GEM_ENV'] = 'test'
 
 def home_dir
   Dir.home
@@ -20,23 +20,22 @@ def create_linux_home_dir(username)
 end
 
 def create_netrc_file
-  File.open("#{home_dir}/.netrc", "w+") do |f|
-    f.write(<<-EOF)
-machine learn-config
-login learn
-password some-amazing-password
+  File.open("#{home_dir}/.netrc", 'w+') do |f|
+    f.write(<<~EOF)
+      machine learn-config
+      login learn
+      password some-amazing-password
     EOF
   end
-  File.chmod(0600, "#{home_dir}/.netrc")
+  File.chmod(0o600, "#{home_dir}/.netrc")
 end
 
 def create_learn_config_file
-  File.open("#{home_dir}/.learn-config", "w+") do |f|
-    f.write(<<-EOF)
----
-:learn_directory: "/home/bobby/Development/code"
-:editor: atom
+  File.open("#{home_dir}/.learn-config", 'w+') do |f|
+    f.write(<<~EOF)
+      ---
+      :learn_directory: "/home/bobby/Development/code"
+      :editor: atom
     EOF
   end
 end
-

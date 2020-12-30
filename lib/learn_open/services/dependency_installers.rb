@@ -2,17 +2,15 @@ module LearnOpen
   module DependencyInstallers
     def self.installer_types
       [
-          PipInstaller,
-          GemInstaller,
-          NodeInstaller
+        PipInstaller,
+        GemInstaller,
+        NodeInstaller
       ]
     end
 
     def self.run_installers(lesson, location, environment, options)
       installer_types.each do |type|
-        if type.detect(lesson, location)
-          type.call(lesson, location, environment, options)
-        end
+        type.call(lesson, location, environment, options) if type.detect(lesson, location)
       end
     end
   end

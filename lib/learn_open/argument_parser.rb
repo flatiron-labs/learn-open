@@ -11,14 +11,14 @@ module LearnOpen
     def parse
       options = {}
       rest = OptionParser.new do |opts|
-        opts.on("--next", "open next lab") do |n|
+        opts.on('--next', 'open next lab') do |n|
           options[:next] = n
         end
-        opts.on("--editor=EDITOR", "specify editor") do |e|
+        opts.on('--editor=EDITOR', 'specify editor') do |e|
           options[:editor] = e
         end
 
-        opts.on("--clone-only", "only download files. No shell") do |co|
+        opts.on('--clone-only', 'only download files. No shell') do |co|
           options[:clone_only] = co
         end
       end.parse(args)

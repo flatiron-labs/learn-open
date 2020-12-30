@@ -2,10 +2,10 @@ module LearnOpen
   class GitSSHConnector
     attr_reader :ssh_connection, :environment
 
-    GIT_SSH_USER = 'git'
+    GIT_SSH_USER = 'git'.freeze
 
     def self.call(git_server:, environment:)
-      self.new(git_server: git_server, environment: environment).call
+      new(git_server: git_server, environment: environment).call
     end
 
     def initialize(git_server:, environment:)
@@ -14,9 +14,7 @@ module LearnOpen
     end
 
     def call
-      if managed_environment? && ssh_unauthenticated?
-        upload_ssh_keys!
-      end
+      upload_ssh_keys! if managed_environment? && ssh_unauthenticated?
 
       ssh_authenticated?
     end

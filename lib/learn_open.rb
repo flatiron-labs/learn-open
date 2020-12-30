@@ -45,7 +45,7 @@ module LearnOpen
 
   def self.logger
     @logger ||= begin
-      home_dir = File.expand_path("~")
+      home_dir = File.expand_path('~')
       Logger.new("#{home_dir}/.learn-open-tmp")
     end
   end
@@ -80,7 +80,7 @@ module LearnOpen
 
   def self.lessons_directory
     @lesson_directory ||= begin
-      home_dir = File.expand_path("~")
+      home_dir = File.expand_path('~')
       YAML.load(File.read("#{home_dir}/.learn-config"))[:learn_directory]
     end
   end

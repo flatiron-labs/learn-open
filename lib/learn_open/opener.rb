@@ -26,14 +26,14 @@ module LearnOpen
 
     def run
       logger.log('Getting lesson...')
-      io.puts "Looking for lesson..."
+      io.puts 'Looking for lesson...'
 
       lesson_data = LearnOpen::Adapters::LearnWebAdapter
-                        .new(options)
-                        .fetch_lesson_data(
-                            target_lesson: target_lesson,
-                            fetch_next_lesson: get_next_lesson
-                        )
+                    .new(options)
+                    .fetch_lesson_data(
+                      target_lesson: target_lesson,
+                      fetch_next_lesson: get_next_lesson
+                    )
 
       lesson = Lessons.classify(lesson_data, options)
       environment = LearnOpen::Environments.classify(options)

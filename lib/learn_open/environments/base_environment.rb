@@ -1,10 +1,9 @@
 module LearnOpen
   module Environments
     class BaseEnvironment
-
       attr_reader :io, :environment_vars, :system_adapter, :options, :logger
 
-      def initialize(options={})
+      def initialize(options = {})
         @io = options.fetch(:io) { LearnOpen.default_io }
         @environment_vars = options.fetch(:environment_vars) { LearnOpen.environment_vars }
         @system_adapter = options.fetch(:system_adapter) { LearnOpen.system_adapter }
@@ -42,10 +41,10 @@ module LearnOpen
         LessonDownloader.call(lesson, location, self, options)
       end
 
-      def open_editor(lesson, location, editor)
-        io.puts "Opening lesson..."
+      def open_editor(lesson, _location, editor)
+        io.puts 'Opening lesson...'
         system_adapter.change_context_directory(lesson.to_path)
-        system_adapter.open_editor(editor, path: ".")
+        system_adapter.open_editor(editor, path: '.')
       end
 
       def start_file_backup(lesson, location)
@@ -57,8 +56,8 @@ module LearnOpen
       end
 
       def notify_of_completion
-        logger.log("Done.")
-        io.puts "Done."
+        logger.log('Done.')
+        io.puts 'Done.'
       end
     end
   end
