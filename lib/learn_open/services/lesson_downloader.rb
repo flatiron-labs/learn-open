@@ -20,21 +20,13 @@ module LearnOpen
     end
 
     def call
-      if !repo_exists?
-        if ensure_git_ssh!
-          fork_repo if lesson.use_student_fork
-          clone_repo
-          :ok
-        else
-          :ssh_unauthenticated
-        end
-      else
-        :noop
-      end
-    end
+      return :noop if repo_exists?
+      return :ssh_unauthenticated unless ensure_git_ssh!
 
-    def ensure_git_ssh!
-      git_ssh_connector.call(git_server: lesson.git_server, environment: environment)
+      fork_repo if lesson.use_student_fork
+      clone_repo
+
+      :ok
     end
 
     def fork_repo(retries = 3)
@@ -84,6 +76,12 @@ module LearnOpen
           exit
         end
       end
+    end
+
+    private
+
+    def ensure_git_ssh!
+      git_ssh_connector.call(git_server: lesson.git_server, environment: environment)
     end
 
     def repo_exists?
