@@ -22,24 +22,6 @@ module LearnOpen
         io.puts "Opening Jupyter Lesson..."
         system_adapter.run_command("open -a Safari #{lesson.to_url}")
       end
-
-      def xcodeproj_file?(lesson)
-        Dir.glob("#{lesson.to_path}/*.xcodeproj").any?
-      end
-
-      def xcworkspace_file?(lesson)
-        Dir.glob("#{lesson.to_path}/*.xcworkspace").any?
-      end
-
-      def open_xcode(lesson)
-        io.puts "Opening lesson..."
-        system_adapter.change_context_directory("#{lesson.to_path}")
-        if xcworkspace_file?(lesson)
-          system_adapter.run_command("cd #{lesson.to_path} && open *.xcworkspace")
-        elsif xcodeproj_file?(lesson)
-          system_adapter.run_command("cd #{lesson.to_path} && open *.xcodeproj")
-        end
-      end
     end
 
     class MacWithChromeEnvironment < MacEnvironment
@@ -52,7 +34,6 @@ module LearnOpen
         io.puts "Opening Jupyter Lesson..."
         system_adapter.run_command("open -a 'Google Chrome' #{lesson.to_url}")
       end
-
     end
   end
 end
