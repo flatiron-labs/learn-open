@@ -33,7 +33,6 @@ require 'learn_open/lessons'
 require 'learn_open/lessons/base_lesson'
 require 'learn_open/lessons/jupyter_lesson'
 require 'learn_open/lessons/readme_lesson'
-require 'learn_open/lessons/ios_lesson'
 require 'learn_open/lessons/lab_lesson'
 
 module LearnOpen

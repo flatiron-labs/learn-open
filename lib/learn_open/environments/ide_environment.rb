@@ -22,8 +22,6 @@ module LearnOpen
       def open_lab(lesson, location, editor, clone_only)
         when_valid(lesson) do
           case lesson
-          when LearnOpen::Lessons::IosLesson
-            super
           when -> (l) { valid?(l) }
             download_lesson(lesson, location)
             open_editor(lesson, location, editor)

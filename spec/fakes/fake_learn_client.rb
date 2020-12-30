@@ -27,40 +27,6 @@ class FakeLearnClient
 
   def validate_repo_slug(repo_slug:)
     case repo_slug
-    when "ios_lab"
-      OpenStruct.new({
-        :clone_repo=>"StevenNunez/ios_lab",
-        :repo_name=>"ios_lab",
-        :repo_slug=>"StevenNunez/ios_lab",
-        :lab=>true,
-        :lesson_id=>31322,
-        :later_lesson=>false,
-        :git_server=>"github.com",
-        :use_student_fork=>true,
-        :dot_learn=>{
-          :tags=>[
-            "UIView"
-          ],
-          :languages=>["swift"],
-          :resources=>0}
-      })
-    when "ios_with_workspace_lab"
-      OpenStruct.new({
-        :clone_repo=>"StevenNunez/ios_with_workspace_lab",
-        :repo_name=>"ios_with_workspace_lab",
-        :repo_slug=>"StevenNunez/ios_with_workspace_lab",
-        :lab=>true,
-        :lesson_id=>31322,
-        :later_lesson=>false,
-        :use_student_fork=>true,
-        :git_server=>"github.com",
-        :dot_learn=>{
-          :tags=>[
-            "UIView"
-          ],
-          :languages=>["swift"],
-          :resources=>0}
-      })
     when "jupyter_lab"
       OpenStruct.new({
         :clone_repo=>"StevenNunez/jupyter_lab",

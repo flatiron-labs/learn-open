@@ -243,7 +243,6 @@ describe LearnOpen::Opener do
       allow(system_adapter).to receive_messages(
         open_editor: :noop,
         spawn: :noop,
-        spawn: :noop,
         open_login_shell: :noop,
         change_context_directory: :noop,
         run_command: :noop,
@@ -272,7 +271,6 @@ Failed to obtain an SSH connection!
 
       allow(system_adapter).to receive_messages(
         open_editor: :noop,
-        spawn: :noop,
         spawn: :noop,
         open_login_shell: :noop,
         change_context_directory: :noop,
@@ -306,7 +304,6 @@ Done.
 
       allow(system_adapter).to receive_messages(
         open_editor: :noop,
-        spawn: :noop,
         spawn: :noop,
         open_login_shell: :noop,
         change_context_directory: :noop,
@@ -561,104 +558,7 @@ EOF
         end
       end
     end
-    context "iOS labs" do
-      it "fails to open on Linux" do
-        io = StringIO.new
 
-        opener = LearnOpen::Opener.new("ios_lab", "atom", false, false,
-                                       learn_web_client: learn_web_client,
-                                       git_adapter: git_adapter,
-                                       environment_vars: {"SHELL" => "/usr/local/bin/fish"},
-                                       system_adapter: system_adapter,
-                                       git_ssh_connector: git_ssh_connector,
-                                       io: io,
-                                       platform: "linux")
-        opener.run
-
-        io.rewind
-        expect(io.read).to eq(<<-EOF)
-Looking for lesson...
-You need to be on a Mac to work on iOS lessons.
-EOF
-      end
-
-      it "fails to open on the IDE" do
-        environment = {
-          "SHELL" => "/usr/local/bin/fish",
-          "LAB_NAME" => "ios_lab",
-          "CREATED_USER" => "bobby",
-          "IDE_CONTAINER" => "true",
-          "IDE_VERSION" => "3"
-        }
-        create_linux_home_dir("bobby")
-        io = StringIO.new
-
-        opener = LearnOpen::Opener.new("ios_lab", "atom", false, false,
-                                       learn_web_client: learn_web_client,
-                                       git_adapter: git_adapter,
-                                       environment_vars: environment,
-                                       system_adapter: system_adapter,
-                                       git_ssh_connector: git_ssh_connector,
-                                       io: io,
-                                       platform: "linux")
-        opener.run
-
-        io.rewind
-        expect(io.read).to eq(<<-EOF)
-Looking for lesson...
-You need to be on a Mac to work on iOS lessons.
-EOF
-      end
-
-      it "opens xcodeproj if on a mac and it exists" do
-        io = StringIO.new
-        expect(system_adapter)
-          .to receive(:change_context_directory)
-          .with("/home/bobby/Development/code/ios_lab")
-        expect(system_adapter)
-          .to receive(:open_login_shell)
-          .with("/usr/local/bin/fish")
-        expect(system_adapter)
-          .to receive(:run_command)
-          .with("cd /home/bobby/Development/code/ios_lab && open *.xcodeproj")
-
-
-        opener = LearnOpen::Opener.new("ios_lab", "atom", false, false,
-                                       learn_web_client: learn_web_client,
-                                       git_adapter: git_adapter,
-                                       environment_vars: {"SHELL" => "/usr/local/bin/fish"},
-                                       system_adapter: system_adapter,
-                                       io: io,
-                                       git_ssh_connector: git_ssh_connector,
-                                       platform: "darwin")
-        opener.run
-
-      end
-      it "opens xcworkspace if on a mac and it exists" do
-        io = StringIO.new
-        expect(system_adapter)
-          .to receive(:change_context_directory)
-          .with("/home/bobby/Development/code/ios_with_workspace_lab")
-        expect(system_adapter)
-          .to receive(:open_login_shell)
-          .with("/usr/local/bin/fish")
-        expect(system_adapter)
-          .to receive(:run_command)
-          .with("cd /home/bobby/Development/code/ios_with_workspace_lab && open *.xcworkspace")
-
-
-        opener = LearnOpen::Opener.new("ios_with_workspace_lab", "atom", false, false,
-                                       learn_web_client: learn_web_client,
-                                       git_adapter: git_adapter,
-                                       environment_vars: {"SHELL" => "/usr/local/bin/fish"},
-                                       system_adapter: system_adapter,
-                                       io: io,
-                                       git_ssh_connector: git_ssh_connector,
-                                       platform: "darwin")
-        opener.run
-
-      end
-    end
     context "Lab" do
       context "installing dependencies" do
         it "runs bundle install if lab is a ruby lab" do

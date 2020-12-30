@@ -8,8 +8,7 @@ module LearnOpen
     def self.lesson_types
       [
           JupyterLesson,
-          ReadmeLesson,
-          IosLesson,
+          ReadmeLesson
       ]
     end
 
